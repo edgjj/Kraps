@@ -1,6 +1,7 @@
-*.wav
-*.txt
-*.bak
-*.out
-*.asd
-/.vscode/*
+*
+
+!*/
+!*.c
+!*.h
+!.gitignore
+!README.md

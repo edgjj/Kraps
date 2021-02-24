@@ -58,20 +58,19 @@ int main(int argc, char* argv[]){
 	SampleFilter_init(&fir);
 
 	float check = numsmp/2;
-	float freqstep = 120.f/numsmp;
+	float freqstep = 680.f/numsmp;
 	DEBUG_PRINT("freq_step: %f\n",freqstep);
 	
 	adsr_gate_on(&adsr);
-	test_dft(&wt);
-	#if 0
+	//test_dft(&wt);
+	
 	for (int i = 0; i < numsmp; i++){
-
 		samples[i] = adsr_get_coeff(&adsr)*wt_get_sample(&wt,freq,0);
 		freq += freqstep;
 		if (adsr.gate == 1 && i > check)
 			adsr_gate_off(&adsr);
 	}
-	#endif
+	
 	tinywav_write_f(&tw,samples,numsmp);
 
 	tinywav_close_write(&tw);

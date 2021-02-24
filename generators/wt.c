@@ -79,37 +79,46 @@ void test_dft(WTable* wt){
 }
 float wt_get_sample(WTable* wt, float freq, uint32_t shift){
 
+    uint16_t n = wt->waveform_size;
     assert ( wt->table != NULL || wt->dft != NULL);
-    assert ( shift+wt->waveform_size <= wt->table_size - 3);
+    assert ( shift+n <= wt->table_size - 3);
     
-    float step = freq * wt->waveform_size / wt->SR;
+    float step = freq * n / wt->SR;
     float r_phase = wt->phase + step ;
 
 
-    int32_t pos_int = (int)wt->phase + shift;
+    int32_t pos_int = (int)wt->phase; // + shift;
     float pos_frac = wt->phase - (int)wt->phase;
     
     memcpy(wt->dft,
         wt->table + shift * sizeof(double),
-        sizeof(double) * wt->waveform_size);
+        sizeof(double) * n);
     
 
 
-	rdft(wt->waveform_size,1,wt->dft,wt->ip,wt->w);
-    
+	rdft(n,1,wt->dft,wt->ip,wt->w);
 
+    int mid = n/2;
+    int bins = (1/2 - freq*8/wt->SR)*n;
+    for (int i = mid - bins + 1; i < mid + bins + 1; i++){
+        wt->dft[i] = 0;
+        wt->dft[i+1] = 0;
+    }
+
+    rdft(n,-1,wt->dft,wt->ip,wt->w);
+    for (int j = 0; j <= n - 1; j++) {
+                wt->dft[j] *= 2.0 / n;
+            }
     /*
-
         Algorithm: 
         1. Do RDFT of waveform;
         2. Cut everything from Fnyq - Fplay to Fnyq;
         3. Do inverse RDFT of waveform;
         4. Linear interp. and pop;
-    
     */
 
    /*
-   
+
         mid = Nfft/2;
         freq = 15000;
         nACBin = ceil ((fs/2 - freq)*Nfft/fs);
@@ -120,8 +129,8 @@ float wt_get_sample(WTable* wt, float freq, uint32_t shift){
    
    */
 
-    float out = 0.f;
-	//float out = wt->table[pos_int + 1] * pos_frac + wt->table[pos_int] * (1 - pos_frac);
+    //float out = 0.f;
+	float out = wt->dft[pos_int + 1] * pos_frac + wt->dft[pos_int] * (1 - pos_frac);
     
 
     while (r_phase > 2047.f)
