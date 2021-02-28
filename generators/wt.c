@@ -7,6 +7,8 @@
 
 void rdft(int, int, double *, int *, double *);
 #define USE_CDFT_PTHREADS
+#define NUM_OCTAVES 11
+
 
 void wt_setup(WTable* wt, float sample_rate){
 
@@ -17,33 +19,82 @@ void wt_setup(WTable* wt, float sample_rate){
 	wt->SR = sample_rate;
 	wt->waveform_size = 2048;
     wt->table = NULL;
+    wt->tables = malloc(NUM_OCTAVES * sizeof(double*));
     wt->table_size = 0;
 
-    wt->dft = malloc(sizeof(double)*wt->waveform_size);
-    wt->ip = malloc((sqrt(wt->waveform_size)+2)*sizeof(int));
-    wt->w = malloc((wt->waveform_size-1)*sizeof(double));
-    wt->ip[0] = 0;
+    
+
+    wt->dft = NULL;
+    wt->ip = NULL;
+    wt->w = NULL;
 
     DEBUG_PRINT("Set up generator. Waveform size: %u\n",wt->waveform_size);
 	
-
 }
-void wt_fill_table(WTable* wt, float* buf, uint32_t len){
 
+void wt_alloc_dft(WTable* wt){
+    wt->dft = malloc(sizeof(double)*wt->table_size);
+    wt->ip = malloc((sqrt(wt->table_size)+2)*sizeof(int));
+    wt->ip[0] = 0;
+    wt->w = malloc((wt->table_size-1)*sizeof(double));
+}
+
+void wt_free_dft(WTable* wt){
+    free(wt->dft);
+    free(wt->ip);
+    free(wt->w);
+}
+
+void wt_fill_mipmap(WTable* wt){
+    float base_note = 11.562f;
+
+    wt_alloc_dft(wt);
+    int32_t wt_sz = wt->table_size;
+    for (int i = 0; i < NUM_OCTAVES; i++){
+        
+        wt->tables[i] = malloc(wt->table_size*sizeof(double));
+        memcpy(wt->tables[i],wt->table,wt->table_size*sizeof(double));
+
+        rdft(wt_sz,1,wt->tables[i],wt->ip,wt->w);
+
+        uint16_t mid = wt_sz/2;
+        uint16_t bins = wt_sz / pow(2,i);
+
+        for (uint16_t j = bins; j < wt_sz-1; j = j+2){
+            wt->tables[i][j] = 0.f;
+            wt->tables[i][j+1] = 0.f;
+        }
+
+
+        rdft(wt_sz,-1,wt->tables[i],wt->ip,wt->w);
+        
+        for (int j = 0; j <= wt_sz - 1; j++) {
+                wt->tables[i][j] *= 2.0f / wt_sz;
+        }
+        DEBUG_PRINT("Passed octave: %d; Bins filtered %d  \n",i, bins);
+    } 
+    
+}
+
+void wt_fill_table(WTable* wt, float* buf, uint32_t len){
+    
     if (wt->table == NULL){
         wt->table = malloc(len*sizeof(double));
     } else {
         wt->table = realloc(wt->table, len*sizeof(double));
     }
-    
-    for (int i = 0; i < len; i++){
-		wt->table[i] = buf[i];
-	}
     wt->table_size = len;
+    for (int i = 0; i < wt->table_size;i++)
+        wt->table[i] = buf[i];
 
-	DEBUG_PRINT("Filled WT: %f\n", len);
+    wt_fill_mipmap(wt);
+    
+	DEBUG_PRINT("Filled WT: %d\n", len);
 
 }
+
+
+
 void wt_fill_table_from_fcn(WTable* wt, float (*fcn)(float phase)){
 
     if (wt->table == NULL){
@@ -55,85 +106,41 @@ void wt_fill_table_from_fcn(WTable* wt, float (*fcn)(float phase)){
     for (int i = 0; i < wt->table_size; i++){
 		wt->table[i] = (*fcn) ( (float) i / 2048 );
 	}
+    
     wt->table_size = wt->waveform_size;
+    
+    wt_fill_mipmap(wt);
 
 	DEBUG_PRINT("Filled WT (math fcn.)\n", wt->waveform_size);
+
 }
-void test_dft(WTable* wt){
 
-    memcpy(wt->dft,
-        wt->table,
-        sizeof(double) * wt->waveform_size);
-    
-	rdft(wt->waveform_size,1,wt->dft,wt->ip,wt->w);
-
-    
-
-    FILE* fp;
-    fp = fopen("./dft.txt","w+");
-    for (int i = 0; i < wt->waveform_size / 2; i++){    
-        fprintf(fp,"%.12f\n",sqrt((pow(wt->dft[2*i],2) + pow(wt->dft[2*i+1],2))/wt->waveform_size));
-    }
-    
-    fclose(fp);
-}
 float wt_get_sample(WTable* wt, float freq, uint32_t shift){
+    // base tune is ~= F-1
 
-    uint16_t n = wt->waveform_size;
-    assert ( wt->table != NULL || wt->dft != NULL);
-    assert ( shift+n <= wt->table_size - 3);
+    uint32_t n = wt->waveform_size;
+    int32_t wt_s = wt->table_size;
+
     
     float step = freq * n / wt->SR;
-    float r_phase = wt->phase + step ;
+    float r_phase = wt->phase + step;
+    
 
-
-    int32_t pos_int = (int)wt->phase; // + shift;
+    int32_t pos_int = (int)wt->phase + shift; 
     float pos_frac = wt->phase - (int)wt->phase;
     
-    memcpy(wt->dft,
-        wt->table + shift * sizeof(double),
-        sizeof(double) * n);
+    float num_oct = log2(freq * wt->table_size / wt->SR);
+    uint16_t num_oct_strp = (uint16_t)num_oct;
+    float oct_frac = num_oct - num_oct_strp;
     
 
+    float o1 = wt->tables[num_oct_strp][pos_int + 1] * pos_frac + wt->tables[num_oct_strp][pos_int] * (1 - pos_frac);
+    float o2 = wt->tables[num_oct_strp+1][pos_int + 1] * pos_frac + wt->tables[num_oct_strp+1][pos_int] * (1 - pos_frac);
 
-	rdft(n,1,wt->dft,wt->ip,wt->w);
-
-    int mid = n/2;
-    int bins = (1/2 - freq*8/wt->SR)*n;
-    for (int i = mid - bins + 1; i < mid + bins + 1; i++){
-        wt->dft[i] = 0;
-        wt->dft[i+1] = 0;
-    }
-
-    rdft(n,-1,wt->dft,wt->ip,wt->w);
-    for (int j = 0; j <= n - 1; j++) {
-                wt->dft[j] *= 2.0 / n;
-            }
-    /*
-        Algorithm: 
-        1. Do RDFT of waveform;
-        2. Cut everything from Fnyq - Fplay to Fnyq;
-        3. Do inverse RDFT of waveform;
-        4. Linear interp. and pop;
-    */
-
-   /*
-
-        mid = Nfft/2;
-        freq = 15000;
-        nACBin = ceil ((fs/2 - freq)*Nfft/fs);
-
-        fftr([mid - nACBin + 1:mid+nACBin + 1]) = 0; % guarantee symmetry; just rectangle window;
-
-        invert = ifft(fftr);
-   
-   */
-
-    //float out = 0.f;
-	float out = wt->dft[pos_int + 1] * pos_frac + wt->dft[pos_int] * (1 - pos_frac);
+    float out = o1 * (1 - oct_frac) + o2 * oct_frac;
     
 
-    while (r_phase > 2047.f)
+    while (r_phase > 2048.f)
 		r_phase -= 2048.f;
 
 	wt->phase = r_phase;

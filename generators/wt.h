@@ -9,6 +9,8 @@ typedef struct WTable{
     uint16_t waveform_size;
 	uint32_t table_size;
 	double *table;
+	
+	double **tables;
 
 	// ooura fft
 	double *dft;

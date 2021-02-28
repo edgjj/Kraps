@@ -3,12 +3,13 @@
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
+
 #include "misc/misc.h"
 #include "tinywav/tinywav.h"
-
 #include "modulators/adsr.h"
 #include "generators/wt.h"
-#include "filters/sample_fir.h"
+
 
 
 
@@ -26,7 +27,7 @@ int main(int argc, char* argv[]){
 	TinyWav tw;	
 	ADSR adsr;
 	WTable wt;
-	SampleFilter fir;
+
 	
 	
 	if (tinywav_open_read(&tw,"./m2_wt.wav",TW_INLINE,TW_FLOAT32) != 0){
@@ -34,12 +35,12 @@ int main(int argc, char* argv[]){
 		return -1;
 	}
 
-	float wt_read [8192];
-	tinywav_read_f(&tw,wt_read,8192);
+	float wt_read [4096];
+	tinywav_read_f(&tw,wt_read,4096);
 	tinywav_close_read(&tw);
 	
 	wt_setup(&wt,SR);
-	wt_fill_table(&wt,wt_read,8192);
+	wt_fill_table(&wt,wt_read,4096);
 	
 	if (tinywav_open_write(&tw,1,SR,TW_INT16,TW_INLINE,"./generator_test.wav") != 0){
 		printf("Can't open file for write\n");
@@ -50,12 +51,11 @@ int main(int argc, char* argv[]){
 	float* samples = (float*) malloc (numsmp*sizeof(float));
 
 	adsr_setup(&adsr,SR);
-	adsr_set_sustain_amp(&adsr,-6.f);
+	adsr_set_sustain_amp(&adsr,0.f);
 	adsr_set_attack_time(&adsr,0.5f);
 	adsr_set_decay_time(&adsr,1.f);
 	adsr_set_release_time(&adsr,2.f);
-	
-	SampleFilter_init(&fir);
+
 
 	float check = numsmp/2;
 	float freqstep = 680.f/numsmp;
@@ -63,14 +63,19 @@ int main(int argc, char* argv[]){
 	
 	adsr_gate_on(&adsr);
 	//test_dft(&wt);
-	
+
+	clock_t s_time = clock();
+
 	for (int i = 0; i < numsmp; i++){
+
 		samples[i] = adsr_get_coeff(&adsr)*wt_get_sample(&wt,freq,0);
 		freq += freqstep;
 		if (adsr.gate == 1 && i > check)
 			adsr_gate_off(&adsr);
 	}
 	
+	float elapsed = (clock() - s_time)  / (CLOCKS_PER_SEC / 1000);
+	printf("Time elapsed: %.10f\n",elapsed);
 	tinywav_write_f(&tw,samples,numsmp);
 
 	tinywav_close_write(&tw);
