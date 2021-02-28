@@ -12,18 +12,22 @@ void rdft(int, int, double *, int *, double *);
 
 void wt_setup(WTable* wt, float sample_rate){
 
-    wt->phase = 0.f;
-
-    assert(sample_rate > 0);
-
-	wt->SR = sample_rate;
-	wt->waveform_size = 2048;
-    wt->table = NULL;
-    wt->tables = malloc(NUM_OCTAVES * sizeof(double*));
-    wt->table_size = 0;
-
     
 
+    assert(sample_rate > 0);
+    
+	wt->SR = sample_rate;
+    wt->phase = 0.f;
+
+    wt->phase_inc = 0.f;
+    wt->freq = 5.38330078126f;
+
+	wt->waveform_size = 2048;
+    wt->table_size = 0;
+
+    wt->table = NULL;
+    wt->tables = malloc(NUM_OCTAVES * sizeof(double*));
+    
     wt->dft = NULL;
     wt->ip = NULL;
     wt->w = NULL;
@@ -43,6 +47,10 @@ void wt_free_dft(WTable* wt){
     free(wt->dft);
     free(wt->ip);
     free(wt->w);
+
+    wt->dft = NULL;
+    wt->ip = NULL;
+    wt->w = NULL;
 }
 
 void wt_fill_mipmap(WTable* wt){
@@ -93,8 +101,6 @@ void wt_fill_table(WTable* wt, float* buf, uint32_t len){
 
 }
 
-
-
 void wt_fill_table_from_fcn(WTable* wt, float (*fcn)(float phase)){
 
     if (wt->table == NULL){
@@ -115,29 +121,35 @@ void wt_fill_table_from_fcn(WTable* wt, float (*fcn)(float phase)){
 
 }
 
-float wt_get_sample(WTable* wt, float freq, uint32_t shift){
+void wt_set_freq(WTable* wt, float freq){
+
+    wt->freq = fmin(freq, wt->SR/2);
+    wt->phase_inc = wt->freq * wt->waveform_size / wt->SR; 
+
+}
+
+double wt_get_sample(WTable* wt, uint32_t shift){
     // base tune is ~= F-1
 
     uint32_t n = wt->waveform_size;
     int32_t wt_s = wt->table_size;
 
-    
-    float step = freq * n / wt->SR;
-    float r_phase = wt->phase + step;
-    
+
+    float r_phase = wt->phase + wt->phase_inc;  
 
     int32_t pos_int = (int)wt->phase + shift; 
     float pos_frac = wt->phase - (int)wt->phase;
     
-    float num_oct = log2(freq * wt->table_size / wt->SR);
+    float num_oct = log2(wt->freq * wt->table_size / wt->SR);
+    
     uint16_t num_oct_strp = (uint16_t)num_oct;
     float oct_frac = num_oct - num_oct_strp;
-    
+    //oct_frac = tanhf(2*oct_frac);
 
-    float o1 = wt->tables[num_oct_strp][pos_int + 1] * pos_frac + wt->tables[num_oct_strp][pos_int] * (1 - pos_frac);
-    float o2 = wt->tables[num_oct_strp+1][pos_int + 1] * pos_frac + wt->tables[num_oct_strp+1][pos_int] * (1 - pos_frac);
+    double o1 = wt->tables[num_oct_strp][pos_int + 1] * pos_frac + wt->tables[num_oct_strp][pos_int] * (1 - pos_frac);
+    double o2 = wt->tables[num_oct_strp+1][pos_int + 1] * pos_frac + wt->tables[num_oct_strp+1][pos_int] * (1 - pos_frac);
 
-    float out = o1 * (1 - oct_frac) + o2 * oct_frac;
+    double out = o1 * (1 - oct_frac) + o2 * oct_frac;
     
 
     while (r_phase > 2048.f)
@@ -149,9 +161,14 @@ float wt_get_sample(WTable* wt, float freq, uint32_t shift){
 }
 
 void wt_clear(WTable* wt){
+    wt_free_dft(wt);
+
     free(wt->table);
-    free(wt->dft);
-    wt->dft = NULL;
+    for (int i = 0; i <NUM_OCTAVES; i++)
+        free(wt->tables[i]);
+    free(wt->tables);
+
     wt->table = NULL;
+    wt->tables = NULL;
 }
 
