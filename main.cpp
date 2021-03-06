@@ -9,7 +9,7 @@
 #include "misc/misc.hpp"
 #include "tinywav/tinywav.h"
 #include "generators/wt.hpp"
-
+#include "modulators/adsr.hpp"
 
 int main(int argc, char* argv[]){
 
@@ -18,13 +18,16 @@ int main(int argc, char* argv[]){
 		return 0;
 	}
 
-	float freq = atof(argv[1]), amp = atof(argv[2]);
+	double freq = atof(argv[1]), amp = atof(argv[2]);
 	printf("Gen. params: %d Hz, %f amp\n",atoi(argv[1]),atof(argv[2]));
 	int time = 2, SR = 44100;
 
-	TinyWav tw ;	
-	auto wt = std::make_unique <Wavetable> (44100.0,2048);
-	
+	TinyWav tw;	
+    std::vector <std::unique_ptr <Processor>> processors;
+
+    processors.emplace_back (std::make_unique <Wavetable> (2048));
+    processors.emplace_back (std::make_unique <ADSR> ());
+
 	if (tinywav_open_read(&tw,"./m2_wt.wav",TW_INLINE,TW_FLOAT32) != 0){
 		printf("Can't read WT\n");
 		return -1;
@@ -34,12 +37,34 @@ int main(int argc, char* argv[]){
 	tinywav_read_f(&tw,wt_read,4096);
 	tinywav_close_read(&tw);
 	
-	wt->fill_table_from_buffer (wt_read, 4096);
+	( (Wavetable*) processors[0].get() )->fill_table_from_buffer (wt_read, 4096);
 
+    std::unique_ptr <Output> freq_out;
+    freq_out.reset (new Output(NULL));
+    *freq_out = freq;
+
+	std::unique_ptr <Output> shift_out;
+    shift_out.reset (new Output(NULL));
+	*shift_out = 0;
+
+
+	std::unique_ptr <Output> gate_out;
+    gate_out.reset (new Output(NULL));
+	*gate_out = true;
+
+	std::unique_ptr <Input> fin_out;
+    fin_out.reset (new Input(NULL, processors[1]->get_out(kADSRAudioOut)));
 
 
 	int numsmp = time*SR;
-	
+    processors[0]->plug (freq_out.get(), kGenFreqIn);
+	processors[0]->plug (shift_out.get(), kWtShiftIn);
+    processors[1]->plug (processors[0].get(), kGenAudioOut, kADSRAudioIn);
+	processors[1]->plug (gate_out.get(), kADSRGate);
+
+
+	for (auto& i : processors)
+		i->set_SR (SR);
 
 	float check = numsmp/2;
 	float freqstep = 600.f/numsmp;
@@ -53,18 +78,19 @@ int main(int argc, char* argv[]){
 
 	float* samples = (float*) malloc (numsmp*sizeof(float));
 
-	for (int i = 0; i < numsmp; i++){
-		wt->set_freq(freq);
-        wt->process();
-		samples[i] = wt->get_sample(0);
-		
-		/* pblep_set_freq(&pblep,freq);
-		samples[i] = adsr_get_coeff(&adsr)*amp*pblep_get_sample(&pblep); */
 
-		freq += freqstep;
+	for (int i = 0; i < numsmp; i++){
+
+        for (auto &i : processors)
+            i->process();
+        
+		samples[i] = *fin_out;
 		
-		/* if (adsr.gate == 1 && i > check)
-			adsr_gate_off(&adsr); */
+		*freq_out += freqstep;
+		
+		if (i > check)
+			*gate_out = false;
+			
 	}
 	
 

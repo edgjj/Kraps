@@ -3,10 +3,20 @@
 
 #include "generator.hpp"
 
-void Generator::set_freq (double freq) 
+Generator::Generator (uint8_t i, uint8_t o) : Processor (p_generator, i + 2, o + 2)
 {
-    this->freq = fmin(freq, sample_rate / 2);
-    this->phase_inc = this->freq * 2 * M_PI / sample_rate;
+
+}
+
+Generator::~Generator ()
+{
+
+}
+
+void Generator::set_freq () 
+{
+    this->freq = fmin(get_sample(kGenFreqIn), sample_rate / 2);
+    this->phase_inc = *inputs[kGenFreqIn] * 2.0 * M_PI * SR_cst;
 }
 
 void Generator::set_phase (double phase)
@@ -19,10 +29,4 @@ void Generator::inc_phase ()
     phase += phase_inc;
     while (phase >= 2 * M_PI)
         phase -= 2 * M_PI;
-}
-
-void Generator::set_SR (double SR) 
-{
-    sample_rate = SR;
-    set_freq (freq);
 }

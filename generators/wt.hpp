@@ -5,23 +5,37 @@
 
 #define NUM_OCTAVES 11
 
+enum kWtInputs 
+{
+    kWtShiftIn = kGenPhaseIn + 1
+};
+
 class Wavetable : public Generator{
 public:
 
-    Wavetable(double, uint16_t);
+    Wavetable(uint16_t);
 
     void fill_table_from_buffer (float*, uint32_t);
     void fill_table_from_fcn (double (*fcn) (double phase));
     void set_shift (uint32_t);
 
     void process () override;
+    
 
     ~Wavetable ();
+
+protected:
+    void process_params () override { ; }
 private:
     void fill_mipmap ();
     void alloc_dft ();
 
-    uint16_t waveform_size;
+    
+    double phase_cst = 0.0;
+
+
+
+    uint16_t waveform_size = 0;
     uint32_t table_size = 0;
     uint32_t shift = 0;
 

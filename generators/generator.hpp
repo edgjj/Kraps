@@ -2,25 +2,43 @@
 #define AGENERATOR_H
 #include "../processor/processor.hpp"
 
+enum kGenInputs 
+{
+    kGenFreqIn,
+    kGenPhaseIn
+};
+
+enum kGenOutputs 
+{
+    kGenAudioOut,
+    kGenPhaseOut
+};
+
 class Generator : public Processor 
 {
 public:
-    Generator(double SR) : Processor(p_generator, SR), SR_cst (1.0 / SR) { ; }
+    Generator(uint8_t i, uint8_t o);
 
-    void set_freq (double);
+
+
+    void set_freq ();
     void set_phase (double);
-    void set_SR (double);
-    
     void inc_phase ();
+
     
-    ~Generator () { ; }
+
+    ~Generator ();
 
 protected:
-    double phase;
-    double SR_cst;
-    double freq;
+    void recalculate_sr () override 
+    {
+        SR_cst = 1.0 / get_SR();
+    }   
+    double phase = 0.0;
+    double freq = 0.0;
+    double SR_cst = 0.0;
 private:
-    double phase_inc;
+    double phase_inc = 0.0;
 };
 
 #endif

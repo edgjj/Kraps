@@ -9,9 +9,10 @@ extern "C"
     void rdft(int, int, double *, int *, double *);
 }
 
-Wavetable::Wavetable(double SR, uint16_t waveform_size) : Generator (SR)
+Wavetable::Wavetable(uint16_t waveform_size) : Generator (1,0)
 {
     this->waveform_size = waveform_size;
+    phase_cst = this->waveform_size / ( 2.0 * M_PI );
 }
 
 Wavetable::~Wavetable()
@@ -27,25 +28,25 @@ Wavetable::~Wavetable()
 
 void Wavetable::process()
 {
-    uint32_t n = waveform_size;
-    int32_t wt_s = table_size;
-
-    int32_t pos_int = (int)phase + shift; 
-    float pos_frac = phase - (int)phase;
+    set_freq ();
     
-    float num_oct = log2(freq * table_size * SR_cst);
+    double phase_cvt = phase_cst * phase;
+
+    int32_t pos_int = *inputs[kWtShiftIn] + phase_cvt; 
+    double pos_frac = phase_cvt - (int)phase_cvt;
+    
+    double num_oct = log2(freq * table_size * SR_cst);
     
     uint16_t num_oct_strp = (uint16_t)num_oct;
-    float oct_frac = num_oct - num_oct_strp;
-    //oct_frac = tanhf(2*oct_frac);
+    double oct_frac = num_oct - num_oct_strp;
 
     double o1 = tables[num_oct_strp][pos_int + 1] * pos_frac + tables[num_oct_strp][pos_int] * (1 - pos_frac);
     double o2 = tables[num_oct_strp+1][pos_int + 1] * pos_frac + tables[num_oct_strp+1][pos_int] * (1 - pos_frac);
 
-    double out = o1 * (1 - oct_frac) + o2 * oct_frac;
-    
-    set_sample(out, 0);
-    inc_phase();
+    *outputs[kGenAudioOut] = o1 * (1 - oct_frac) + o2 * oct_frac;
+    *outputs[kGenPhaseOut] = phase;
+
+    inc_phase ();
 }
 
 void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
@@ -104,7 +105,6 @@ inline void Wavetable::alloc_dft ()
     ip[0] = 0;
     w = (double*) malloc((table_size-1)*sizeof(double));
 }
-
 
 
 void Wavetable::fill_mipmap ()

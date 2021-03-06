@@ -3,9 +3,9 @@
 #include "adsr.hpp"
 
 
-ADSR::ADSR (double SR) : Processor (p_modulator, SR)
+ADSR::ADSR () : Processor (p_modulator, 2, 1)
 {
-
+    
 }
 
 
@@ -24,6 +24,15 @@ void ADSR::gate_off()
 void ADSR::process()
 {
     float ret = pos;
+
+    if (*inputs[kADSRGate] == true)
+    {
+        gate_on();
+    }
+    else
+    {
+        gate_off();
+    }
 
     switch (state){
         case adsr_ENV_ATT:
@@ -55,7 +64,7 @@ void ADSR::process()
             break;
     }
 
-    set_sample (ret, 0);
+    *outputs[kADSRAudioOut] = *inputs[kADSRAudioIn] * ret;
     
 }
 
