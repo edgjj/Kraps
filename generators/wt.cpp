@@ -23,13 +23,14 @@ Wavetable::~Wavetable()
     free(table);
     for (int i = 0; i < NUM_OCTAVES; i++)
         free(tables[i]);
+    
 }
 
 
-void Wavetable::process()
+void Wavetable::process_callback()
 {
     set_freq ();
-    
+
     double phase_cvt = phase_cst * phase;
 
     int32_t pos_int = *inputs[kWtShiftIn] + phase_cvt; 
@@ -82,11 +83,12 @@ void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
         table = (double*) realloc(table, waveform_size*sizeof(double));
     }
 
-    for (int i = 0; i < table_size; i++){
-		table[i] = (*fcn) ( (float) i / 2048 );
-	}
-    
     table_size = waveform_size;
+
+    for (int i = 0; i < table_size; i++){
+		table[i] = (*fcn) ( (float) i * 2 * M_PI / 2048 );
+	}
+     
     
     fill_mipmap();
 

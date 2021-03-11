@@ -3,36 +3,38 @@
 #include "adsr.hpp"
 
 
-ADSR::ADSR () : Processor (p_modulator, 2, 1)
+
+ADSR::ADSR () : Processor (p_modulator, 1, 1)
 {
+    params = std::vector<double> (4, 0.0);
+}
+
+
+void ADSR::set_gate(bool g)
+{
+    if (g == true)
+    {
+        state = adsr_ENV_ATT;
+        pos = 0.0;
+    } else 
+    {
+        state = adsr_ENV_REL;
+    }
     
+
+    gate = g;
 }
 
 
-void ADSR::gate_on()
+void ADSR::process_callback()
 {
-    state = adsr_ENV_ATT;
-    pos = 0.0;
-    gate = true;
-}
-void ADSR::gate_off()
-{
-    state = adsr_ENV_REL;
-    gate = false;
-}
+    double ret = pos;
 
-void ADSR::process()
-{
-    float ret = pos;
-
-    if (*inputs[kADSRGate] == true)
+    if (*inputs[kADSRGate] != gate)
     {
-        gate_on();
+        set_gate(*inputs[kADSRGate]);
     }
-    else
-    {
-        gate_off();
-    }
+
 
     switch (state){
         case adsr_ENV_ATT:
@@ -64,7 +66,7 @@ void ADSR::process()
             break;
     }
 
-    *outputs[kADSRAudioOut] = *inputs[kADSRAudioIn] * ret;
+    *outputs[kADSRAudioOut] = ret;
     
 }
 
@@ -75,7 +77,7 @@ void ADSR::process_params ()
         if (i == adsr_sustain)
         {
             sustain_amp = pow(10, params[i] / 20.0);
-            return;
+            continue;
         }
 
         if (params[i] <= 0.0)

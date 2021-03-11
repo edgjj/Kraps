@@ -4,13 +4,12 @@ Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) :
     type (type), 
     sample_rate (0.0), 
     bypass (false), 
-    amp (0.0),
-    null_out()
+    amp (0.0)
 {
+    null_out = std::make_unique<Output> (nullptr);
     for (int i = 0; i < num_inputs; i++)
     {
         inputs.emplace_back (std::make_unique<Input> (this, null_out.get()));
-        plug (null_out.get(), i);
     }
     for (int i = 0; i < num_outputs; i++)
     {
@@ -21,6 +20,12 @@ Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) :
 Processor::~Processor ()
 {
 
+}
+
+void Processor::process ()
+{
+    /* for future doings */
+    process_callback ();
 }
 
 void Processor::plug (Output* out, uint8_t index)
@@ -40,12 +45,12 @@ void Processor::unplug (uint8_t index)
 
 void Processor::unplug (Processor* proc)
 {
-    for (auto &i : inputs)
+    for (uint8_t i = 0; i < inputs.size(); i++)
     {
-        if (i->proc == proc)
+        if (inputs[i]->proc == proc)
         {
-            i->src = null_out.get();
-            i->proc = nullptr;
+            inputs[i]->src = null_out.get();
+            inputs[i]->proc = nullptr;
             return;
         }
     }

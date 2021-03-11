@@ -6,6 +6,7 @@
 #include <array>
 #include <memory>
 
+#include "processor_types.hpp"
 #include "../misc/misc.hpp"
 
 class Processor;
@@ -15,9 +16,9 @@ struct Output
     Output (Processor* proc)
     {
         this->proc = proc;
-        val = 0.0;
     }
-    float val;
+    float val = 0.0;
+
     Processor* proc;
 
     inline operator double() const
@@ -57,7 +58,11 @@ struct Input
     {
         return src->val;
     }
-
+    
+    inline operator bool() const
+    {
+        return (bool)src->val;
+    }
     
     inline operator float() const
     {
@@ -67,6 +72,11 @@ struct Input
     inline const bool operator== (const bool& val)
     {
         return src->val == val;
+    }
+
+    inline const bool operator!= (const bool& val)
+    {
+        return src->val != val;
     }
 
     inline double operator+ (const double& val)
@@ -83,25 +93,19 @@ struct Input
     Output* src;
 };
 
-typedef enum ProcessorTypes 
-{
-    p_generator = 1,
-    p_modulator = 2,
-    p_filter = 4,
-    p_dafx = 8,
-} ProcessorTypes;
+
 
 class Processor
 {
 public:
     Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs);
 
-    virtual void process () = 0;
-    
+
+    void process ();
 
     void set_bypassed (double val) { this->bypass = val; if (val == true) for (auto &i : outputs) i->val = 0.0; }
     void set_amp (double val) { this->amp = val; }
-    void set_SR (double val) { sample_rate = val; recalculate_sr (); }
+    void set_SR (double val) { sample_rate = val; recalculate_sr (); process_params(); }
     void set_param (int num, double val) { params[num] = val; process_params(); }
     void set_param (std::vector<double>& val) { params = val; process_params(); }
 
@@ -112,7 +116,10 @@ public:
     double get_param (int num) { return params[num]; }
     Output* get_out (int num) { return outputs[num].get(); }
 
+    /* plug (output ptr, input_index) */
     void plug (Output*, uint8_t);
+
+    /* plug (processor ptr, output_index, input_index) */
     void plug (Processor*, uint8_t, uint8_t);
     void unplug (uint8_t);
     void unplug (Processor*);
@@ -125,6 +132,7 @@ public:
 
 protected:
 
+    virtual void process_callback () = 0;
     virtual void process_params () = 0;
     virtual void recalculate_sr () = 0;
 

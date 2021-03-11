@@ -5,7 +5,8 @@
 enum kGenInputs 
 {
     kGenFreqIn,
-    kGenPhaseIn
+    kGenPhaseIn,
+    kGenGate
 };
 
 enum kGenOutputs 
@@ -33,6 +34,7 @@ protected:
     void recalculate_sr () override 
     {
         SR_cst = 1.0 / get_SR();
+        
     }   
     double phase = 0.0;
     double freq = 0.0;

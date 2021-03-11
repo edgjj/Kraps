@@ -19,12 +19,13 @@ public:
     void fill_table_from_fcn (double (*fcn) (double phase));
     void set_shift (uint32_t);
 
-    void process () override;
+    
     
 
     ~Wavetable ();
 
 protected:
+    void process_callback () override;
     void process_params () override { ; }
 private:
     void fill_mipmap ();
