@@ -31,18 +31,18 @@ void Wavetable::process_callback()
 {
     set_freq ();
 
-    double phase_cvt = phase_cst * phase;
+    double phase_cvt    = phase_cst * phase;
 
-    int32_t pos_int = *inputs[kWtShiftIn] + phase_cvt; 
-    double pos_frac = phase_cvt - (int)phase_cvt;
+    int32_t pos_int     = *inputs[kWtShiftIn] + phase_cvt; 
+    double pos_frac     = phase_cvt - (int)phase_cvt;
     
-    double num_oct = log2(freq * table_size * SR_cst);
+    double num_oct      = log2(freq * table_size * SR_cst);
     
-    uint16_t num_oct_strp = (uint16_t)num_oct;
-    double oct_frac = num_oct - num_oct_strp;
+    uint16_t no_strip   = (uint16_t)num_oct;
+    double  oct_frac    = num_oct - no_strip;
 
-    double o1 = tables[num_oct_strp][pos_int + 1] * pos_frac + tables[num_oct_strp][pos_int] * (1 - pos_frac);
-    double o2 = tables[num_oct_strp+1][pos_int + 1] * pos_frac + tables[num_oct_strp+1][pos_int] * (1 - pos_frac);
+    double o1 = tables[no_strip][pos_int + 1] * pos_frac + tables[no_strip][pos_int] * (1 - pos_frac);
+    double o2 = tables[no_strip + 1][pos_int + 1] * pos_frac + tables[no_strip + 1][pos_int] * (1 - pos_frac);
 
     *outputs[kGenAudioOut] = o1 * (1 - oct_frac) + o2 * oct_frac;
     *outputs[kGenPhaseOut] = phase;
@@ -102,10 +102,10 @@ void Wavetable::set_shift (uint32_t shift)
 
 inline void Wavetable::alloc_dft ()
 {
-    dft = (double*) malloc(sizeof(double)*table_size);
-    ip = (int*) malloc((sqrt(table_size)+2)*sizeof(int));
-    ip[0] = 0;
-    w = (double*) malloc((table_size-1)*sizeof(double));
+    dft     = (double*) malloc(sizeof(double)*table_size);
+    ip      = (int*) malloc((sqrt(table_size)+2)*sizeof(int));
+    ip[0]   = 0;
+    w       = (double*) malloc((table_size-1)*sizeof(double));
 }
 
 
@@ -118,17 +118,17 @@ void Wavetable::fill_mipmap ()
     int32_t wt_sz = table_size;
     for (int i = 0; i < NUM_OCTAVES; i++){
         
-        tables[i] = (double*) malloc(table_size*sizeof(double));
-        std::memcpy(tables[i], table, table_size*sizeof(double));
+        tables[i]   = (double*) malloc(table_size*sizeof(double));
+        std::memcpy (tables[i], table, table_size*sizeof(double));
 
-        rdft(wt_sz,1,tables[i],ip,w);
+        rdft (wt_sz,1,tables[i],ip,w);
 
-        uint16_t mid = wt_sz/2;
-        uint16_t bins = wt_sz / pow(2,i);
+        uint16_t mid    = wt_sz / 2;
+        uint16_t bins   = wt_sz / pow(2,i);
 
         for (uint16_t j = bins; j < wt_sz-1; j = j+2){
-            tables[i][j] = 0.f;
-            tables[i][j+1] = 0.f;
+            tables[i][j]    = 0.f;
+            tables[i][j+1]  = 0.f;
         }
 
 

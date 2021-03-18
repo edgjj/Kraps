@@ -32,88 +32,75 @@ void LFO::add_point(Vec2 pos)
             break;
         }
     }
-    preprocess();
-    // add point
 
-    // recalc phase constant = this->points.size() / ( 2.0 * M_PI );
 }
 
 void LFO::move_point (int i, Vec2 pos)
 {
     if (i == 0){
-        points.front().y = pos.y;
-        points.back().y = pos.y;
+        points.front().y    = pos.y;
+        points.back().y     = pos.y;
     }
     else points[i] = pos;
 
-    preprocess();
 }
 
 void LFO::set_tension (int i, double tension)
 {
     if (points.size() == 2)
         return;
-    int8_t sign = std::signbit (tension) * 2 - 1;
-    this->tension[i] = fabs (tension) > 0.9999 ? sign * 0.9999 : tension;
-    preprocess();
+    int8_t sign         = std::signbit (tension) * 2 - 1;
+    this->tension[i]    = fabs (tension) > 0.9999 ? sign * 0.9999 : tension;
 }
 
 void LFO::remove_point (int i)
 {
     if (points.size() == 2)
         return;
+
+    if (i == 0 || i >= points.size() - 1)
+        return;
     points.erase (points.begin() + i);
     tension.erase (tension.begin() + i - 1);
     tension.erase (tension.begin() + i);
-    preprocess();
+    
 }
 
-void LFO::preprocess()
-{
-
-    auto get_interp = [&] (double x){
-        Vec2 p1, p2;
-        for (int i = 0; i < points.size() - 1; i++)
+double LFO::get_interp (double x){
+    Vec2    p1, p2;
+    double  y_diff;
+    int8_t  sign;
+    
+    for (int i = 0; i < points.size() - 1; i++)
+    {
+        p1 = points[i]; 
+        p2 = points[i+1];
+        if (x >= p1.x && x < p2.x)
         {
-            p1 = points[i]; p2 = points[i+1];
-            if (x >= p1.x && x < p2.x)
+            if (points.size() == 2)
             {
-                if (points.size() == 2)
-                {
-                    return p1.y;
-                }
-                double y_diff = p2.y - p1.y;
-                int8_t sign = std::signbit (y_diff) * -2 + 1;
-
-                return sigmoid ( ( (x - p1.x) / (p2.x - p1.x) ) * 1, tension [i] * sign ) * y_diff + p1.y;
+                return p1.y;
             }
-        } 
-        return 0.0;
-    };
+            y_diff  = p2.y - p1.y;
+            sign    = std::signbit (y_diff) * -2 + 1;
 
-    for (int i = 0; i < lookup.size(); i++){
-	    lookup[i] = ( get_interp ( (double) i / lookup.size() ) );
-	}
-
-}
+            return sigmoid ( ( (x - p1.x) / (p2.x - p1.x) ) , tension [i] * sign ) * y_diff + p1.y;
+        }
+    } 
+    return 0.0;
+};
 
 void LFO::process_callback ()
 {
     set_freq();
 
-
-    // 2 * M_PI maps to points vector size;
-    double phase_cvt = phase_const * phase;
-    int32_t pos_int = phase_cvt; 
-    double pos_frac = phase_cvt - pos_int;
-
-    *outputs[kLFOAudioOut] = lookup[pos_int + 1] * pos_frac + lookup[pos_int] * (1 - pos_frac);
+    *outputs[kLFOAudioOut] = get_interp( phase * phase_const );
     *outputs[kLFOPhaseOut] = phase;
 
     inc_phase();
 }
 
-double LFO::sigmoid(double x, double k) // k in [ -0.9999; 0.9999 ]
+inline double LFO::sigmoid(double x, double k) // k in [ -0.9999; 0.9999 ]
 {
     return (x - x * k) / (k - fabs (x) * 2 * k + 1);
 }
