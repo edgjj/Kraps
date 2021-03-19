@@ -109,11 +109,9 @@ public:
     void set_param (int num, double val) { params[num] = val; process_params(); }
     void set_param (std::vector<double>& val) { params = val; process_params(); }
 
-
+    
+    uint32_t get_ID () { return id; }
     double get_SR () { return sample_rate; }
-    inline void set_sample (double sample, int num) { outputs[num]->val = sample; }
-    double get_sample (int num) { return inputs[num]->src->val; }
-    double get_param (int num) { return params[num]; }
     Output* get_out (int num) { return outputs[num].get(); }
 
     /* plug (output ptr, input_index) */
@@ -143,6 +141,9 @@ protected:
     std::vector< std::unique_ptr <Output> > outputs;
 
 private:
+    uint32_t id = 0;
+    static uint32_t ctr = 0;
+
     bool bypass;
     uint8_t type;   
     std::unique_ptr<Output> null_out; 

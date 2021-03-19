@@ -4,15 +4,17 @@
 #include <map>
 typedef enum ProcessorTypes 
 {
-    p_generator,
-    p_modulator,
+    p_wt,
+    p_lfo,
+    p_adsr,
     p_filter,
     p_dafx
 } ProcessorTypes;
 
 static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
-    { p_generator, "Generator" },
-    { p_modulator, "Modulator" },
+    { p_wt, "Wavetable" },
+    { p_lfo, "LFO" },
+    { p_adsr, "ADSR Env." },
     { p_filter, "Filter" },
     { p_dafx, "FX" },
 };

@@ -19,6 +19,13 @@ class ProcessorMatrix
 public:
     ProcessorMatrix ();
 
+    uint32_t add_processor (uint8_t type);
+    void remove_processor (uint32_t id);
+
+    void create_route (uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in);
+
+    void process ();
+
     void* serialize ();
     Output* get_out ();
 

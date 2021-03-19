@@ -3,7 +3,7 @@
 
 #include "generator.hpp"
 
-Generator::Generator (uint8_t i, uint8_t o) : Processor (p_generator, i + 3, o + 2)
+Generator::Generator (uint8_t type, uint8_t i, uint8_t o) : Processor (type, i + 3, o + 2)
 {
 
 }

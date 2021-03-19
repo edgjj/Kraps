@@ -9,7 +9,7 @@ extern "C"
     void rdft(int, int, double *, int *, double *);
 }
 
-Wavetable::Wavetable(uint16_t waveform_size) : Generator (1,0)
+Wavetable::Wavetable(uint16_t waveform_size) : Generator (p_wt, 1, 0)
 {
     this->waveform_size = waveform_size;
     phase_cst = this->waveform_size / ( 2.0 * M_PI );

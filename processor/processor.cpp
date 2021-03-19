@@ -4,7 +4,8 @@ Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) :
     type (type), 
     sample_rate (0.0), 
     bypass (false), 
-    amp (0.0)
+    amp (0.0),
+    id (ctr++)
 {
     null_out = std::make_unique<Output> (nullptr);
     for (int i = 0; i < num_inputs; i++)

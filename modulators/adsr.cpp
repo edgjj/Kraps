@@ -4,7 +4,7 @@
 
 
 
-ADSR::ADSR () : Processor (p_modulator, 1, 1)
+ADSR::ADSR () : Processor (p_adsr, 1, 1)
 {
     params = std::vector<double> (4, 0.0);
 }
