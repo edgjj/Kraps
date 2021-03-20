@@ -6,10 +6,13 @@
 #include <array>
 #include <memory>
 
+
 #include "processor_types.hpp"
 #include "../misc/misc.hpp"
 
 class Processor;
+static uint32_t ctr = 0;
+
 
 struct Output
 {
@@ -141,8 +144,8 @@ protected:
     std::vector< std::unique_ptr <Output> > outputs;
 
 private:
-    uint32_t id = 0;
-    static uint32_t ctr = 0;
+    const uint32_t id = 0;
+    
 
     bool bypass;
     uint8_t type;   

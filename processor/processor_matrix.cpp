@@ -19,7 +19,7 @@ uint32_t ProcessorMatrix::add_processor (uint8_t type)
     switch (type)
     {
         case p_wt:
-            processors.emplace_back ( std::make_unique <Wavetable> ());
+            processors.emplace_back ( std::make_unique <Wavetable> (2048));
             break;
         case p_lfo:
             processors.emplace_back ( std::make_unique <LFO> ());
@@ -59,10 +59,10 @@ void ProcessorMatrix::process ()
 
 void* ProcessorMatrix::serialize ()
 {
-
+    return nullptr;
 }
 
 Output* ProcessorMatrix::get_out ()
 {
-
+    return nullptr;
 }

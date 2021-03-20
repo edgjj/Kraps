@@ -15,7 +15,7 @@ Generator::~Generator ()
 
 void Generator::set_freq () 
 {
-    this->freq = fmin(get_sample(kGenFreqIn), sample_rate / 2);
+    this->freq = fmin(*inputs[kGenFreqIn], sample_rate / 2);
     this->phase_inc = *inputs[kGenFreqIn] * 2.0 * M_PI * SR_cst;
 }
 

@@ -18,7 +18,7 @@ enum kGenOutputs
 class Generator : public Processor 
 {
 public:
-    Generator(uint8_t i, uint8_t o);
+    Generator(uint8_t type,uint8_t i, uint8_t o);
 
 
 

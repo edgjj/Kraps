@@ -5,7 +5,7 @@
 
 /* https://dhemery.github.io/DHE-Modules/technical/sigmoid/ */
 
-LFO::LFO () : Generator (0, 0),
+LFO::LFO () : Generator (p_lfo, 0, 0),
     points ({ { 0.0, 0.0 }, { 1.0, 0.0 } }),
     tension ({})
 {

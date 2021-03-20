@@ -2,6 +2,8 @@
 #define PROCESSOR_DEFS_H
 
 #include <map>
+#include <string>
+
 typedef enum ProcessorTypes 
 {
     p_wt,
