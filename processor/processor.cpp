@@ -4,7 +4,6 @@ Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) :
     type (type), 
     sample_rate (0.0), 
     bypass (false), 
-    amp (0.0),
     id (ctr++)
 {
     null_out = std::make_unique<Output> (nullptr);
@@ -26,7 +25,8 @@ Processor::~Processor ()
 void Processor::process ()
 {
     /* for future doings */
-    process_callback ();
+    if (!is_bypassed())
+        process_callback ();
 }
 
 void Processor::plug (Output* out, uint8_t index)
