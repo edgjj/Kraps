@@ -29,6 +29,13 @@ void Processor::process ()
         process_callback ();
 }
 
+std::tuple < std::vector <std::unique_ptr<Input> >*, 
+    std::vector <std::unique_ptr<Output> >*> 
+    Processor::get_IO()
+{
+    return std::make_tuple(&inputs, &outputs);
+}
+
 void Processor::plug (Output* out, uint8_t index)
 {
     inputs[index]->src = out;

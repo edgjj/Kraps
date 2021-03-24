@@ -4,6 +4,11 @@ class Processor;
 
 struct Output
 {
+    Output()
+    {
+        this->proc = nullptr;
+    }
+
     Output(Processor* proc)
     {
         this->proc = proc;
@@ -39,6 +44,11 @@ struct Output
 
 struct Input
 {
+    Input()
+    {
+        this->proc = nullptr;
+        this->src = nullptr;
+    }
     Input(Processor* proc, Output* src)
     {
         this->proc = proc;

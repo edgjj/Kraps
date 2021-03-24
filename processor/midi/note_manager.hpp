@@ -2,11 +2,7 @@
 #include <vector>
 #include "../processor.hpp"
 
-struct Note
-{
-	uint8_t note_number;
-	uint8_t velocity;
-};
+
 
 enum kNoteMgrOutputs
 {
@@ -20,14 +16,33 @@ class NoteManager : public Processor
 public:
 	NoteManager();
 	~NoteManager();
-	void NoteOn(uint8_t note_number, uint8_t velocity);
-	void NoteOff(uint8_t note_number, uint8_t velocity);
-	void AllNotesOff();
+	void note_on (int note_number, int velocity, double timestamp);
+	void note_off (int note_number, int velocity, double timestamp);
+	void all_notes_off (double timestamp);
+	void upd_timestamp(int timestamp);
+	void set_block_size(int samples_per_block);
 protected:
 	void process_callback();
 	void process_params() { ; }
 	void recalculate_sr() { ; }
 private:
+	enum kNoteEventType
+	{
+		kNoteOn,
+		kNoteOff,
+		kAllNotesOff
+	};
+
+	struct Note
+	{
+		int note_number;
+		int velocity;
+		int life_time;
+		double time_stamp;
+	};
+	int cur_event;
+	int global_timestamp;
+	int block_size;
 	std::vector<Note> notes;
 	std::vector<Output*> outputs;
 };

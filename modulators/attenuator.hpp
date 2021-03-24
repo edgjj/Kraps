@@ -14,7 +14,7 @@ enum kAttenOutputs {
 class Attenuator : public Processor
 {
 public:
-    Attenuator () : Processor (p_modulator, 2, 1)
+    Attenuator () : Processor (p_misc, 2, 1)
     {
         ;
     }

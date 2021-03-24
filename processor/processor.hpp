@@ -33,6 +33,11 @@ public:
     void set_param(std::vector<double>& val) { params = val; process_params(); }
     uint32_t get_ID () { return id; }
   
+    Output* get_output(uint8_t id) { return outputs[id].get(); }
+
+    std::tuple < std::vector <std::unique_ptr<Input> >* , 
+        std::vector <std::unique_ptr<Output> >*> 
+        get_IO();
 
     /* plug (output ptr, input_index) */
     void plug (Output*, uint8_t);
