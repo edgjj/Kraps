@@ -11,6 +11,7 @@ typedef enum ProcessorTypes
     p_adsr,
     p_filter,
     p_dafx,
+    p_atten,
     p_misc
 } ProcessorTypes;
 

@@ -29,16 +29,19 @@ Wavetable::~Wavetable()
 
 void Wavetable::process_callback()
 {
+    if (SR_cst == 0.0)
+        return;
+
     set_freq ();
 
-    double phase_cvt    = phase_cst * phase;
+    double phase_cvt    = phase_cst * phase ;
 
-    int32_t pos_int     = *inputs[kWtShiftIn] + phase_cvt; 
+    unsigned int pos_int    = *inputs[kWtShiftIn] + phase_cvt;
     double pos_frac     = phase_cvt - (int)phase_cvt;
     
     double num_oct      = log2(freq * table_size * SR_cst);
     
-    uint16_t no_strip   = (uint16_t)num_oct;
+    unsigned int no_strip   = (unsigned int)num_oct;
     double  oct_frac    = num_oct - no_strip;
 
     double o1 = tables[no_strip][pos_int + 1] * pos_frac + tables[no_strip][pos_int] * (1 - pos_frac);
@@ -85,9 +88,9 @@ void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
 
     table_size = waveform_size;
 
-    for (int i = 0; i < table_size; i++){
-		table[i] = (*fcn) ( (float) i * 2 * M_PI / 2048 );
-	}
+    for (int i = 0; i < table_size; i++)
+		table[i] = (*fcn) ( 2 * M_PI * ( (float) i  / waveform_size ) );
+	
      
     
     fill_mipmap();
@@ -111,7 +114,6 @@ inline void Wavetable::alloc_dft ()
 
 void Wavetable::fill_mipmap ()
 {
-    float base_note = 11.562f;
 
     alloc_dft();
 

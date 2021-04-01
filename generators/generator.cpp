@@ -13,20 +13,32 @@ Generator::~Generator ()
 
 }
 
-void Generator::set_freq () 
-{
-    this->freq = fmin(*inputs[kGenFreqIn], sample_rate / 2);
-    this->phase_inc = *inputs[kGenFreqIn] * 2.0 * M_PI * SR_cst;
-}
-
-void Generator::set_phase (double phase)
+void Generator::set_phase(double phase)
 {
     this->phase = phase;
 }
 
+void Generator::set_freq () 
+{
+    freq = fmin(*inputs[kGenFreqIn], sample_rate / 2);
+    phase_inc = freq * 2.0 * M_PI * SR_cst;
+}
+
+
 void Generator::inc_phase ()
 {
+    
+    if (*inputs[kGenGate] != gate)
+    {
+        gate = *inputs[kGenGate];
+        if (gate == true)
+            phase = 0.0;
+    }
+
     phase += *inputs[kGenPhaseIn] + phase_inc;
-    while (phase >= 2 * M_PI)
+
+
+    while (phase > 2 * M_PI)
         phase -= 2 * M_PI;
+
 }

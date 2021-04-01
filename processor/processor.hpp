@@ -19,8 +19,6 @@ public:
 
 
     Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs);
-
-
     
 
     void set_bypassed (double val) { this->bypass = val; if (val == true) for (auto &i : outputs) i->val = 0.0; }
@@ -41,6 +39,9 @@ public:
 
     /* plug (output ptr, input_index) */
     void plug (Output*, uint8_t);
+
+    /* plug (input ptr, input_index) */
+    void plug(Input*, uint8_t);
 
     /* plug (src_processor ptr, output_index, input_index) */
     void plug (Processor*, uint8_t, uint8_t);
@@ -68,6 +69,7 @@ protected:
 
     std::vector< std::unique_ptr <Input> > inputs;
     std::vector< std::unique_ptr <Output> > outputs;
+
 
 private:
     const uint32_t id = 0;

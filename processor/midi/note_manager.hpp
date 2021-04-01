@@ -40,9 +40,8 @@ private:
 		int life_time;
 		double time_stamp;
 	};
-	int cur_event;
-	int global_timestamp;
-	int block_size;
+	int global_timestamp = 0;
+	int block_size = 0;
 	std::vector<Note> notes;
-	std::vector<Output*> outputs;
+
 };

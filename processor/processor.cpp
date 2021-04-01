@@ -26,7 +26,10 @@ void Processor::process ()
 {
     /* for future doings */
     if (!is_bypassed())
-        process_callback ();
+    {
+        process_callback();
+    }
+        
 }
 
 std::tuple < std::vector <std::unique_ptr<Input> >*, 
@@ -39,6 +42,11 @@ std::tuple < std::vector <std::unique_ptr<Input> >*,
 void Processor::plug (Output* out, uint8_t index)
 {
     inputs[index]->src = out;
+}
+
+void Processor::plug(Input* in, uint8_t index)
+{
+    inputs[index]->src = in->src;
 }
 
 void Processor::plug (Processor* proc, uint8_t o_idx, uint8_t i_idx)
