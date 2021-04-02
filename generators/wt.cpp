@@ -29,10 +29,11 @@ Wavetable::~Wavetable()
 
 void Wavetable::process_callback()
 {
-    if (SR_cst == 0.0)
+    
+    if (SR_cst == 0.0 || inputs[kGenFreqIn]->src->val == 0.0)
         return;
 
-    set_freq ();
+    set_freq();
 
     double phase_cvt    = phase_cst * phase ;
 
@@ -71,7 +72,6 @@ void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
 
     fill_mipmap();
     
-    LOG::info ("Filled WT: " + std::to_string(len));
 
 }
 
@@ -95,7 +95,6 @@ void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
     
     fill_mipmap();
 
-	LOG::info("Filled WT (math fcn.)");
 }
 
 void Wavetable::set_shift (uint32_t shift)
@@ -139,6 +138,6 @@ void Wavetable::fill_mipmap ()
         for (int j = 0; j <= wt_sz - 1; j++) {
                 tables[i][j] *= 2.0f / wt_sz;
         }
-        LOG::info("Passed octave: " + std::to_string(i) + "; Bins filtered " + std::to_string(bins));
+
     } 
 }

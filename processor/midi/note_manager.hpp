@@ -1,8 +1,9 @@
-#pragma once
+﻿#ifndef KRPSNOTEMGR_H
+#define KRPSNOTEMGR_H
 #include <vector>
 #include "../processor.hpp"
 
-
+// m = 12*log2(fm/440 Hz) + 69 and fm =  2(m−69)/12(440 Hz).
 
 enum kNoteMgrOutputs
 {
@@ -16,6 +17,7 @@ class NoteManager : public Processor
 public:
 	NoteManager();
 	~NoteManager();
+
 	void note_on (int note_number, int velocity, double timestamp);
 	void note_off (int note_number, int velocity, double timestamp);
 	void all_notes_off (double timestamp);
@@ -45,3 +47,5 @@ private:
 	std::vector<Note> notes;
 
 };
+
+#endif

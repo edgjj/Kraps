@@ -1,4 +1,5 @@
-#pragma once
+#ifndef KRPSIO_H
+#define KRPSIO_H
 
 class Processor;
 
@@ -93,3 +94,5 @@ struct Input
     Processor* proc;
     Output* src;
 };
+
+#endif
