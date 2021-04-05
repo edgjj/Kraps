@@ -40,7 +40,7 @@ void Wavetable::process_callback()
     unsigned int pos_int    = *inputs[kWtShiftIn] + phase_cvt;
     double pos_frac     = phase_cvt - (int)phase_cvt;
     
-    double num_oct      = log2(freq * table_size * SR_cst);
+    double num_oct      = log2 (freq * table_size * SR_cst);
     
     unsigned int no_strip   = (unsigned int)num_oct;
     double  oct_frac    = num_oct - no_strip;

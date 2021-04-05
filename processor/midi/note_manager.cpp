@@ -5,6 +5,7 @@
 NoteManager::NoteManager() : Processor (p_misc, 1, 3)
 {
 	params.push_back (440.0);
+	params_constrainments.push_back(std::make_pair<double, double>(400, 500));
 }
 
 void NoteManager::note_on(int note_number, int velocity, double timestamp)

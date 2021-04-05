@@ -66,9 +66,12 @@ protected:
 
     double sample_rate;
     std::vector<double> params;
+    std::vector <std::pair <double, double>> params_constrainments;
+
 
     std::vector< std::unique_ptr <Input> > inputs;
     std::vector< std::unique_ptr <Output> > outputs;
+
 
 
 private:

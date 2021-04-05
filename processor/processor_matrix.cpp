@@ -47,6 +47,7 @@ uint32_t ProcessorMatrix::add_processor (uint8_t type)
         case p_dafx:
             break;
     }
+    processors.back()->set_SR (sample_rate);
     uint32_t id = processors.back()->get_ID();
     processors_io[id] = processors.back()->get_IO();
 
@@ -73,6 +74,7 @@ Processor* ProcessorMatrix::get_processor(uint32_t id)
     return result->get();
 }
 
+
 void ProcessorMatrix::plug_internal(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in)
 {
     auto src_vec = std::get <1> (processors_io[src]);
@@ -96,6 +98,7 @@ void ProcessorMatrix::set_output_node(uint32_t num)
 
 void ProcessorMatrix::set_SR(double sample_rate)
 {
+    this->sample_rate = sample_rate;
     for (auto& i : processors)
     {
         i->set_SR(sample_rate);

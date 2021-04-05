@@ -47,11 +47,13 @@ private:
     std::map <uint32_t, std::tuple< std::vector <std::unique_ptr<Input> >*,
         std::vector <std::unique_ptr<Output> >*> > processors_io;
 
+
     std::vector < std::unique_ptr <Input>  > global_inputs;
     std::vector < std::unique_ptr <Output>  > global_outputs;
 
     std::vector < std::unique_ptr <Processor> > processors;
 
+    double sample_rate = 0;
     uint32_t output_node = 0;
 
 };
