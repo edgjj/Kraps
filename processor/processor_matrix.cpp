@@ -56,12 +56,18 @@ uint32_t ProcessorMatrix::add_processor (uint8_t type)
 
 void ProcessorMatrix::remove_processor (uint32_t id)
 {
-    std::remove_if(processors.begin(), processors.end(),
+    processors.erase(std::remove_if(processors.begin(), processors.end(),
         [&](std::unique_ptr<Processor>& n)
         {
             return n->get_ID() == id;
         }
-    );
+    ), processors.end());
+
+    processors_io.erase(id);
+
+    if (output_node == id)
+        output_node = -1;
+
 }
 
 Processor* ProcessorMatrix::get_processor(uint32_t id)
@@ -71,6 +77,10 @@ Processor* ProcessorMatrix::get_processor(uint32_t id)
         {
             return n->get_ID() == id;
         });
+
+    if (result == processors.end())
+        return nullptr;
+
     return result->get();
 }
 
@@ -112,6 +122,9 @@ double ProcessorMatrix::process ()
 
 
     // *global_outputs[kMtxAudioOut] = *std::get<1>(processors_io[output_node])->at(0);
+    if (output_node == -1)
+        return 0.0;
+
     return *std::get<1>(processors_io[output_node])->at(0);
 }
 
