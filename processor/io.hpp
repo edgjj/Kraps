@@ -14,31 +14,29 @@ struct Output
     {
         this->proc = proc;
     }
-    float val = 0.0;
-
+    double val = 0.0;
     Processor* proc;
 
     inline operator double() const
     {
-        return this->val;
+        return val;
     }
 
-
-    inline const Output& operator=(const double& val)
+    inline const Output& operator=(const double& value)
     {
-        this->val = val;
+        val = value;
         return *this;
     }
 
-    inline const Output& operator+=(const double& val)
+    inline const Output& operator+=(const double& value)
     {
-        this->val += val;
+        val += value;
         return *this;
     }
 
-    inline const Output& operator*(const double& val)
+    inline const Output& operator*(const double& value)
     {
-        this->val *= val;
+        val *= value;
         return *this;
     }
 };
@@ -71,24 +69,24 @@ struct Input
         return (float)src->val;
     }
 
-    inline const bool operator== (const bool& val)
+    inline const bool operator== (const bool& value)
     {
-        return src->val == val;
+        return src->val == (double)value;
     }
 
-    inline const bool operator!= (const bool& val)
+    inline const bool operator!= (const bool& value)
     {
-        return src->val != val;
+        return src->val != (double)value;
     }
 
-    inline double operator+ (const double& val)
+    inline double operator+ (const double& value)
     {
-        return src->val + val;
+        return src->val + value;
     }
 
-    inline const double operator*(const double& val)
+    inline const double operator*(const double& value)
     {
-        return src->val * val;
+        return src->val * value;
     }
 
     Processor* proc;

@@ -22,6 +22,7 @@ static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
     { p_adsr, "ADSR Env." },
     { p_filter, "Filter" },
     { p_dafx, "FX" },
+    { p_atten, "Attenuator"},
     { p_misc, "Miscellaneous"}
 };
 

@@ -34,16 +34,20 @@ public:
     Processor* get_processor (uint32_t id);
 
 
+    void set_output_node(uint32_t num);
+    void set_SR(double sample_rate);
+    void set_lock();
+
+
     void plug_internal(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in);
     void plug_external (Output* out, uint32_t dest_in);
-    void set_output_node(uint32_t num);
-
-    double process ();
-    void set_SR(double sample_rate);
     
+    double process ();
+
     void* serialize ();
     Input* get_in (uint16_t num);
 
+    
     IO_container* get_IO() { return &processors_io; }
 
     ~ProcessorMatrix ();
@@ -58,7 +62,8 @@ private:
     std::vector < std::unique_ptr <Processor> > processors;
 
     double sample_rate = 0;
-    uint32_t output_node = 0;
+    int32_t output_node = 0;
+    bool is_locked = false;
 
 };
 

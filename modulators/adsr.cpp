@@ -7,7 +7,8 @@
 ADSR::ADSR () : Processor (p_adsr, 1, 1)
 {
     params = std::vector<double> (4, 0.0);
-    params_constrainments = std::vector<std::pair <double, double >>(4, std::pair<double, double>(0.0, 20.0));
+    params_constrainments = std::vector<std::pair <double, double >>(3, std::pair<double, double>(0.0, 20.0));
+    params_constrainments.push_back(std::pair(-60, 0));
 }
 
 

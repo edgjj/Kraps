@@ -4,6 +4,8 @@
 #define MTX_NUMINPUTS 4
 #define MTX_NUMOUTPUTS 1
 
+#define WAIT_LOCK while (is_locked) ;
+
 ProcessorMatrix::ProcessorMatrix()
 {
     for (int i = 0; i < MTX_NUMINPUTS; i++)
@@ -24,6 +26,7 @@ ProcessorMatrix::~ProcessorMatrix()
 
 uint32_t ProcessorMatrix::add_processor (uint8_t type)
 {
+    WAIT_LOCK
     switch (type)
     {
         case p_wt:
@@ -54,8 +57,10 @@ uint32_t ProcessorMatrix::add_processor (uint8_t type)
     return id;
 }
 
+
 void ProcessorMatrix::remove_processor (uint32_t id)
 {
+    WAIT_LOCK
     processors.erase(std::remove_if(processors.begin(), processors.end(),
         [&](std::unique_ptr<Processor>& n)
         {
@@ -65,7 +70,7 @@ void ProcessorMatrix::remove_processor (uint32_t id)
 
     processors_io.erase(id);
 
-    if (output_node == id)
+    if (output_node == (int32_t) id)
         output_node = -1;
 
 }
@@ -87,6 +92,7 @@ Processor* ProcessorMatrix::get_processor(uint32_t id)
 
 void ProcessorMatrix::plug_internal(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in)
 {
+    WAIT_LOCK
     auto src_vec = std::get <1> (processors_io[src]);
     auto dest_vec = std::get <0> (processors_io[dest]);
 
@@ -96,13 +102,14 @@ void ProcessorMatrix::plug_internal(uint32_t src, uint32_t dest, uint16_t src_ou
 
 void ProcessorMatrix::plug_external(Output* out, uint32_t dest_in)
 {
+    WAIT_LOCK
     _ASSERT(dest_in < global_inputs.size());
-
     global_inputs[dest_in]->src = out;
 }
 
 void ProcessorMatrix::set_output_node(uint32_t num)
 {
+    WAIT_LOCK
     output_node = num;
 }
 
@@ -113,6 +120,13 @@ void ProcessorMatrix::set_SR(double sample_rate)
     {
         i->set_SR(sample_rate);
     }
+}
+
+void ProcessorMatrix::set_lock()
+{
+    is_locked = !is_locked;
+    for (auto& i : processors)
+        i->set_lock();
 }
 
 double ProcessorMatrix::process ()
