@@ -12,8 +12,9 @@ typedef enum ProcessorTypes
     p_filter,
     p_dafx,
     p_atten,
+    p_macro,
     p_misc,
-    p_count = p_atten
+    p_count = p_macro
 } ProcessorTypes;
 
 static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
@@ -23,6 +24,7 @@ static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
     { p_filter, "Filter" },
     { p_dafx, "FX" },
     { p_atten, "Attenuator"},
+    { p_macro, "Macro-8"},
     { p_misc, "Miscellaneous"}
 };
 

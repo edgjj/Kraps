@@ -5,6 +5,7 @@
 #include "../modulators/lfo.hpp"
 #include "../modulators/adsr.hpp"
 #include "../modulators/attenuator.hpp"
+#include "../modulators/macros.hpp"
 
 typedef std::map <uint32_t, std::tuple< std::vector <std::unique_ptr<Input> >*,
     std::vector <std::unique_ptr<Output> >*> > IO_container;

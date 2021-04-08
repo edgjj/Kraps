@@ -44,6 +44,9 @@ uint32_t ProcessorMatrix::add_processor (uint8_t type)
         case p_atten:
             processors.emplace_back(std::make_unique <Attenuator>());
             break;
+        case p_macro:
+            processors.emplace_back(std::make_unique <Macro>());
+            break;
         case p_filter:
             break;
         case p_dafx:
