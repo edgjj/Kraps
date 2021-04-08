@@ -17,8 +17,6 @@ public:
 
     void fill_table_from_buffer (float*, uint32_t);
     void fill_table_from_fcn (double (*fcn) (double phase));
-    void set_shift (uint32_t);
-    
 
     ~Wavetable ();
 

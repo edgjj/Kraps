@@ -56,6 +56,7 @@ void Wavetable::process_callback()
 
 void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
 {
+    WAIT_LOCK
     if (table == nullptr)
     {
         table = (double*) malloc(len*sizeof(double));
@@ -77,6 +78,7 @@ void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
 
 void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
 {
+    WAIT_LOCK
     if (table == nullptr)
     {
         table = (double*) malloc(waveform_size*sizeof(double));
@@ -97,10 +99,6 @@ void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
 
 }
 
-void Wavetable::set_shift (uint32_t shift)
-{
-    this->shift = shift;
-}
 
 inline void Wavetable::alloc_dft ()
 {

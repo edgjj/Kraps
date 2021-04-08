@@ -5,16 +5,20 @@ class Processor;
 
 struct Output
 {
-    Output()
+    Output(uint32_t _id)
     {
         this->proc = nullptr;
+        id = _id;
     }
 
-    Output(Processor* proc)
+    Output(Processor* proc, uint32_t _id)
     {
         this->proc = proc;
+        id = _id;
     }
     double val = 0.0;
+
+    int32_t id = 0;
     Processor* proc;
 
     inline operator double() const
@@ -43,15 +47,17 @@ struct Output
 
 struct Input
 {
-    Input()
+    Input(uint32_t _id)
     {
         this->proc = nullptr;
         this->src = nullptr;
+        id = _id;
     }
-    Input(Processor* proc, Output* src)
+    Input(Processor* proc, Output* src, uint32_t _id)
     {
         this->proc = proc;
         this->src = src;
+        id = _id;
     }
 
     inline operator double() const
@@ -89,6 +95,7 @@ struct Input
         return src->val * value;
     }
 
+    int32_t id = 0;
     Processor* proc;
     Output* src;
 };

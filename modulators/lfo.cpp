@@ -14,6 +14,7 @@ LFO::LFO () : Generator (p_lfo, 0, 0),
 
 void LFO::add_point(Vec2 pos)
 {
+    WAIT_LOCK
     for (int i = 0; i < points.size() - 1; i++)
     {
         Vec2 p1, p2;
@@ -37,6 +38,7 @@ void LFO::add_point(Vec2 pos)
 
 void LFO::move_point (int i, Vec2 pos)
 {
+    WAIT_LOCK
     if (i == 0){
         points.front().y    = pos.y;
         points.back().y     = pos.y;
@@ -47,6 +49,7 @@ void LFO::move_point (int i, Vec2 pos)
 
 void LFO::set_tension (int i, double tension)
 {
+    WAIT_LOCK
     if (points.size() == 2)
         return;
     int8_t sign         = std::signbit (tension) * 2 - 1;
@@ -55,6 +58,7 @@ void LFO::set_tension (int i, double tension)
 
 void LFO::remove_point (int i)
 {
+    WAIT_LOCK
     if (points.size() == 2)
         return;
 

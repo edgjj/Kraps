@@ -6,14 +6,14 @@ Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) :
     bypass (false), 
     id (ctr++)
 {
-    null_out = std::make_unique<Output> (nullptr);
+    null_out = std::make_unique<Output> (nullptr, -1);
     for (int i = 0; i < num_inputs; i++)
     {
-        inputs.emplace_back (std::make_unique<Input> (this, null_out.get()));
+        inputs.emplace_back (std::make_unique<Input> (this, null_out.get(), i));
     }
     for (int i = 0; i < num_outputs; i++)
     {
-        outputs.emplace_back (std::make_unique<Output> (this));
+        outputs.emplace_back (std::make_unique<Output> (this, i));
     }
 }
 

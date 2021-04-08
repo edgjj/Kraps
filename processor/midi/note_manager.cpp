@@ -11,10 +11,12 @@ NoteManager::NoteManager() : Processor (p_misc, 1, 3)
 void NoteManager::note_on(int note_number, int velocity, double timestamp)
 {
 	Note t = { note_number, velocity, -1, timestamp };
+
 	auto it = std::find_if(notes.begin(), notes.end(),
 		[&cn = t](const Note& n) -> bool
 		{ return n.note_number == cn.note_number; }
 	);
+
 	if (it != notes.end())
 		return;
 

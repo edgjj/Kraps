@@ -39,7 +39,7 @@ public:
     void set_lock();
 
 
-    void plug_internal(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in);
+    bool plug_internal(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in);
     void plug_external (Output* out, uint32_t dest_in);
     
     double process ();

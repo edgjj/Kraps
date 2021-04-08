@@ -13,6 +13,9 @@
 
 static uint32_t ctr = 0;
 
+#define WAIT_LOCK while (is_locked) ;;
+
+
 class Processor
 {
 public:
@@ -78,15 +81,13 @@ protected:
     std::vector< std::unique_ptr <Input> > inputs;
     std::vector< std::unique_ptr <Output> > outputs;
 
-
+    bool is_locked = false;
 
 private:
     const uint32_t id = 0;
     bool bypass;
     uint8_t type;   
     std::unique_ptr<Output> null_out; 
-
-    bool is_locked = false;
 
 };
 
