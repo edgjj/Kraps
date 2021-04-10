@@ -6,13 +6,14 @@
 
 typedef enum ProcessorTypes 
 {
-    p_wt,
+    p_wt = 1,
     p_lfo,
     p_adsr,
     p_filter,
     p_dafx,
     p_atten,
     p_macro,
+    p_notemgr,
     p_misc,
     p_count = p_macro
 } ProcessorTypes;
@@ -25,6 +26,7 @@ static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
     { p_dafx, "FX" },
     { p_atten, "Attenuator"},
     { p_macro, "Macro-8"},
+    { p_notemgr, "Note Manager"},
     { p_misc, "Miscellaneous"}
 };
 

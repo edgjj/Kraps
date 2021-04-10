@@ -69,9 +69,9 @@ public:
 
 protected:
 
-    virtual void process_callback () = 0;
-    virtual void process_params () = 0;
-    virtual void recalculate_sr () = 0;
+    virtual void process_callback() { ; }
+    virtual void process_params () { ; }
+    virtual void recalculate_sr () { ; }
 
     double sample_rate;
     std::vector<double> params;

@@ -20,7 +20,7 @@ public:
     Macro() : Processor(p_macro, 0, 8)
     {
         params = std::vector<double>(8, 0.0);
-        params_constrainments = std::vector<std::pair <double, double >>(1, std::pair<double, double>(0.0, 1.0));
+        params_constrainments = std::vector<std::pair <double, double >>(8, std::pair<double, double>(0.0, 1.0));
     }
     ~Macro() { ; }
 protected:

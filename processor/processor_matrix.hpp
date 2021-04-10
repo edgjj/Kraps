@@ -6,6 +6,7 @@
 #include "../modulators/adsr.hpp"
 #include "../modulators/attenuator.hpp"
 #include "../modulators/macros.hpp"
+#include "../processor/midi/note_manager.hpp"
 
 typedef std::map <uint32_t, std::tuple< std::vector <std::unique_ptr<Input> >*,
     std::vector <std::unique_ptr<Output> >*> > IO_container;
@@ -24,6 +25,16 @@ enum kMtxOutputs
     kMtxAudioOut
 };
 
+class OutputProcessor : public Processor
+{
+public:
+    OutputProcessor() : Processor(p_misc, 1, 0)
+    {
+
+    }
+    double get_sample() { return *inputs[0]; }
+    ~OutputProcessor() { ; }
+};
 
 class ProcessorMatrix
 {
@@ -31,18 +42,19 @@ public:
     ProcessorMatrix ();
 
     uint32_t add_processor (uint8_t type);
-    void remove_processor (uint32_t id);
+    bool remove_processor (uint32_t id);
     Processor* get_processor (uint32_t id);
 
 
-    void set_output_node(uint32_t num);
+
     void set_SR(double sample_rate);
     void set_lock();
 
-
     bool plug_internal(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in);
     void plug_external (Output* out, uint32_t dest_in);
-    
+
+    NoteManager* get_note_mgr();
+
     double process ();
 
     void* serialize ();
@@ -56,6 +68,7 @@ private:
 
     IO_container processors_io;
 
+    std::array <uint32_t, 2> immutables;
 
     std::vector < std::unique_ptr <Input>  > global_inputs;
     std::vector < std::unique_ptr <Output>  > global_outputs;
@@ -63,7 +76,6 @@ private:
     std::vector < std::unique_ptr <Processor> > processors;
 
     double sample_rate = 0;
-    int32_t output_node = 0;
     bool is_locked = false;
 
 };

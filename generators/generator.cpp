@@ -40,7 +40,7 @@ void Generator::inc_phase ()
     while (phase < 0.0)
         phase += 2 * M_PI;
         
-    while (phase > 2 * M_PI)
+    while (phase >= 2 * M_PI)
         phase -= 2 * M_PI;
 
 }

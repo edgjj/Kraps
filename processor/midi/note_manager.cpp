@@ -2,7 +2,7 @@
 #include <algorithm>
 
 
-NoteManager::NoteManager() : Processor (p_misc, 1, 3)
+NoteManager::NoteManager() : Processor (p_notemgr, 0, 3)
 {
 	params.push_back (440.0);
 	params_constrainments.push_back(std::make_pair<double, double>(400, 500));

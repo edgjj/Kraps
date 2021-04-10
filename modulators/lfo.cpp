@@ -6,10 +6,10 @@
 /* https://dhemery.github.io/DHE-Modules/technical/sigmoid/ */
 
 LFO::LFO () : Generator (p_lfo, 0, 0),
-    points ({ { 0.0, 0.0 }, { 1.0, 0.0 } }),
-    tension ({})
+    points({ { 0.0, 0.0 }, {0.5, 1.0}, { 1.0, 0.0 } }),
+    tension ({ 0.0, 0.0 })
 {
-    phase_const = lookup.size() / ( 2.0 * M_PI );
+
 }
 
 void LFO::add_point(Vec2 pos)

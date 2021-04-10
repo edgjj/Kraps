@@ -43,9 +43,6 @@ private:
 
     double phase_const = 1 / (2 * M_PI);
 
-
-    std::array<double, 2048> lookup = { 0.0 };
-
     std::vector<Vec2> points;
     std::vector <double> tension; // == N + 2 / 2
 };

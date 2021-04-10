@@ -20,7 +20,7 @@ public:
     ~Attenuator() { ; }
 protected:
     void process_callback () override
-    {
+    { 
         *outputs[kAttenOut] = *inputs[kAttenIn] * *inputs[kAttenMod];
     }
     void process_params () override { ; }

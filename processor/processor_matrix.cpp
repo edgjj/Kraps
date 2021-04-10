@@ -1,22 +1,17 @@
 #include "processor_matrix.hpp"
 
 #include "midi/note_manager.hpp"
-#define MTX_NUMINPUTS 4
-#define MTX_NUMOUTPUTS 1
 
 
 ProcessorMatrix::ProcessorMatrix()
 {
-    for (int i = 0; i < MTX_NUMINPUTS; i++)
-    {
-        global_inputs.emplace_back(std::make_unique<Input>(i));
-    }
+    processors.emplace_back(std::make_unique <OutputProcessor>());
+    immutables[0] = processors.back()->get_ID();
+    processors_io[immutables[0]] = processors.back()->get_IO();
 
-    for (int i = 0; i < MTX_NUMOUTPUTS; i++)
-    {
-        global_outputs.emplace_back(std::make_unique<Output>(i));
-    }
-
+    processors.emplace_back(std::make_unique <NoteManager>());
+    immutables[1] = processors.back()->get_ID();
+    processors_io[immutables[1]] = processors.back()->get_IO();
 }
 ProcessorMatrix::~ProcessorMatrix()
 {
@@ -30,16 +25,19 @@ uint32_t ProcessorMatrix::add_processor (uint8_t type)
     {
         case p_wt:
             processors.emplace_back ( std::make_unique <Wavetable> (2048));
-            processors.back()->plug(get_in(kMtxGate), kGenGate);
-            processors.back()->plug(get_in(kMtxFreq), kGenFreqIn);
+            //processors.back()->plug(get_in(kMtxGate), kGenGate);
+            //processors.back()->plug(get_in(kMtxFreq), kGenFreqIn);
+            ((Wavetable*)processors.back().get())->fill_table_from_fcn([](double phase) -> double {
+                return sin(phase);
+                });
             break;
         case p_lfo:
             processors.emplace_back ( std::make_unique <LFO> ());
-            processors.back()->plug(get_in(kMtxGate), kLFOGate);
+            //processors.back()->plug(get_in(kMtxGate), kLFOGate);
             break;
         case p_adsr:
             processors.emplace_back ( std::make_unique <ADSR> ());
-            processors.back()->plug(get_in(kMtxGate), kADSRGate);
+            //processors.back()->plug(get_in(kMtxGate), kADSRGate);
             break;
         case p_atten:
             processors.emplace_back(std::make_unique <Attenuator>());
@@ -59,10 +57,17 @@ uint32_t ProcessorMatrix::add_processor (uint8_t type)
     return id;
 }
 
-
-void ProcessorMatrix::remove_processor (uint32_t id)
+NoteManager* ProcessorMatrix::get_note_mgr()
 {
+    return (NoteManager *) processors[1].get();
+}
+bool ProcessorMatrix::remove_processor (uint32_t id)
+{
+
     WAIT_LOCK
+
+    if (std::find (immutables.begin(), immutables.end(), id) != immutables.end())
+        return false;
 
     for (auto& i : processors_io)
     {
@@ -83,13 +88,10 @@ void ProcessorMatrix::remove_processor (uint32_t id)
             return n->get_ID() == id;
         }
     ), processors.end());
-
     
     processors_io.erase(id);
 
-    if (output_node == (int32_t) id)
-        output_node = -1;
-
+    return true;
 }
 
 Processor* ProcessorMatrix::get_processor(uint32_t id)
@@ -129,11 +131,6 @@ void ProcessorMatrix::plug_external(Output* out, uint32_t dest_in)
     global_inputs[dest_in]->src = out;
 }
 
-void ProcessorMatrix::set_output_node(uint32_t num)
-{
-    WAIT_LOCK
-    output_node = num;
-}
 
 void ProcessorMatrix::set_SR(double sample_rate)
 {
@@ -158,10 +155,8 @@ double ProcessorMatrix::process ()
 
 
     // *global_outputs[kMtxAudioOut] = *std::get<1>(processors_io[output_node])->at(0);
-    if (output_node == -1)
-        return 0.0;
 
-    return *std::get<1>(processors_io[output_node])->at(0);
+    return ((OutputProcessor*)processors[0].get())->get_sample();
 }
 
 void* ProcessorMatrix::serialize ()
