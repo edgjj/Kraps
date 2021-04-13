@@ -25,19 +25,15 @@ uint32_t ProcessorMatrix::add_processor (uint8_t type)
     {
         case p_wt:
             processors.emplace_back ( std::make_unique <Wavetable> (2048));
-            //processors.back()->plug(get_in(kMtxGate), kGenGate);
-            //processors.back()->plug(get_in(kMtxFreq), kGenFreqIn);
             ((Wavetable*)processors.back().get())->fill_table_from_fcn([](double phase) -> double {
                 return sin(phase);
                 });
             break;
         case p_lfo:
             processors.emplace_back ( std::make_unique <LFO> ());
-            //processors.back()->plug(get_in(kMtxGate), kLFOGate);
             break;
         case p_adsr:
             processors.emplace_back ( std::make_unique <ADSR> ());
-            //processors.back()->plug(get_in(kMtxGate), kADSRGate);
             break;
         case p_atten:
             processors.emplace_back(std::make_unique <Attenuator>());

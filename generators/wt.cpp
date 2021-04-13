@@ -17,19 +17,13 @@ Wavetable::Wavetable(uint16_t waveform_size) : Generator (p_wt, 1, 0)
 
 Wavetable::~Wavetable()
 {
-    free(dft);
-    free(ip);
-    free(w);
-    free(table);
-    for (int i = 0; i < NUM_OCTAVES; i++)
-        free(tables[i]);
+
     
 }
 
 
 void Wavetable::process_callback()
 {
-    
     if (SR_cst == 0.0 || inputs[kGenFreqIn]->src->val == 0.0)
         return;
 
@@ -57,14 +51,9 @@ void Wavetable::process_callback()
 void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
 {
     WAIT_LOCK
-    if (table == nullptr)
-    {
-        table = (double*) malloc(len*sizeof(double));
-    } 
-    else 
-    {
-        table = (double*) realloc(table, len*sizeof(double));
-    }
+
+
+    table.reset(new double[len]);
 
     table_size = len;
 
@@ -79,14 +68,8 @@ void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
 void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
 {
     WAIT_LOCK
-    if (table == nullptr)
-    {
-        table = (double*) malloc(waveform_size*sizeof(double));
-    } 
-    else 
-    {
-        table = (double*) realloc(table, waveform_size*sizeof(double));
-    }
+
+    table.reset(new double[waveform_size]);
 
     table_size = waveform_size;
 
@@ -102,10 +85,10 @@ void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
 
 inline void Wavetable::alloc_dft ()
 {
-    dft     = (double*) malloc(sizeof(double)*table_size);
-    ip      = (int*) malloc((sqrt(table_size)+2)*sizeof(int));
-    ip[0]   = 0;
-    w       = (double*) malloc((table_size-1)*sizeof(double));
+    dft.reset   (new double[table_size]);
+    ip.reset    (new int[sqrt(table_size) + 2]);
+    ip[0]       = 0;
+    w.reset     (new double[table_size - 1]);
 }
 
 
@@ -117,10 +100,10 @@ void Wavetable::fill_mipmap ()
     int32_t wt_sz = table_size;
     for (int i = 0; i < NUM_OCTAVES; i++){
         
-        tables[i]   = (double*) malloc(table_size*sizeof(double));
-        std::memcpy (tables[i], table, table_size*sizeof(double));
+        tables[i].reset(new double[table_size]);
+        std::memcpy (tables[i].get(), table.get(), table_size*sizeof(double));
 
-        rdft (wt_sz,1,tables[i],ip,w);
+        rdft (wt_sz,1,tables[i].get(),ip.get(),w.get());
 
         uint16_t mid    = wt_sz / 2;
         uint16_t bins   = wt_sz / pow(2,i);
@@ -131,7 +114,7 @@ void Wavetable::fill_mipmap ()
         }
 
 
-        rdft(wt_sz,-1,tables[i],ip,w);
+        rdft(wt_sz,-1,tables[i].get(),ip.get(),w.get());
         
         for (int j = 0; j <= wt_sz - 1; j++) {
                 tables[i][j] *= 2.0f / wt_sz;

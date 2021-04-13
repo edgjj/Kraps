@@ -13,7 +13,7 @@
 
 static uint32_t ctr = 0;
 
-#define WAIT_LOCK while (is_locked) ;;
+#define WAIT_LOCK while (is_locked) { ; }
 
 
 class Processor

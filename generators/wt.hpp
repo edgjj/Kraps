@@ -36,12 +36,12 @@ private:
     uint32_t table_size = 0;
     uint32_t shift = 0;
 
-    double* table = nullptr;
-    std::array <double*, NUM_OCTAVES> tables { nullptr };
+    std::unique_ptr<double[]> table;
+    std::array <std::unique_ptr<double[]>, NUM_OCTAVES> tables;
 
-    double* dft = nullptr;
-    int* ip = nullptr;
-    double* w = nullptr;
+    std::unique_ptr<double[]> dft;
+    std::unique_ptr<int[]> ip;
+    std::unique_ptr<double[]> w;
 };
 
 #endif 
