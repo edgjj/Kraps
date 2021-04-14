@@ -9,6 +9,8 @@ extern "C"
     void rdft(int, int, double *, int *, double *);
 }
 
+namespace kraps {
+
 Wavetable::Wavetable(uint16_t waveform_size) : Generator (p_wt, 1, 0)
 {
     this->waveform_size = waveform_size;
@@ -121,4 +123,6 @@ void Wavetable::fill_mipmap ()
         }
 
     } 
+}
+
 }

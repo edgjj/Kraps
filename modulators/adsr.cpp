@@ -2,8 +2,7 @@
 
 #include "adsr.hpp"
 
-
-
+namespace kraps {
 ADSR::ADSR () : Processor (p_adsr, 1, 1)
 {
     params = std::vector<double> (4, 0.0);
@@ -91,3 +90,4 @@ void ADSR::process_params ()
     }
 }
 
+}

@@ -4,6 +4,8 @@
 #include <map>
 #include <string>
 
+namespace kraps{
+
 typedef enum ProcessorTypes 
 {
     p_wt = 1,
@@ -14,6 +16,7 @@ typedef enum ProcessorTypes
     p_atten,
     p_macro,
     p_notemgr,
+    p_output,
     p_misc,
     p_count = p_macro
 } ProcessorTypes;
@@ -27,7 +30,10 @@ static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
     { p_atten, "Attenuator"},
     { p_macro, "Macro-8"},
     { p_notemgr, "Note Manager"},
+    { p_output, "Output Node"},
     { p_misc, "Miscellaneous"}
 };
+
+}
 
 #endif

@@ -1,7 +1,11 @@
 #ifndef KRPSIO_H
 #define KRPSIO_H
 
+
+
+namespace kraps{
 class Processor;
+namespace io {
 
 struct Output
 {
@@ -100,4 +104,6 @@ struct Input
     Output* src;
 };
 
+}
+}
 #endif

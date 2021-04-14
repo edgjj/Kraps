@@ -4,6 +4,7 @@
 
 
 /* https://dhemery.github.io/DHE-Modules/technical/sigmoid/ */
+namespace kraps {
 
 LFO::LFO () : Generator (p_lfo, 0, 0),
     points({ { 0.0, 0.0 }, {0.5, 1.0}, { 1.0, 0.0 } }),
@@ -107,4 +108,6 @@ void LFO::process_callback ()
 inline double LFO::sigmoid(double x, double k) // k in [ -0.9999; 0.9999 ]
 {
     return (x - x * k) / (k - fabs (x) * 2 * k + 1);
+}
+
 }

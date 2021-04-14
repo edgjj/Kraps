@@ -15,6 +15,7 @@ static uint32_t ctr = 0;
 
 #define WAIT_LOCK while (is_locked) { ; }
 
+namespace kraps {
 
 class Processor
 {
@@ -40,17 +41,17 @@ public:
 
     uint32_t get_ID () { return id; }
   
-    Output* get_output(uint8_t id_) { return outputs[id_].get(); }
+    io::Output* get_output(uint8_t id_) { return outputs[id_].get(); }
 
-    std::tuple < std::vector <std::unique_ptr<Input> >* , 
-        std::vector <std::unique_ptr<Output> >*> 
+    std::tuple < std::vector <std::unique_ptr<io::Input> >* ,
+        std::vector <std::unique_ptr<io::Output> >*>
         get_IO();
 
     /* plug (output ptr, input_index) */
-    void plug (Output*, uint8_t);
+    void plug (io::Output*, uint8_t);
 
     /* plug (input ptr, input_index) */
-    void plug(Input*, uint8_t);
+    void plug(io::Input*, uint8_t);
 
     /* plug (src_processor ptr, output_index, input_index) */
     void plug (Processor*, uint8_t, uint8_t);
@@ -78,8 +79,8 @@ protected:
     std::vector <std::pair <double, double>> params_constrainments;
 
 
-    std::vector< std::unique_ptr <Input> > inputs;
-    std::vector< std::unique_ptr <Output> > outputs;
+    std::vector< std::unique_ptr <io::Input> > inputs;
+    std::vector< std::unique_ptr <io::Output> > outputs;
 
     bool is_locked = false;
 
@@ -87,8 +88,9 @@ private:
     const uint32_t id = 0;
     bool bypass;
     uint8_t type;   
-    std::unique_ptr<Output> null_out; 
+    std::unique_ptr<io::Output> null_out;
 
 };
 
+}
 #endif

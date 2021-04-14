@@ -1,19 +1,21 @@
 #include "processor.hpp"
 
+namespace kraps{
+
 Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) : 
     type (type), 
     sample_rate (0.0), 
     bypass (false), 
     id (ctr++)
 {
-    null_out = std::make_unique<Output> (nullptr, -1);
+    null_out = std::make_unique<io::Output> (nullptr, -1);
     for (int i = 0; i < num_inputs; i++)
     {
-        inputs.emplace_back (std::make_unique<Input> (this, null_out.get(), i));
+        inputs.emplace_back (std::make_unique<io::Input> (this, null_out.get(), i));
     }
     for (int i = 0; i < num_outputs; i++)
     {
-        outputs.emplace_back (std::make_unique<Output> (this, i));
+        outputs.emplace_back (std::make_unique<io::Output> (this, i));
     }
 }
 
@@ -32,19 +34,19 @@ void Processor::process ()
         
 }
 
-std::tuple < std::vector <std::unique_ptr<Input> >*, 
-    std::vector <std::unique_ptr<Output> >*> 
+std::tuple < std::vector <std::unique_ptr<io::Input> >*, 
+    std::vector <std::unique_ptr<io::Output> >*>
     Processor::get_IO()
 {
     return std::make_tuple(&inputs, &outputs);
 }
 
-void Processor::plug (Output* out, uint8_t index)
+void Processor::plug (io::Output* out, uint8_t index)
 {
     inputs[index]->src = out;
 }
 
-void Processor::plug(Input* in, uint8_t index)
+void Processor::plug(io::Input* in, uint8_t index)
 {
     inputs[index]->src = in->src;
 }
@@ -70,4 +72,6 @@ void Processor::unplug (Processor* proc)
             return;
         }
     }
+}
+
 }

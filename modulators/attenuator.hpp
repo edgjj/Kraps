@@ -2,6 +2,8 @@
 #define ATTENUATOR_H
 #include "../processor/processor.hpp"
 
+namespace kraps {
+
 enum kAttenInputs {
     kAttenIn,
     kAttenMod
@@ -30,5 +32,5 @@ private:
     
 };
 
-
+}
 #endif

@@ -1,6 +1,7 @@
 #ifndef AGENERATOR_H
 #define AGENERATOR_H
 #include "../processor/processor.hpp"
+namespace kraps {
 
 enum kGenInputs 
 {
@@ -40,4 +41,5 @@ private:
 
 };
 
+}
 #endif

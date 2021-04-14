@@ -5,10 +5,13 @@
 
 #define NUM_OCTAVES 11
 
+namespace kraps {
+
 enum kWtInputs 
 {
     kWtShiftIn = kGenPhaseIn + 1
 };
+
 
 class Wavetable : public Generator{
 public:
@@ -43,5 +46,7 @@ private:
     std::unique_ptr<int[]> ip;
     std::unique_ptr<double[]> w;
 };
+
+}
 
 #endif 

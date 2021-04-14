@@ -3,9 +3,9 @@
 #include <array>
 #include "../Kraps/generators/generator.hpp"
 
-#define NUM_OCTAVES 11
 
 
+namespace kraps{
 
 class BasicG : public Generator {
 public:
@@ -29,4 +29,5 @@ private:
 
 };
 
+}
 #endif 

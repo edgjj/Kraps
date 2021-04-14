@@ -1,6 +1,7 @@
 #include "note_manager.hpp"
 #include <algorithm>
 
+namespace kraps {
 
 NoteManager::NoteManager() : Processor (p_notemgr, 0, 3)
 {
@@ -99,5 +100,7 @@ void NoteManager::process_callback()
 
 NoteManager::~NoteManager()
 {
+
+}
 
 }

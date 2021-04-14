@@ -8,8 +8,11 @@
 #include "../modulators/macros.hpp"
 #include "../processor/midi/note_manager.hpp"
 
-typedef std::map <uint32_t, std::tuple< std::vector <std::unique_ptr<Input> >*,
-    std::vector <std::unique_ptr<Output> >*> > IO_container;
+
+typedef std::map <uint32_t, std::tuple< std::vector <std::unique_ptr<kraps::io::Input> >*,
+    std::vector <std::unique_ptr<kraps::io::Output> >*> > IO_container;
+
+namespace kraps{
 
 
 enum kMtxInputs
@@ -28,13 +31,14 @@ enum kMtxOutputs
 class OutputProcessor : public Processor
 {
 public:
-    OutputProcessor() : Processor(p_misc, 1, 0)
+    OutputProcessor() : Processor(p_output, 1, 0)
     {
 
     }
     double get_sample() { return *inputs[0]; }
     ~OutputProcessor() { ; }
 };
+
 
 class ProcessorMatrix
 {
@@ -51,14 +55,14 @@ public:
     void set_lock();
 
     bool plug_internal(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in);
-    void plug_external (Output* out, uint32_t dest_in);
+    void plug_external (io::Output* out, uint32_t dest_in);
 
     NoteManager* get_note_mgr();
 
     double process ();
 
     void* serialize ();
-    Input* get_in (uint16_t num);
+    io::Input* get_in (uint16_t num);
 
     
     IO_container* get_IO() { return &processors_io; }
@@ -70,8 +74,8 @@ private:
 
     std::array <uint32_t, 2> immutables;
 
-    std::vector < std::unique_ptr <Input>  > global_inputs;
-    std::vector < std::unique_ptr <Output>  > global_outputs;
+    std::vector < std::unique_ptr <io::Input>  > global_inputs;
+    std::vector < std::unique_ptr <io::Output>  > global_outputs;
 
     std::vector < std::unique_ptr <Processor> > processors;
 
@@ -80,5 +84,5 @@ private:
 
 };
 
-
+}
 #endif

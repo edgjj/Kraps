@@ -2,6 +2,8 @@
 #define MACROS_H
 #include "../processor/processor.hpp"
 
+namespace kraps {
+
 enum kMacroOutputs {
     kMacroOut1,
     kMacroOut2,
@@ -35,5 +37,7 @@ protected:
 private:
 
 };
+
+}
 
 #endif

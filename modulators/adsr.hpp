@@ -4,7 +4,7 @@
 #include <cstdint>
 #include "../processor/processor.hpp"
 
-
+namespace kraps {
 
 enum adsr_params {
     adsr_attack,
@@ -53,6 +53,6 @@ private:
     double sustain_amp = 0.0;
 };
 
-
+}
 
 #endif

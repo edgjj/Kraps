@@ -2,6 +2,7 @@
 #define LFO_H
 #include <map>
 #include "../generators/generator.hpp"
+namespace kraps {
 
 struct Vec2 
 {
@@ -47,4 +48,5 @@ private:
     std::vector <double> tension; // == N + 2 / 2
 };
 
+}
 #endif

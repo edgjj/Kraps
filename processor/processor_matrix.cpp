@@ -2,6 +2,8 @@
 
 #include "midi/note_manager.hpp"
 
+namespace kraps{
+
 
 ProcessorMatrix::ProcessorMatrix()
 {
@@ -120,7 +122,7 @@ bool ProcessorMatrix::plug_internal(uint32_t src, uint32_t dest, uint16_t src_ou
 }
 
 
-void ProcessorMatrix::plug_external(Output* out, uint32_t dest_in)
+void ProcessorMatrix::plug_external(io::Output* out, uint32_t dest_in)
 {
     WAIT_LOCK
     _ASSERT(dest_in < global_inputs.size());
@@ -160,7 +162,9 @@ void* ProcessorMatrix::serialize ()
     return nullptr;
 }
 
-Input* ProcessorMatrix::get_in(uint16_t num)
+io::Input* ProcessorMatrix::get_in(uint16_t num)
 {
     return global_inputs[num].get();
+}
+
 }
