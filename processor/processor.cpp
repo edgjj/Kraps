@@ -8,6 +8,7 @@ Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) :
     bypass (false), 
     id (ctr++)
 {
+
     null_out = std::make_unique<io::Output> (nullptr, -1);
     for (int i = 0; i < num_inputs; i++)
     {
@@ -17,11 +18,12 @@ Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) :
     {
         outputs.emplace_back (std::make_unique<io::Output> (this, i));
     }
+
 }
 
 Processor::~Processor ()
 {
-
+    ctr--;
 }
 
 void Processor::process ()
@@ -74,4 +76,21 @@ void Processor::unplug (Processor* proc)
     }
 }
 
+nlohmann::json Processor::get_serialize_obj()
+{
+    nlohmann::json o;
+    o["id"] = id;
+    o["params"] = params; 
+    o["type"] = type;
+    o["bypass"] = bypass;
+    return o;
+}
+
+void Processor::set_serialize(nlohmann::json obj)
+{
+    if (obj.find("params") != obj.end())
+        obj["params"].get_to(params);
+    if (obj.find("bypass") != obj.end())
+        obj["bypass"].get_to(bypass);
+}
 }

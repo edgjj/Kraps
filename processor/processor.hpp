@@ -10,18 +10,17 @@
 #include "processor_types.hpp"
 #include "io.hpp"
 #include "../misc/misc.hpp"
+#include "../serialize/nlohmann/json.hpp"
 
 static uint32_t ctr = 0;
 
-#define WAIT_LOCK while (is_locked) { ; }
+#define WAIT_LOCK while (is_locked) { ; } // not thread-safe at all and bad idea
 
 namespace kraps {
 
 class Processor
 {
 public:
-
-
     Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs);
     
 
@@ -38,7 +37,6 @@ public:
 
     size_t get_param_count() { return params.size(); }
     std::pair <double, double> get_param_range(uint32_t id_) { return params_constrainments[id_]; }
-
     uint32_t get_ID () { return id; }
   
     io::Output* get_output(uint8_t id_) { return outputs[id_].get(); }
@@ -65,6 +63,12 @@ public:
 
     bool is_bypassed () { return bypass; }
     uint8_t get_type () { return type; }
+
+    /* serialize dependant */
+    virtual nlohmann::json get_serialize_obj();
+    virtual void set_serialize(nlohmann::json obj);
+    //virtual void set_serialize_obj(serialize::SerializeObj& s) { ; }
+
 
     ~Processor();
 

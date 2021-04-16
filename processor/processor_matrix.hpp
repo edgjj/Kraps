@@ -1,6 +1,7 @@
 #ifndef APROCESSORMTX_H
 #define APROCESSORMTX_H
 
+
 #include "../generators/wt.hpp"
 #include "../modulators/lfo.hpp"
 #include "../modulators/adsr.hpp"
@@ -47,6 +48,7 @@ public:
 
     uint32_t add_processor (uint8_t type);
     bool remove_processor (uint32_t id);
+    void clear();
     Processor* get_processor (uint32_t id);
 
 
@@ -58,14 +60,15 @@ public:
     void plug_external (io::Output* out, uint32_t dest_in);
 
     NoteManager* get_note_mgr();
-
     double process ();
 
-    void* serialize ();
     io::Input* get_in (uint16_t num);
 
-    
     IO_container* get_IO() { return &processors_io; }
+
+
+    int serialize(std::string path);
+    int deserialize(std::string path);
 
     ~ProcessorMatrix ();
 private:
@@ -81,6 +84,7 @@ private:
 
     double sample_rate = 0;
     bool is_locked = false;
+    
 
 };
 

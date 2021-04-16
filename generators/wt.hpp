@@ -18,8 +18,13 @@ public:
 
     Wavetable(uint16_t);
 
-    void fill_table_from_buffer (float*, uint32_t);
+    template <typename T>
+    void fill_table_from_buffer (T*, uint32_t);
+
     void fill_table_from_fcn (double (*fcn) (double phase));
+    nlohmann::json get_serialize_obj() override;
+    void set_serialize(nlohmann::json) override;
+
 
     ~Wavetable ();
 
@@ -37,7 +42,6 @@ private:
 
     uint16_t waveform_size = 0;
     uint32_t table_size = 0;
-    uint32_t shift = 0;
 
     std::unique_ptr<double[]> table;
     std::array <std::unique_ptr<double[]>, NUM_OCTAVES> tables;

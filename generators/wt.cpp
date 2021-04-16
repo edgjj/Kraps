@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "wt.hpp"
+#include "../serialize/base64/base64.hpp"
 
 extern "C" 
 {
@@ -36,7 +37,11 @@ void Wavetable::process_callback()
     unsigned int pos_int    = *inputs[kWtShiftIn] + phase_cvt;
     double pos_frac     = phase_cvt - (int)phase_cvt;
     
-    double num_oct      = log2 (freq * table_size * SR_cst);
+    double log_arg = freq * table_size * SR_cst;
+    if (log_arg < 1)
+        log_arg = 1;
+
+    double num_oct      = log2 (log_arg); // incorrect, needs fix
     
     unsigned int no_strip   = (unsigned int)num_oct;
     double  oct_frac    = num_oct - no_strip;
@@ -50,10 +55,10 @@ void Wavetable::process_callback()
     inc_phase ();
 }
 
-void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
+template <typename T>
+void Wavetable::fill_table_from_buffer (T* buf, uint32_t len)
 {
     WAIT_LOCK
-
 
     table.reset(new double[len]);
 
@@ -123,6 +128,33 @@ void Wavetable::fill_mipmap ()
         }
 
     } 
+}
+
+nlohmann::json Wavetable::get_serialize_obj()
+{
+    nlohmann::json o;
+    o["table"] = base64_encode((BYTE*) table.get(), sizeof(double) * table_size);
+    o["table_size"] = table_size;
+    o["waveform_size"] = waveform_size;
+    o.update(Processor::get_serialize_obj());
+
+    return o;
+}
+
+void Wavetable::set_serialize(nlohmann::json obj)
+{
+    Processor::set_serialize(obj);
+    if (obj.find("table_size") != obj.end())
+        obj["table_size"].get_to(table_size);
+
+    if (obj.find("waveform_size") != obj.end())
+        obj["waveform_size"].get_to(table_size);
+
+    if (obj.find("table") != obj.end())
+    {
+        auto decoded = base64_decode(obj["table"]);
+        fill_table_from_buffer((double*) decoded.data(), table_size);
+    }
 }
 
 }
