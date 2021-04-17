@@ -3,7 +3,7 @@
 #include "adsr.hpp"
 
 namespace kraps {
-ADSR::ADSR () : Processor (p_adsr, 1, 1)
+ADSR::ADSR () : Processor (p_adsr, 1, 1) // possibly add smoothing for 4 samples behind
 {
     params = std::vector<double> (4, 0.0);
     params_constrainments = std::vector<std::pair <double, double >>(3, std::pair<double, double>(0.0, 20.0));
@@ -16,12 +16,12 @@ void ADSR::set_gate(bool g)
     if (g == true)
     {
         state = adsr_ENV_ATT;
-        pos = 0.0;
-    } else 
+        //pos = 0.0;
+    } 
+    else 
     {
         state = adsr_ENV_REL;
     }
-    
 
     gate = g;
 }
@@ -36,7 +36,7 @@ void ADSR::process_callback()
         set_gate(*inputs[kADSRGate]);
     }
 
-
+    
     switch (state){
         case adsr_ENV_ATT:
             if (pos < 1.f && step[adsr_attack] > 0.f){

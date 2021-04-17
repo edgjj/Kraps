@@ -12,7 +12,7 @@
 #include "../misc/misc.hpp"
 #include "../serialize/nlohmann/json.hpp"
 
-static uint32_t ctr = 0;
+
 
 #define WAIT_LOCK while (is_locked) { ; } // not thread-safe at all and bad idea
 
@@ -22,7 +22,7 @@ class Processor
 {
 public:
     Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs);
-    
+    static uint32_t ctr;
 
     void set_bypassed (bool val) { this->bypass = val; if (val == true) for (auto &i : outputs) i->val = 0.0; }
     void set_SR (double val) { sample_rate = val; recalculate_sr (); process_params(); }
@@ -93,7 +93,7 @@ protected:
     bool is_locked = false;
 
 private:
-    const uint32_t id = 0;
+    uint32_t id = 0;
     bool bypass;
     uint8_t type;   
     std::unique_ptr<io::Output> null_out;

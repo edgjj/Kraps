@@ -46,7 +46,7 @@ class ProcessorMatrix
 public:
     ProcessorMatrix ();
 
-    uint32_t add_processor (uint8_t type);
+    uint32_t add_processor (uint8_t type, uint32_t _id = 0);
     bool remove_processor (uint32_t id);
     void clear();
     Processor* get_processor (uint32_t id);
@@ -56,8 +56,9 @@ public:
     void set_SR(double sample_rate);
     void set_lock();
 
-    bool plug_internal(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in);
-    void plug_external (io::Output* out, uint32_t dest_in);
+    bool plug(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in);
+    bool unplug(uint32_t dest, uint16_t dest_in);
+
 
     NoteManager* get_note_mgr();
     double process ();

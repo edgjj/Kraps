@@ -23,7 +23,7 @@ ProcessorMatrix::~ProcessorMatrix()
     ;
 }
 
-uint32_t ProcessorMatrix::add_processor(uint8_t type)
+uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
 {
     WAIT_LOCK
         switch (type)
@@ -60,6 +60,10 @@ uint32_t ProcessorMatrix::add_processor(uint8_t type)
 
     processors.back()->set_SR(sample_rate);
     uint32_t id = processors.back()->get_ID();
+    if (_id != 0)
+    {
+        id = _id;
+    }
     processors_io[id] = processors.back()->get_IO();
 
     return id;
@@ -115,7 +119,7 @@ void ProcessorMatrix::clear()
                 return std::find(immutables.begin(), immutables.end(), n->get_ID()) != immutables.end() == false;
             }
     ), processors.end());
-    
+
     for (auto it = processors_io.begin(); it != processors_io.end(); )
     {
         if (std::find(immutables.begin(), immutables.end(), it->first) != immutables.end() == false)
@@ -123,6 +127,7 @@ void ProcessorMatrix::clear()
         else 
             ++it;
     }
+    
 }
 
 Processor* ProcessorMatrix::get_processor(uint32_t id)
@@ -140,7 +145,7 @@ Processor* ProcessorMatrix::get_processor(uint32_t id)
 }
 
 
-bool ProcessorMatrix::plug_internal(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in)
+bool ProcessorMatrix::plug(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in)
 {
     WAIT_LOCK
 
@@ -155,11 +160,14 @@ bool ProcessorMatrix::plug_internal(uint32_t src, uint32_t dest, uint16_t src_ou
 }
 
 
-void ProcessorMatrix::plug_external(io::Output* out, uint32_t dest_in)
+bool ProcessorMatrix::unplug(uint32_t dest, uint16_t dest_in)
 {
     WAIT_LOCK
-        _ASSERT(dest_in < global_inputs.size());
-    global_inputs[dest_in]->src = out;
+
+    if (processors_io.find(dest) == processors_io.end())
+        return false;
+
+    processors[dest]->unplug(dest_in);
 }
 
 
@@ -247,7 +255,7 @@ int ProcessorMatrix::deserialize(std::string path)
         return -1;
 
     clear();
-
+    
     using js = nlohmann::json;
 
     js o;
@@ -262,7 +270,7 @@ int ProcessorMatrix::deserialize(std::string path)
 
     for (auto& i : o["processors"])
     {
-        add_processor(i["type"]);
+        add_processor(i["type"], i["id"]);
         processors.back()->set_serialize(i);
     }
 
@@ -272,7 +280,7 @@ int ProcessorMatrix::deserialize(std::string path)
         {
             if (j["src_id"] == -1)
                 continue;
-            plug_internal(j["src_proc_id"], i["proc_id"], j["src_id"], j["id"]);
+            plug(j["src_proc_id"], i["proc_id"], j["src_id"], j["id"]);
         } 
     }
     return 1;

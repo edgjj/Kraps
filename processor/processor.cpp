@@ -1,6 +1,7 @@
 #include "processor.hpp"
 
 namespace kraps{
+uint32_t Processor::ctr = 0;
 
 Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) : 
     type (type), 
@@ -23,7 +24,7 @@ Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) :
 
 Processor::~Processor ()
 {
-    ctr--;
+    
 }
 
 void Processor::process ()
@@ -98,5 +99,7 @@ void Processor::set_serialize(nlohmann::json obj)
         obj["params"].get_to(params);
     if (obj.find("bypass") != obj.end())
         obj["bypass"].get_to(bypass);
+    if (obj.find("id") != obj.end())
+        obj["id"].get_to(id);
 }
 }
