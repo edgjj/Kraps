@@ -20,7 +20,6 @@ Wavetable::Wavetable(uint16_t waveform_size) : Generator (p_wt, 1, 0)
 
 Wavetable::~Wavetable()
 {
-
     
 }
 
@@ -36,13 +35,14 @@ void Wavetable::process_callback()
 
     unsigned int pos_int    = *inputs[kWtShiftIn] + phase_cvt;
     double pos_frac     = phase_cvt - (int)phase_cvt;
-    
-    double log_arg = freq * table_size * SR_cst;
-    if (log_arg < 1)
-        log_arg = 1;
+    double log_arg      = freq * 2 * waveform_size / (44100.0); // lets think every wt we get is 44100
+    double num_oct      = 0.0;
 
-    double num_oct      = log2 (log_arg); // incorrect, needs fix
+    if (log_arg >= 1.0)
+        num_oct = log2(log_arg);   
     
+    // basic freq = 44100
+
     unsigned int no_strip   = (unsigned int)num_oct;
     double  oct_frac    = num_oct - no_strip;
 
@@ -82,7 +82,6 @@ void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
 
     for (int i = 0; i < table_size; i++)
 		table[i] = (*fcn) ( 2 * M_PI * ( (float) i  / waveform_size ) );
-	
      
     
     fill_mipmap();
@@ -99,7 +98,7 @@ inline void Wavetable::alloc_dft ()
 }
 
 
-void Wavetable::fill_mipmap ()
+void Wavetable::fill_mipmap () // incorrect too
 {
 
     alloc_dft();
@@ -112,14 +111,13 @@ void Wavetable::fill_mipmap ()
 
         rdft (wt_sz,1,tables[i].get(),ip.get(),w.get());
 
-        uint16_t mid    = wt_sz / 2;
-        uint16_t bins   = wt_sz / pow(2,i);
-
-        for (uint16_t j = bins; j < wt_sz-1; j = j+2){
+        //uint16_t mid    = wt_sz / 2;
+        uint16_t bins   = waveform_size / pow(2,i); // 2048 - 1024 - 512 - 256 - 128 - 64 - 32 - 16 - 8 - 4 - 2 - 1
+        if (bins == 1) bins = 0;
+        for (uint16_t j = bins + 2; j < wt_sz-1; j = j+2){
             tables[i][j]    = 0.f;
             tables[i][j+1]  = 0.f;
         }
-
 
         rdft(wt_sz,-1,tables[i].get(),ip.get(),w.get());
         
