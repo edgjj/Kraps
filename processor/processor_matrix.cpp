@@ -106,6 +106,9 @@ void ProcessorMatrix::clear()
 {
     WAIT_LOCK
 
+    processors[0]->unplug();
+    processors[1]->unplug();
+
     processors.erase(std::remove_if(processors.begin(), processors.end(),
             [&](std::unique_ptr<Processor>& n)
             {

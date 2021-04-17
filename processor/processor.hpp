@@ -54,6 +54,10 @@ public:
     /* plug (src_processor ptr, output_index, input_index) */
     void plug (Processor*, uint8_t, uint8_t);
 
+
+    /* unplug everything */
+    void unplug();
+
     /* unplug (input_index) */
     void unplug (uint8_t);
 

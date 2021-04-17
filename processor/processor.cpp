@@ -58,6 +58,12 @@ void Processor::plug (Processor* proc, uint8_t o_idx, uint8_t i_idx)
     inputs[i_idx]->src = proc->outputs[o_idx].get();
 }
 
+void Processor::unplug()
+{
+    for (auto& i : inputs)
+        i->src = null_out.get();
+}
+
 void Processor::unplug (uint8_t index)
 {
     inputs[index]->src = null_out.get();
