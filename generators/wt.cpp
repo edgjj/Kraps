@@ -34,6 +34,10 @@ void Wavetable::process_callback()
     double phase_cvt    = phase_cst * phase ;
 
     unsigned int pos_int    = *inputs[kWtShiftIn] + phase_cvt;
+    unsigned int pos_int_inc = pos_int + 1;
+
+    if (pos_int_inc == waveform_size)
+        pos_int_inc = 0;
     double pos_frac     = phase_cvt - (int)phase_cvt;
     double log_arg      = freq * 2 * waveform_size / (44100.0); // lets think every wt we get is 44100
     double num_oct      = 0.0;
@@ -41,13 +45,16 @@ void Wavetable::process_callback()
     if (log_arg >= 1.0)
         num_oct = log2(log_arg);   
     
-    // basic freq = 44100
+    if (num_oct > NUM_OCTAVES - 2)
+        num_oct = NUM_OCTAVES - 2;
+    // there's somewhere zero-crossings click problem
+    // i think it's zero-division related this since we get inf output
 
     unsigned int no_strip   = (unsigned int)num_oct;
     double  oct_frac    = num_oct - no_strip;
 
-    double o1 = tables[no_strip][pos_int + 1] * pos_frac + tables[no_strip][pos_int] * (1 - pos_frac);
-    double o2 = tables[no_strip + 1][pos_int + 1] * pos_frac + tables[no_strip + 1][pos_int] * (1 - pos_frac);
+    double o1 = tables[no_strip][pos_int_inc] * pos_frac + tables[no_strip][pos_int] * (1 - pos_frac);
+    double o2 = tables[no_strip + 1][pos_int_inc] * pos_frac + tables[no_strip + 1][pos_int] * (1 - pos_frac);
 
     *outputs[kGenAudioOut] = o1 * (1 - oct_frac) + o2 * oct_frac;
     *outputs[kGenPhaseOut] = phase;

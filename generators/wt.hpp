@@ -3,13 +3,13 @@
 #include <array>
 #include "generator.hpp"
 
-#define NUM_OCTAVES 11
+#define NUM_OCTAVES 12
 
 namespace kraps {
 
 enum kWtInputs 
 {
-    kWtShiftIn = kGenPhaseIn + 1
+    kWtShiftIn = kGenGate + 1
 };
 
 
@@ -37,8 +37,6 @@ private:
 
     
     double phase_cst = 0.0;
-
-
 
     uint16_t waveform_size = 0;
     uint32_t table_size = 0;

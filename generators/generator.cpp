@@ -23,8 +23,7 @@ void Generator::set_phase(double phase)
 
 void Generator::set_freq () 
 {
-    freq = fmin(*inputs[kGenFreqIn], sample_rate / 2);
-    freq *= params[0];
+    freq = fmin(*inputs[kGenFreqIn] * params[0], sample_rate / 2);
     phase_inc = freq * 2.0 * M_PI * SR_cst;
 }
 
