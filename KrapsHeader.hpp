@@ -1,6 +1,7 @@
 #ifndef KRAPSHDR_H
 #define KRAPSHDR_H
 
+#include "serialize/base64/base64.hpp"
 #include "processor/processor_matrix.hpp"
 #include "processor/processor_types.hpp"
 #include "misc/misc.hpp"

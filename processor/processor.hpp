@@ -22,7 +22,6 @@ class Processor
 {
 public:
     Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs);
-    static uint32_t ctr;
 
     void set_bypassed (bool val) { this->bypass = val; if (val == true) for (auto &i : outputs) i->val = 0.0; }
     void set_SR (double val) { sample_rate = val; recalculate_sr (); process_params(); }
@@ -38,7 +37,9 @@ public:
     size_t get_param_count() { return params.size(); }
     std::pair <double, double> get_param_range(uint32_t id_) { return params_constrainments[id_]; }
     uint32_t get_ID () { return id; }
-  
+    void set_ID(uint32_t _id) { id = _id; }
+
+
     io::Output* get_output(uint8_t id_) { return outputs[id_].get(); }
 
     std::tuple < std::vector <std::unique_ptr<io::Input> >* ,

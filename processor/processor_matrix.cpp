@@ -1,8 +1,7 @@
 #include "processor_matrix.hpp"
 
 #include "midi/note_manager.hpp"
-#include <fstream>
-#include <iomanip>
+
 
 
 namespace kraps {
@@ -11,16 +10,20 @@ namespace kraps {
 ProcessorMatrix::ProcessorMatrix()
 {
     processors.emplace_back(std::make_unique <OutputProcessor>());
-    immutables[0] = processors.back()->get_ID();
+    processors.back()->set_ID(0);
+    immutables[0] = 0;
     processors_io[immutables[0]] = processors.back()->get_IO();
 
     processors.emplace_back(std::make_unique <NoteManager>());
-    immutables[1] = processors.back()->get_ID();
+    processors.back()->set_ID(1);
+    immutables[1] = 1;
     processors_io[immutables[1]] = processors.back()->get_IO();
+
+    proc_ctr = 2;
 }
 ProcessorMatrix::~ProcessorMatrix()
 {
-    ;
+     // needs independent id counter for each instance
 }
 
 uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
@@ -59,11 +62,11 @@ uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
         }
 
     processors.back()->set_SR(sample_rate);
-    uint32_t id = processors.back()->get_ID();
+    uint32_t id = ++proc_ctr;
     if (_id != 0)
-    {
         id = _id;
-    }
+
+    processors.back()->set_ID(id);
     processors_io[id] = processors.back()->get_IO();
 
     return id;
@@ -196,7 +199,7 @@ double ProcessorMatrix::process()
     return ((OutputProcessor*)processors[0].get())->get_sample();
 }
 
-int ProcessorMatrix::serialize(std::string path)
+nlohmann::json ProcessorMatrix::serialize()
 {
     WAIT_LOCK
     
@@ -233,34 +236,18 @@ int ProcessorMatrix::serialize(std::string path)
         o["r_matrix"].push_back(r_mtx);
     }
 
-
-    std::ofstream of(path, std::ofstream::out);
-
-    if (of.fail())
-        return -1;
-
-    of << std::setw(4) << o << std::endl;
-    of.close();
-    return 1;
+    return o;
 }
 
-int ProcessorMatrix::deserialize(std::string path)
+int ProcessorMatrix::deserialize(nlohmann::json o)
 {
     WAIT_LOCK
    
-    std::ifstream inp(path, std::ifstream::in);
-    
-    
-    if (inp.fail())
-        return -1;
-
     clear();
     
     using js = nlohmann::json;
 
-    js o;
-    inp >> o;
-    inp.close();
+
 
     if (o.find("processors") == o.end())
         return -1;

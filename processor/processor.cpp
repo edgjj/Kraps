@@ -1,13 +1,12 @@
 #include "processor.hpp"
 
 namespace kraps{
-uint32_t Processor::ctr = 0;
 
 Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) : 
     type (type), 
     sample_rate (0.0), 
     bypass (false), 
-    id (ctr++)
+    id (0)
 {
 
     null_out = std::make_unique<io::Output> (nullptr, -1);
@@ -97,6 +96,7 @@ void Processor::set_serialize(nlohmann::json obj)
 {
     if (obj.find("params") != obj.end())
         obj["params"].get_to(params);
+    process_params();
     if (obj.find("bypass") != obj.end())
         obj["bypass"].get_to(bypass);
     if (obj.find("id") != obj.end())

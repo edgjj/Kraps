@@ -68,12 +68,12 @@ public:
     IO_container* get_IO() { return &processors_io; }
 
 
-    int serialize(std::string path);
-    int deserialize(std::string path);
+    nlohmann::json serialize();
+    int deserialize(nlohmann::json o);
 
     ~ProcessorMatrix ();
 private:
-
+    uint32_t proc_ctr = 0;
     IO_container processors_io;
 
     std::array <uint32_t, 2> immutables;
