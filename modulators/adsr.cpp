@@ -5,7 +5,8 @@
 namespace kraps {
 ADSR::ADSR () : Processor (p_adsr, 1, 1) // possibly add smoothing for 4 samples behind
 {
-    params = std::vector<double> (4, 0.0);
+    params = std::vector<double> (4, 0.001);
+    params[3] = 0.0;
     params_constrainments = std::vector<std::pair <double, double >>(3, std::pair<double, double>(0.0, 20.0));
     params_constrainments.push_back(std::pair(-60, 0));
 }

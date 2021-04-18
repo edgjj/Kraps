@@ -7,6 +7,8 @@
 #include "../modulators/adsr.hpp"
 #include "../modulators/attenuator.hpp"
 #include "../modulators/macros.hpp"
+#include "../filters/filtering.hpp"
+#include "../dafx/tubedist.hpp"
 #include "../processor/midi/note_manager.hpp"
 
 

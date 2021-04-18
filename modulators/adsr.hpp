@@ -1,7 +1,6 @@
 #ifndef ADSR_h
 #define ADSR_h
 
-#include <cstdint>
 #include "../processor/processor.hpp"
 
 namespace kraps {

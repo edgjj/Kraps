@@ -44,8 +44,10 @@ uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
             processors.emplace_back(std::make_unique <ADSR>());
             break;
         case p_filter:
+            processors.emplace_back(std::make_unique <filters::Filter>());
             break;
-        case p_dafx:
+        case p_tube:
+            processors.emplace_back(std::make_unique <dafx::TubeDist>());
             break;
         case p_atten:
             processors.emplace_back(std::make_unique <Attenuator>());
@@ -170,7 +172,13 @@ bool ProcessorMatrix::unplug(uint32_t dest, uint16_t dest_in)
     if (processors_io.find(dest) == processors_io.end())
         return false;
 
-    processors[dest]->unplug(dest_in);
+    auto result = std::find_if(processors.begin(), processors.end(),
+        [&](std::unique_ptr<Processor>& n)
+        {
+            return n->get_ID() == dest;
+        });
+
+    result->get()->unplug(dest_in);
 }
 
 
