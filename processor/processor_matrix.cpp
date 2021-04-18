@@ -55,11 +55,16 @@ uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
         case p_macro:
             processors.emplace_back(std::make_unique <Macro>());
             break;
+        case p_delay:
+            processors.emplace_back(std::make_unique <dafx::Delay>());
+            break;
         case p_notemgr:
             return -1;
         case p_output:
             return -1;
         case p_misc:
+            return -1;
+        default:
             return -1;
         }
 

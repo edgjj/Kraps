@@ -9,6 +9,7 @@
 #include "../modulators/macros.hpp"
 #include "../filters/filtering.hpp"
 #include "../dafx/tubedist.hpp"
+#include "../dafx/delay.hpp"
 #include "../processor/midi/note_manager.hpp"
 
 
