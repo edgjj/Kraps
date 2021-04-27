@@ -1,7 +1,7 @@
 #ifndef APROCESSORMTX_H
 #define APROCESSORMTX_H
 
-
+#include "../generators/basic_gen.hpp"
 #include "../generators/wt.hpp"
 #include "../modulators/lfo.hpp"
 #include "../modulators/adsr.hpp"

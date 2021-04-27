@@ -17,7 +17,7 @@ void ADSR::set_gate(bool g)
     if (g == true)
     {
         state = adsr_ENV_ATT;
-        //pos = 0.0;
+        pos = 0.0;
     } 
     else 
     {

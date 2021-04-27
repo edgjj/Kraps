@@ -34,13 +34,34 @@ protected:
     void process_callback () override
     { 
         for (int i = 0; i < outputs.size(); i++)
-            *outputs[i] = *inputs[i*2] * *inputs[i*2+1];
+            *outputs[i] = *inputs[i * 2] * *inputs[i * 2 + 1];
     }
     void process_params () override { ; }
     void recalculate_sr () override { ; }
 
 private:
     
+};
+
+class Summer : public Processor
+{
+public:
+    Summer() : Processor(p_summer, 8, 4)
+    {
+
+    }
+    ~Summer() { ; }
+protected:
+    void process_callback() override
+    {
+        for (int i = 0; i < outputs.size(); i++)
+            *outputs[i] = *inputs[i * 2] + *inputs[i * 2 + 1];
+    }
+    void process_params() override { ; }
+    void recalculate_sr() override { ; }
+
+private:
+
 };
 
 }

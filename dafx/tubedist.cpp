@@ -16,9 +16,9 @@ TubeDist::~TubeDist()
 }
 void TubeDist::process_params()
 {
-    tC = (params[2] < 0.01 ? 0.01 : params[2]) * 2 + 1;
-    bC = (params[3] + 0.166666667) * 6;
-    pC = params[4] * 8;
+    tC = (params[2] / 100.0 < 0.01 ? 0.01 : params[2] / 100.0) * 2 + 1;
+    bC = (params[3] / 100.0 + 0.166666667) * 6;
+    pC = params[4] / 100.0 * 8;
 
     auto d2g = [](double dB) { return pow(10, dB / 20); };
     gain = d2g(params[0]);

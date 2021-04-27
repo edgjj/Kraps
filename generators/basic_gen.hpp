@@ -10,7 +10,7 @@ namespace kraps{
 class BasicG : public Generator {
 public:
 
-    BasicG() : Generator(p_misc, 0, 0) { ; }
+    BasicG() : Generator(p_basic_gen, 0, 0) { ; }
 
     ~BasicG() { ; } 
 

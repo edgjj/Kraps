@@ -52,11 +52,17 @@ uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
         case p_atten:
             processors.emplace_back(std::make_unique <Attenuator>());
             break;
+        case p_summer:
+            processors.emplace_back(std::make_unique <Summer>());
+            break;
         case p_macro:
             processors.emplace_back(std::make_unique <Macro>());
             break;
         case p_delay:
             processors.emplace_back(std::make_unique <dafx::Delay>());
+            break;
+        case p_basic_gen:
+            processors.emplace_back(std::make_unique <BasicG>());
             break;
         case p_notemgr:
             return -1;

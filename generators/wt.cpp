@@ -31,7 +31,7 @@ void Wavetable::process_callback()
 
     set_freq();
 
-    double phase_cvt    = phase_cst * phase ;
+    double phase_cvt    = phase_cst * phase;
 
     unsigned int pos_int    = *inputs[kWtShiftIn] + phase_cvt;
     unsigned int pos_int_inc = pos_int + 1;
