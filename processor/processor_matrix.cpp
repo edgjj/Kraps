@@ -28,6 +28,7 @@ ProcessorMatrix::~ProcessorMatrix()
 
 uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
 {
+    // [CRITICAL] not thread-safe at all, needs another solution
     WAIT_LOCK
         switch (type)
         {
