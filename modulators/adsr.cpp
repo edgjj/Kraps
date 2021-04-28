@@ -9,6 +9,15 @@ ADSR::ADSR () : Processor (p_adsr, 1, 1) // possibly add smoothing for 4 samples
     params[3] = 0.0;
     params_constrainments = std::vector<std::pair <double, double >>(3, std::pair<double, double>(0.0, 20.0));
     params_constrainments.push_back(std::pair(-60, 0));
+
+    io_description[0] =
+    {
+        { kADSRGate, "GATE", "Just gate. Resets ADSR state."}
+    };
+    io_description[1] =
+    {
+        { kADSRAudioOut, "OUT", "Gives access to produced control signal."}
+    };
 }
 
 

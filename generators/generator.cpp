@@ -9,6 +9,29 @@ Generator::Generator (uint8_t type, uint8_t i, uint8_t o) : Processor (type, i +
 {
     params = std::vector<double>(1, 1.0);
     params_constrainments.push_back(std::pair(0.0, 64.0));
+
+    io_description[0] =
+    {
+        {
+            kGenFreqIn, "FREQ", "Raw frequency input."
+        },
+        {
+            kGenPhaseIn, "PHASE", "Phase Modulation input."
+        },
+        {
+            kGenGate, "GATE", "Just gate. Resets generator phase."
+        }
+    };
+
+    io_description[1] =
+    {
+        {
+            kGenAudioOut, "AUDIO", "Provides raw audio."
+        },
+        {
+            kGenPhaseOut, "PHASE", "Provides raw generator phase."
+        }
+    };
 }
 
 Generator::~Generator ()

@@ -7,6 +7,13 @@ NoteManager::NoteManager() : Processor (p_notemgr, 0, 3)
 {
 	params.push_back (440.0);
 	params_constrainments.push_back(std::make_pair<double, double>(400, 500));
+
+	io_description[1] =
+	{
+		{ kNoteMgrFreq, "FREQ", "Current played note frequency."},
+		{ kNoteMgrAmp, "VELO", "Note velocity converted to CV."},
+		{ kNoteMgrGate, "GATE", "Just gate."}
+	};
 }
 
 void NoteManager::note_on(int note_number, int velocity, double timestamp)

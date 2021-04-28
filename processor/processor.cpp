@@ -82,6 +82,29 @@ void Processor::unplug (Processor* proc)
     }
 }
 
+IODescription Processor::get_io_description(uint32_t num, bool is_output)
+{
+
+    if (io_description[is_output].size() <= num)
+    {
+        std::string out = is_output == true ? "OUT " : "IN ";
+        out += std::to_string(num);
+        return { num, out, "Empty. " };
+    }
+
+    IODescription ret;
+    for (auto& i : io_description[is_output])
+    {
+        if (i.id == num)
+        {
+            ret = i;
+            break;
+        }
+    }
+
+    return ret;
+}
+
 nlohmann::json Processor::get_serialize_obj()
 {
     nlohmann::json o;

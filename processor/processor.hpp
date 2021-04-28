@@ -18,6 +18,13 @@
 
 namespace kraps {
 
+struct IODescription
+{
+    uint32_t id;
+    std::string name;
+    std::string description;
+};
+
 class Processor
 {
 public:
@@ -55,7 +62,6 @@ public:
     /* plug (src_processor ptr, output_index, input_index) */
     void plug (Processor*, uint8_t, uint8_t);
 
-
     /* unplug everything */
     void unplug();
 
@@ -69,10 +75,13 @@ public:
     bool is_bypassed () { return bypass; }
     uint8_t get_type () { return type; }
 
-    /* serialize dependant */
+
+
+    IODescription get_io_description(uint32_t num, bool is_output = false);
+
+    /* serializing things */
     virtual nlohmann::json get_serialize_obj();
     virtual void set_serialize(nlohmann::json obj);
-    //virtual void set_serialize_obj(serialize::SerializeObj& s) { ; }
 
 
     ~Processor();
@@ -83,10 +92,16 @@ protected:
     virtual void process_params () { ; }
     virtual void recalculate_sr () { ; }
 
+    /* gui friendly stuff */
+
+    std::array <std::vector <IODescription>, 2> io_description = { };
+
+
+    /* dsp */
+
     double sample_rate;
     std::vector<double> params;
     std::vector <std::pair <double, double>> params_constrainments;
-
 
     std::vector< std::unique_ptr <io::Input> > inputs;
     std::vector< std::unique_ptr <io::Output> > outputs;

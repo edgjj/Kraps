@@ -51,6 +51,7 @@ struct Output
 
 struct Input
 {
+
     Input(uint32_t _id)
     {
         this->proc = nullptr;

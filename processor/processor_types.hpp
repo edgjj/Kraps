@@ -55,8 +55,6 @@ static std::map<ProcessorTypes, std::vector <std::string>> ProcessorParametersDe
 
 
 
-
-
 }
 
 #endif

@@ -9,6 +9,16 @@ Delay::Delay() : Processor (p_delay, 1, 1)
 	params = { 0.02, 0.7, 0.5 };
 	params_constrainments = { {0, 5}, {0, 1}, {0, 1} };
 	dly_line = std::make_unique<DelayLine <double>>(5 * 44100, 44100);
+
+	io_description[0] =
+	{
+		{kDelayAudioIn, "AUDIO", "Just audio input."}
+	};
+
+	io_description[1] =
+	{
+		{kDelayAudioIn, "AUDIO", "Output for processed signal."}
+	};
 }
 
 Delay::~Delay()

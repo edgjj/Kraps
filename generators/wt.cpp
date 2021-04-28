@@ -16,6 +16,9 @@ Wavetable::Wavetable(uint16_t waveform_size) : Generator (p_wt, 1, 0)
 {
     this->waveform_size = waveform_size;
     phase_cst = this->waveform_size / ( 2.0 * M_PI );
+
+
+    io_description[0].push_back({ kWtShiftIn, "SHIFT", "Shifts WT position forward" });
 }
 
 Wavetable::~Wavetable()

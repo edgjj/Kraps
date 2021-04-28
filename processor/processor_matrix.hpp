@@ -18,26 +18,15 @@ typedef std::map <uint32_t, std::tuple< std::vector <std::unique_ptr<kraps::io::
 
 namespace kraps{
 
-
-enum kMtxInputs
-{
-    kMtxGate,
-    kMtxFreq,
-    kMtxPitchWheel,
-    kMtxVeloAmp
-};
-
-enum kMtxOutputs
-{
-    kMtxAudioOut
-};
-
 class OutputProcessor : public Processor
 {
 public:
     OutputProcessor() : Processor(p_output, 1, 0)
     {
-
+        io_description[0] =
+        {
+            { 0, "AUDIO", "Outputs audio to host."}
+        };
     }
     double get_sample() { return *inputs[0]; }
     ~OutputProcessor() { ; }

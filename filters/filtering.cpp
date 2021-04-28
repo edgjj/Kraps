@@ -16,6 +16,21 @@ Filter::Filter() : Processor (p_filter, 3, 4)
     fake_ptr[0] = new double[1];
     fake_ptr[0][0] = 0.0;
 
+    io_description[0] =
+    {
+        {kFilterAudioIn, "AUDIO", "Just audio input."},
+        {kFilterFreqIn, "FREQ", "Input for frequency CV."},
+        {kFilterResIn, "RES", "Input for resonance CV."},
+    };
+
+    io_description[1] =
+    {
+        {kFilterAudioOutLPF, "LPF", "Low-pass filter output."},
+        {kFilterAudioOutHPF, "HPF", "High-pass filter output."},
+        {kFilterAudioOutBPF, "BPF", "Band-pass filter output."},
+        {kFilterAudioOutAPF, "APF", "All-pass filter output."},
+    };
+
 }
 
 Filter::~Filter()

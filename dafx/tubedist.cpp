@@ -9,6 +9,16 @@ TubeDist::TubeDist() : Processor(p_tube, 1, 1)
     params = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
     params_constrainments = { {0.0, 30.0}, {0.0, 20.0}, {0.0, 100.0}, {0.0, 100.0}, {0.0, 100.0}, {-60.0, 10.0} };
     process_params();
+
+    io_description[0] =
+    {
+        {kDAFXAudioIn, "AUDIO", "Just audio input."}
+    };
+
+    io_description[1] =
+    {
+        {kDAFXAudioOut, "AUDIO", "Output for processed signal."}
+    };
 }
 TubeDist::~TubeDist()
 {
