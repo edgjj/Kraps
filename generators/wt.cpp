@@ -17,6 +17,9 @@ Wavetable::Wavetable(uint16_t waveform_size) : Generator (p_wt, 1, 0)
     this->waveform_size = waveform_size;
     phase_cst = this->waveform_size / ( 2.0 * M_PI );
 
+    params.push_back(0.0);
+    params_constrainments.push_back(std::pair<double, double>(0.0, 100));
+
 
     io_description[0].push_back({ kWtShiftIn, "SHIFT", "Shifts WT position forward" });
 }
@@ -36,7 +39,7 @@ void Wavetable::process_callback()
 
     double phase_cvt    = phase_cst * phase;
 
-    unsigned int pos_int    = *inputs[kWtShiftIn] + phase_cvt;
+    unsigned int pos_int    = *inputs[kWtShiftIn] + phase_cvt + shift;
     unsigned int pos_int_inc = pos_int + 1;
 
     if (pos_int_inc == waveform_size)
@@ -79,7 +82,6 @@ void Wavetable::fill_table_from_buffer (T* buf, uint32_t len)
 
     fill_mipmap();
     
-
 }
 
 void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
@@ -98,6 +100,15 @@ void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
 
 }
 
+
+double* const Wavetable::get_table_view()
+{
+    return table.get();
+}
+uint16_t Wavetable::get_wform_size()
+{
+    return waveform_size;
+}
 
 inline void Wavetable::alloc_dft ()
 {
@@ -136,6 +147,19 @@ void Wavetable::fill_mipmap () // incorrect too
         }
 
     } 
+}
+
+void Wavetable::process_params()
+{
+    WAIT_LOCK;
+    if (table_size == waveform_size)
+        shift = 0;
+    shift = (params[1] / 100.0) * (table_size - waveform_size);
+}
+
+uint32_t Wavetable::get_shift()
+{
+    return shift;
 }
 
 nlohmann::json Wavetable::get_serialize_obj()

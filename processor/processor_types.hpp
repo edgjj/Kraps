@@ -43,7 +43,7 @@ static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
 
 static std::map<ProcessorTypes, std::vector <std::string>> ProcessorParametersDesc = 
 {
-    { p_wt, {"Frequency Multiplier"}},
+    { p_wt, {"Freq. Multiplier", "WT. Pos"}},
     { p_basic_gen, {"Frequency Multiplier"}},
     { p_lfo, {"Frequency Multiplier"}},
     { p_adsr, {"Attack", "Decay", "Release", "Sustain Gain"}},

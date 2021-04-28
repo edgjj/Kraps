@@ -24,18 +24,19 @@ public:
     void fill_table_from_fcn (double (*fcn) (double phase));
     nlohmann::json get_serialize_obj() override;
     void set_serialize(nlohmann::json) override;
-
-
+    double* const get_table_view ();
+    uint32_t get_shift();
+    uint16_t get_wform_size();
     ~Wavetable ();
 
 protected:
     void process_callback () override;
-    void process_params () override { ; }
+    void process_params() override;
 private:
     void fill_mipmap ();
     void alloc_dft ();
 
-    
+    uint32_t shift = 0;
     double phase_cst = 0.0;
 
     uint16_t waveform_size = 0;
