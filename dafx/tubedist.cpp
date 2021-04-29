@@ -6,7 +6,7 @@ namespace dafx
 {
 TubeDist::TubeDist() : Processor(p_tube, 1, 1)
 {
-    params = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+    params = { 0.0, 0.0, 0.0, 0.0, 0.0, -4.5 };
     params_constrainments = { {0.0, 30.0}, {0.0, 20.0}, {0.0, 100.0}, {0.0, 100.0}, {0.0, 100.0}, {-60.0, 10.0} };
     process_params();
 

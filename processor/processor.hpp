@@ -30,7 +30,7 @@ class Processor
 public:
     Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs);
 
-    void set_bypassed (bool val) { this->bypass = val; if (val == true) for (auto &i : outputs) i->val = 0.0; }
+    void set_bypassed (bool val) { this->bypass = val;  }
     void set_SR (double val) { sample_rate = val; recalculate_sr (); process_params(); }
     double get_SR() { return sample_rate; }
     void set_lock() { is_locked = !is_locked;  }
@@ -38,8 +38,8 @@ public:
     void process();
 
     double get_param(int num) { return params[num]; }
-    void set_param(int num, double val) { params[num] = val; process_params(); }
-    void set_param(std::vector<double>& val) { params = val; process_params(); }
+    void set_param(int num, double val) { WAIT_LOCK;  params[num] = val; process_params(); }
+    void set_param(std::vector<double>& val) { WAIT_LOCK;  params = val; process_params(); }
 
     size_t get_param_count() { return params.size(); }
     std::pair <double, double> get_param_range(uint32_t id_) { return params_constrainments[id_]; }

@@ -5,10 +5,6 @@
 #include "wt.hpp"
 #include "../serialize/base64/base64.hpp"
 
-extern "C" 
-{
-    void rdft(int, int, double *, int *, double *);
-}
 
 namespace kraps {
 
@@ -19,7 +15,6 @@ Wavetable::Wavetable(uint16_t waveform_size) : Generator (p_wt, 1, 0)
 
     params.push_back(0.0);
     params_constrainments.push_back(std::pair<double, double>(0.0, 100));
-
 
     io_description[0].push_back({ kWtShiftIn, "SHIFT", "Shifts WT position forward" });
 }
@@ -49,15 +44,13 @@ void Wavetable::process_callback()
     double num_oct      = 0.0;
 
     if (log_arg >= 1.0)
-        num_oct = log2(log_arg);   
+        num_oct = log2(log_arg) - 1;   
     
     if (num_oct > NUM_OCTAVES - 2)
         num_oct = NUM_OCTAVES - 2;
-    // there's somewhere zero-crossings click problem
-    // i think it's zero-division related this since we get inf output
 
-    unsigned int no_strip   = (unsigned int)num_oct;
-    double  oct_frac    = num_oct - no_strip;
+    unsigned int no_strip = (unsigned int)num_oct;
+    double  oct_frac = num_oct - no_strip;
 
     double o1 = tables[no_strip][pos_int_inc] * pos_frac + tables[no_strip][pos_int] * (1 - pos_frac);
     double o2 = tables[no_strip + 1][pos_int_inc] * pos_frac + tables[no_strip + 1][pos_int] * (1 - pos_frac);
@@ -68,31 +61,47 @@ void Wavetable::process_callback()
     inc_phase ();
 }
 
-template <typename T>
-void Wavetable::fill_table_from_buffer (T* buf, uint32_t len)
+void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
 {
-    WAIT_LOCK
-
-    table.reset(new double[len]);
+    WAIT_LOCK;
+    set_bypassed(true);
 
     table_size = len;
+    table.reset(new double[table_size]);
 
-    for (int i = 0; i < table_size; i++)
+    for (uint32_t i = 0; i < table_size; i++)
         table[i] = buf[i];
 
     fill_mipmap();
-    
+
+    set_bypassed(false);
+}
+
+void Wavetable::fill_table_from_buffer(double* buf, uint32_t len)
+{
+    WAIT_LOCK;
+    set_bypassed(true);
+
+    table_size = len;
+    table.reset(new double[table_size]);
+
+    for (uint32_t i = 0; i < table_size; i++)
+        table[i] = buf[i];
+
+    fill_mipmap();
+
+    set_bypassed(false);
 }
 
 void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
 {
-    WAIT_LOCK
+    WAIT_LOCK;
 
     table.reset(new double[waveform_size]);
 
     table_size = waveform_size;
 
-    for (int i = 0; i < table_size; i++)
+    for (uint32_t i = 0; i < table_size; i++)
 		table[i] = (*fcn) ( 2 * M_PI * ( (float) i  / waveform_size ) );
      
     
@@ -101,7 +110,7 @@ void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
 }
 
 
-double* const Wavetable::get_table_view()
+double* Wavetable::get_table_view() const
 {
     return table.get();
 }
@@ -110,42 +119,39 @@ uint16_t Wavetable::get_wform_size()
     return waveform_size;
 }
 
-inline void Wavetable::alloc_dft ()
-{
-    dft.reset   (new double[table_size]);
-    ip.reset    (new int[sqrt(table_size) + 2]);
-    ip[0]       = 0;
-    w.reset     (new double[table_size - 1]);
-}
 
 
 void Wavetable::fill_mipmap () // incorrect too
 {
+    WAIT_LOCK;
 
-    alloc_dft();
+    uint32_t wt_sz = table_size;
+    uint32_t nfft = wt_sz / 2;
+    kissfft<double> fft_driver (nfft, false);
+    std::unique_ptr<std::complex<double>[]> fft_buf = std::make_unique <std::complex <double>[]>(wt_sz);
+    std::unique_ptr<std::complex<double>[]> fft_buf_inv = std::make_unique <std::complex <double>[]>(wt_sz);
+    for (int i = 0; i < NUM_OCTAVES; i++)
+    {
 
-    int32_t wt_sz = table_size;
-    for (int i = 0; i < NUM_OCTAVES; i++){
-        
-        tables[i].reset(new double[table_size]);
-        std::memcpy (tables[i].get(), table.get(), table_size*sizeof(double));
+        tables[i] = std::make_unique <double []> (wt_sz);
+        std::memcpy (tables[i].get(), table.get(), wt_sz * sizeof(double));
 
-        rdft (wt_sz,1,tables[i].get(),ip.get(),w.get());
+        fft_driver.transform_real(tables[i].get(), fft_buf.get());
 
-        //uint16_t mid    = wt_sz / 2;
-        uint16_t bins   = waveform_size / pow(2,i); // 2048 - 1024 - 512 - 256 - 128 - 64 - 32 - 16 - 8 - 4 - 2 - 1
+        uint16_t bins   = waveform_size / pow(2, i - 2); 
         if (bins == 1) bins = 0;
-        for (uint16_t j = bins + 2; j < wt_sz-1; j = j+2){
-            tables[i][j]    = 0.f;
-            tables[i][j+1]  = 0.f;
-        }
+        for (uint32_t j = bins; j < wt_sz; j++)
+            fft_buf[j] = 0.0;
 
-        rdft(wt_sz,-1,tables[i].get(),ip.get(),w.get());
-        
-        for (int j = 0; j <= wt_sz - 1; j++) {
-                tables[i][j] *= 2.0f / wt_sz;
-        }
+        fft_driver.assign(wt_sz, true);
+        fft_driver.transform(fft_buf.get(), fft_buf_inv.get());
 
+        double mult = 2.0f / wt_sz;
+
+        for (uint32_t j = 0; j < wt_sz; ++j) 
+            tables[i][j] = fft_buf_inv[j].real() * mult;
+
+        fft_driver.assign(nfft, false);
     } 
 }
 
@@ -154,13 +160,20 @@ void Wavetable::process_params()
     WAIT_LOCK;
     if (table_size == waveform_size)
         shift = 0;
-    shift = (params[1] / 100.0) * (table_size - waveform_size);
+    if (params.size () > 1 && waveform_size < table_size)
+        shift = (params[1] / 100.0) * (table_size - waveform_size - 1);
 }
 
 uint32_t Wavetable::get_shift()
 {
     return shift;
 }
+
+uint32_t Wavetable::get_table_size()
+{
+    return table_size;
+}
+
 
 nlohmann::json Wavetable::get_serialize_obj()
 {
@@ -179,8 +192,8 @@ void Wavetable::set_serialize(nlohmann::json obj)
     if (obj.find("table_size") != obj.end())
         obj["table_size"].get_to(table_size);
 
-    if (obj.find("waveform_size") != obj.end())
-        obj["waveform_size"].get_to(table_size);
+    if (obj.find("waveform_size") != obj.end()) 
+        obj["waveform_size"].get_to(waveform_size);
 
     if (obj.find("table") != obj.end())
     {

@@ -29,9 +29,13 @@ Processor::~Processor ()
 void Processor::process ()
 {
     /* for future doings */
-    if (!is_bypassed())
+    if (is_bypassed() == false)
     {
         process_callback();
+    }
+    else
+    {
+        for (auto& i : outputs) i->val = 0.0;
     }
         
 }

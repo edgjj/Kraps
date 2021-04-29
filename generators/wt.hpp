@@ -2,6 +2,7 @@
 #define WT_H
 #include <array>
 #include "generator.hpp"
+#include "../fft/kissfft.hpp"
 
 #define NUM_OCTAVES 12
 
@@ -18,15 +19,16 @@ public:
 
     Wavetable(uint16_t);
 
-    template <typename T>
-    void fill_table_from_buffer (T*, uint32_t);
+    void fill_table_from_buffer (float*, uint32_t);
+    void fill_table_from_buffer (double*, uint32_t);
 
     void fill_table_from_fcn (double (*fcn) (double phase));
     nlohmann::json get_serialize_obj() override;
     void set_serialize(nlohmann::json) override;
-    double* const get_table_view ();
+    double* get_table_view () const;
     uint32_t get_shift();
     uint16_t get_wform_size();
+    uint32_t get_table_size();
     ~Wavetable ();
 
 protected:
@@ -34,7 +36,6 @@ protected:
     void process_params() override;
 private:
     void fill_mipmap ();
-    void alloc_dft ();
 
     uint32_t shift = 0;
     double phase_cst = 0.0;
@@ -45,9 +46,6 @@ private:
     std::unique_ptr<double[]> table;
     std::array <std::unique_ptr<double[]>, NUM_OCTAVES> tables;
 
-    std::unique_ptr<double[]> dft;
-    std::unique_ptr<int[]> ip;
-    std::unique_ptr<double[]> w;
 };
 
 }
