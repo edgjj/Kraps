@@ -1,6 +1,7 @@
 ﻿#ifndef KRPSNOTEMGR_H
 #define KRPSNOTEMGR_H
 #include <vector>
+#include <deque>
 #include "../processor.hpp"
 
 // m = 12*log2(fm/440 Hz) + 69 and fm =  2(m−69)/12(440 Hz).
@@ -34,20 +35,24 @@ private:
 	{
 		kNoteOn,
 		kNoteOff,
-		kAllNotesOff
+		kAllNotesOff,
+		kEmpty
 	};
-
 	struct Note
 	{
-		int note_number;
-		int velocity;
-		int life_time;
-		double time_stamp;
+		kNoteEventType type = kEmpty;
+		int note_number = -1;
+		int velocity = -1;
+		double timestamp = -1;
 	};
+
+
 	int global_timestamp = 0;
 	int block_size = 0;
-	std::vector<Note> notes;
 
+	std::vector<Note> notes;
+	std::deque<Note> queue;
+	Note cur_played_note;
 };
 
 }

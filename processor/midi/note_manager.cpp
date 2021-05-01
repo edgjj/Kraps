@@ -18,45 +18,23 @@ NoteManager::NoteManager() : Processor (p_notemgr, 0, 3)
 
 void NoteManager::note_on(int note_number, int velocity, double timestamp)
 {
-	Note t = { note_number, velocity, -1, timestamp };
-
-	auto it = std::find_if(notes.begin(), notes.end(),
-		[&cn = t](const Note& n) -> bool
-		{ return n.note_number == cn.note_number; }
-	);
-
-	if (it != notes.end())
-		return;
-
-	notes.push_back( { note_number, velocity, -1, timestamp });
+	Note p;
+	p = { kNoteOn, note_number, velocity, timestamp };
+	notes.push_back (p);
 }
 
 void NoteManager::note_off(int note_number, int velocity, double timestamp)
 {
-	if (notes.empty()) 
-		return;
-
-	Note t = { note_number, velocity, 0, timestamp };
-
-	int note_num = 0;
-	for (int i = 0; i < notes.size(); i++)
-		if (notes[i].note_number == t.note_number)
-		{
-			note_num = i; break;
-		}
-
-	notes[note_num].life_time = t.time_stamp - notes[note_num].time_stamp;
-
-	if (notes[note_num].life_time < 0)
-		notes[note_num].life_time += block_size;
-
+	Note p;
+	p = { kNoteOff, note_number, velocity, timestamp };
+	notes.push_back(p);
 }
 
 void NoteManager::all_notes_off(double timestamp)
 {
-	for (int i = 0; i < notes.size(); i++)
-		notes[i].life_time = timestamp - notes[i].time_stamp;
-
+	Note p;
+	p = { kAllNotesOff, -1, -1, timestamp };
+	notes.push_back(p);
 }
 
 void NoteManager::set_block_size(int samples_per_block)
@@ -72,37 +50,72 @@ void NoteManager::upd_timestamp(int timestamp)
 
 void NoteManager::process_callback()
 {
+	if (!queue.empty())
+	{
+		cur_played_note = queue.back();
+		queue.pop_back();
+		*outputs[kNoteMgrGate] = 1.0;
+		*outputs[kNoteMgrFreq] = pow(2, (cur_played_note.note_number - 69) / 12.0) * params[0];
+		*outputs[kNoteMgrAmp] = cur_played_note.velocity / 127.0;
+	}
+
 	if (notes.empty())
 		return;
 
-	if (notes.back().time_stamp == global_timestamp)
+
+	for (int i = 0; i < notes.size(); i++)
 	{
-		*outputs[kNoteMgrGate] = 1.0;
-		*outputs[kNoteMgrFreq] = pow(2, (notes.back().note_number - 69) / 12.0) * params[0];
-		*outputs[kNoteMgrAmp] = notes.back().velocity / 127.0;
+		Note cur = notes[i];
+		if (cur.timestamp != global_timestamp)
+			continue;
+
+		switch (cur.type)
+		{
+		case kNoteOn:
+			if (cur_played_note.type != kEmpty)
+			{
+				cur_played_note = cur;
+				queue.push_back (cur_played_note);
+				*outputs[kNoteMgrGate] = 0.0;
+				break;
+			}
+			else
+			{
+				queue.push_back(cur);
+			}
+			break;
+		case kNoteOff:
+			if (cur_played_note.note_number == cur.note_number)
+			{
+				cur_played_note = Note();
+				*outputs[kNoteMgrGate] = 0.0;
+				*outputs[kNoteMgrAmp] = cur.velocity / 127.0;
+			}
+			else
+			{
+				for (auto iter = queue.begin(); iter != queue.end(); )
+				{
+					if (iter->note_number == cur.note_number)
+					{
+						iter = queue.erase(iter);
+					}
+					else
+					{
+						++iter;
+					}
+				}
+			}
+			break;
+		case kAllNotesOff:
+			*outputs[kNoteMgrGate] = 0.0;
+			cur_played_note = Note();
+			queue.clear();
+			break;
+		}
 	}
 
-	
-	notes.erase(std::remove_if(notes.begin(), notes.end(),
-		[&](Note& n)
-		{
-			return n.life_time == 0;
-		}
-	),notes.end());
-
-	std::for_each(notes.begin(), notes.end(), 
-		[&](Note& n) 
-		{
-			if (n.life_time > 0)
-				n.life_time -= 1;
-		}
-	);
-
-	if (notes.empty())
-	{
-		*outputs[kNoteMgrGate] = 0.0;
-	}
-
+	if (global_timestamp == block_size - 1)
+		notes.clear();
 }
 
 NoteManager::~NoteManager()
