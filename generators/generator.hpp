@@ -28,7 +28,7 @@ public:
     void set_phase (double);
     void inc_phase ();
 
-    ~Generator ();
+    virtual ~Generator ();
 
 protected:
     void recalculate_sr () override 

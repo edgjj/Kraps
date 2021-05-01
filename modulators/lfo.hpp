@@ -37,7 +37,7 @@ public:
     ~LFO() { ; }
 protected:
     void process_callback () override;
-    void process_params () override { ; }
+    void process_params() override;
 private:
     inline double sigmoid (double x, double k);
     double get_interp (double x);

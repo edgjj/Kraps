@@ -10,7 +10,7 @@ LFO::LFO () : Generator (p_lfo, 0, 0),
     points({ { 0.0, 0.0 }, {0.5, 1.0}, { 1.0, 0.0 } }),
     tension ({ 0.0, 0.0 })
 {
-
+    
 }
 
 void LFO::add_point(Vec2 pos)
@@ -34,6 +34,11 @@ void LFO::add_point(Vec2 pos)
             break;
         }
     }
+
+}
+
+void LFO::process_params()
+{
 
 }
 
@@ -97,7 +102,6 @@ double LFO::get_interp (double x){
 
 void LFO::process_callback ()
 {
-    set_freq();
 
     *outputs[kLFOAudioOut] = get_interp( phase * phase_const );
     *outputs[kLFOPhaseOut] = phase;

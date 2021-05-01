@@ -84,7 +84,7 @@ public:
     virtual void set_serialize(nlohmann::json obj);
 
 
-    ~Processor();
+    virtual ~Processor();
 
 protected:
 

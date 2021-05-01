@@ -55,7 +55,7 @@ void NoteManager::process_callback()
 		cur_played_note = queue.back();
 		queue.pop_back();
 		*outputs[kNoteMgrGate] = 1.0;
-		*outputs[kNoteMgrFreq] = pow(2, (cur_played_note.note_number - 69) / 12.0) * params[0];
+		*outputs[kNoteMgrFreq] = pow(2, (cur_played_note.note_number - 69) / 12.0) * params[0]; // possible to do RMS smoothing to make "slides"
 		*outputs[kNoteMgrAmp] = cur_played_note.velocity / 127.0;
 	}
 
