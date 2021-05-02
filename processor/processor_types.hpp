@@ -45,7 +45,7 @@ static std::map<ProcessorTypes, std::vector <std::string>> ProcessorParametersDe
 {
     { p_wt, {"Freq. Multiplier", "WT. Pos"}},
     { p_basic_gen, {"Frequency Multiplier"}},
-    { p_lfo, {"Frequency"}},
+    { p_lfo, {"Frequency", "Envelope Mode"}},
     { p_adsr, {"Attack", "Decay", "Release", "Sustain Gain"}},
     { p_delay, {"Time", "Feedback", "Dry/Wet"}},
     { p_filter, {"Frequency", "Q", "Reserved"}},

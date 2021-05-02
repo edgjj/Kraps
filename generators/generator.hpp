@@ -41,9 +41,9 @@ protected:
     bool gate = 0.0;
     double freq = 0.0;
     double SR_cst = 0.0;
-    
-private:
     double phase_inc = 0.0;
+private:
+    
 
 };
 

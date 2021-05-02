@@ -10,7 +10,8 @@ LFO::LFO () : Generator (p_lfo, 0, 0),
     points({ { 0.0, 0.0 }, {0.5, 1.0}, { 1.0, 0.0 } }),
     tension ({ 0.0, 0.0 })
 {
-    
+    params.push_back(0.0);
+    params_constrainments.push_back(std::pair(0.0, 1.0));
 }
 
 void LFO::add_point(Vec2 pos)
@@ -40,12 +41,13 @@ void LFO::add_point(Vec2 pos)
 void LFO::process_params()
 {
     set_freq(params[0]);
+    if (params.size() > 1)
+        is_env = params[1];
 }
 std::pair<std::vector<Vec2>, std::vector<double>> LFO::get_points()
 {
     return std::make_pair(points,tension);
 }
-
 
 
 void LFO::move_point (int i, Vec2 pos)
@@ -105,6 +107,33 @@ double LFO::get_interp (double x){
     return 0.0;
 };
 
+void LFO::inc_phase()
+{
+
+    if (*inputs[kGenGate] != gate)
+    {
+        gate = *inputs[kGenGate];
+        if (gate == true)
+            phase = 0.0;
+    }
+
+    phase += *inputs[kGenPhaseIn] + phase_inc;
+
+    if (is_env)
+    {
+        phase = fmin(phase, 2 * M_PI);
+    }
+    else
+    {
+        while (phase < 0.0)
+            phase += 2 * M_PI;
+
+        while (phase >= 2 * M_PI)
+            phase -= 2 * M_PI;
+    }
+    
+
+}
 
 void LFO::process_callback ()
 {

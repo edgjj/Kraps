@@ -34,6 +34,8 @@ public:
     void move_point (int, Vec2);
     void set_tension (int, double);
     void remove_point (int);
+    void inc_phase();
+
 
     ~LFO() { ; }
 protected:
@@ -43,6 +45,7 @@ private:
     inline double sigmoid (double x, double k);
     double get_interp (double x);
 
+    bool is_env = false;
     double phase_const = 1 / (2 * M_PI);
 
     std::vector<Vec2> points;
