@@ -40,7 +40,7 @@ void LFO::add_point(Vec2 pos)
 
 void LFO::process_params()
 {
-    set_freq(params[0]);
+    param_freq = params[0];
     if (params.size() > 1)
         is_env = params[1];
 }
@@ -137,6 +137,7 @@ void LFO::inc_phase()
 
 void LFO::process_callback ()
 {
+    set_freq(*inputs[kGenFreqIn] + param_freq);
 
     *outputs[kLFOAudioOut] = get_interp( phase * phase_const );
     *outputs[kLFOPhaseOut] = phase;

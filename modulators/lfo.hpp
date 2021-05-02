@@ -36,7 +36,6 @@ public:
     void remove_point (int);
     void inc_phase();
 
-
     ~LFO() { ; }
 protected:
     void process_callback () override;
@@ -44,6 +43,8 @@ protected:
 private:
     inline double sigmoid (double x, double k);
     double get_interp (double x);
+
+    double param_freq = 0.0;
 
     bool is_env = false;
     double phase_const = 1 / (2 * M_PI);
