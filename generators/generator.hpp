@@ -3,9 +3,6 @@
 #include "../processor/processor.hpp"
 namespace kraps {
 
-
-
-
 enum kGenInputs 
 {
     kGenFreqIn,

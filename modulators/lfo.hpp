@@ -34,10 +34,13 @@ public:
     void move_point (int, Vec2);
     void set_tension (int, double);
     void remove_point (int);
-    void inc_phase();
+    
+    nlohmann::json get_serialize_obj() override;
+    void set_serialize(nlohmann::json) override;
 
     ~LFO() { ; }
 protected:
+    void inc_phase();
     void process_callback () override;
     void process_params() override;
 private:

@@ -1,12 +1,12 @@
 #ifndef APROCESSORMTX_H
 #define APROCESSORMTX_H
 
-#include "../generators/basic_gen.hpp"
 #include "../generators/wt.hpp"
 #include "../modulators/lfo.hpp"
 #include "../modulators/adsr.hpp"
 #include "../modulators/attenuator.hpp"
 #include "../modulators/macros.hpp"
+#include "../generators/sampler.hpp"
 #include "../filters/filtering.hpp"
 #include "../dafx/tubedist.hpp"
 #include "../dafx/delay.hpp"

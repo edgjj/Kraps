@@ -17,11 +17,11 @@ typedef enum ProcessorTypes
     p_macro,
     p_delay,
     p_summer,
-    p_basic_gen,
+    p_sampler,
     p_notemgr = 240,
     p_output,
     p_misc,
-    p_count = p_basic_gen
+    p_count = p_sampler
 } ProcessorTypes;
 
 
@@ -32,7 +32,7 @@ static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
     { p_filter, "Filter" },
     { p_tube, "Tube Dist." },
     { p_atten, "Attenuator Bank"},
-    { p_basic_gen, "Basic Generator"},
+    { p_sampler, "Sampler"},
     { p_summer, "Summer Bank"},
     { p_macro, "Macro-8"},
     { p_delay, "Delay"},
@@ -44,7 +44,7 @@ static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
 static std::map<ProcessorTypes, std::vector <std::string>> ProcessorParametersDesc = 
 {
     { p_wt, {"Freq. Multiplier", "WT. Pos"}},
-    { p_basic_gen, {"Frequency Multiplier"}},
+    { p_sampler, {"Root Freq.", "Sample Start"}},
     { p_lfo, {"Frequency", "Envelope Mode"}},
     { p_adsr, {"Attack", "Decay", "Release", "Sustain Gain"}},
     { p_delay, {"Time", "Feedback", "Dry/Wet"}},

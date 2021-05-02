@@ -62,8 +62,8 @@ uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
         case p_delay:
             processors.emplace_back(std::make_unique <dafx::Delay>());
             break;
-        case p_basic_gen:
-            processors.emplace_back(std::make_unique <BasicG>());
+        case p_sampler:
+            processors.emplace_back(std::make_unique <Sampler>());
             break;
         case p_notemgr:
             return -1;

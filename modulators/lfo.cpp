@@ -145,6 +145,45 @@ void LFO::process_callback ()
     inc_phase();
 }
 
+nlohmann::json LFO::get_serialize_obj()
+{
+    nlohmann::json o;
+    o["tension"] = tension;
+    o["is_env"] = is_env;
+
+    std::vector <std::array<double, 2>> pts_conv;
+
+    for (auto& i : points)
+        pts_conv.push_back({ i.x, i.y });
+
+    o["points"] = pts_conv;
+
+    o.update(Processor::get_serialize_obj());
+
+    return o;
+}
+
+void LFO::set_serialize(nlohmann::json obj)
+{
+    Processor::set_serialize(obj);
+    if (obj.find("tension") != obj.end())
+        obj["tension"].get_to(tension);
+
+    if (obj.find("is_env") != obj.end())
+        obj["is_env"].get_to(is_env);
+
+    if (obj.find("points") != obj.end())
+    {
+        std::vector <std::array<double, 2>> pts_conv;
+        std::vector <Vec2> pts_conv_2;
+        obj["points"].get_to(pts_conv);
+        for (auto& i : pts_conv)
+            pts_conv_2.push_back({ i[0], i[1] });
+
+        points = pts_conv_2;
+    }
+}
+
 inline double LFO::sigmoid(double x, double k) // k in [ -0.9999; 0.9999 ]
 {
     return (x - x * k) / (k - fabs (x) * 2 * k + 1);

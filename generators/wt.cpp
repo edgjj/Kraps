@@ -41,6 +41,7 @@ void Wavetable::process_callback()
 
     if (pos_int_inc == waveform_size)
         pos_int_inc = 0;
+
     double pos_frac     = phase_cvt - (int)phase_cvt;
     double log_arg      = freq * 2 * waveform_size / (44100.0); // lets think every wt we get is 44100
     double num_oct      = 0.0;
