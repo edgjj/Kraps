@@ -24,8 +24,10 @@ class Generator : public Processor
 public:
     Generator(uint8_t type,uint8_t i, uint8_t o);
 
+    void set_freq (double);
     void set_freq ();
     void set_phase (double);
+    double get_phase();
     void inc_phase ();
 
     virtual ~Generator ();
@@ -39,6 +41,7 @@ protected:
     bool gate = 0.0;
     double freq = 0.0;
     double SR_cst = 0.0;
+    
 private:
     double phase_inc = 0.0;
 

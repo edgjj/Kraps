@@ -39,13 +39,19 @@ void LFO::add_point(Vec2 pos)
 
 void LFO::process_params()
 {
-
+    set_freq(params[0]);
 }
+std::pair<std::vector<Vec2>, std::vector<double>> LFO::get_points()
+{
+    return std::make_pair(points,tension);
+}
+
+
 
 void LFO::move_point (int i, Vec2 pos)
 {
     WAIT_LOCK
-    if (i == 0){
+    if (i == 0 || i == points.size() - 1){
         points.front().y    = pos.y;
         points.back().y     = pos.y;
     }
@@ -72,8 +78,7 @@ void LFO::remove_point (int i)
         return;
     points.erase (points.begin() + i);
     tension.erase (tension.begin() + i - 1);
-    tension.erase (tension.begin() + i);
-    
+
 }
 
 double LFO::get_interp (double x){
@@ -99,6 +104,7 @@ double LFO::get_interp (double x){
     } 
     return 0.0;
 };
+
 
 void LFO::process_callback ()
 {

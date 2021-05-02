@@ -50,7 +50,15 @@ void Generator::set_freq ()
     phase_inc = freq * 2.0 * M_PI * SR_cst;
 }
 
-
+void Generator::set_freq(double _freq)
+{
+    freq = _freq;
+    phase_inc = freq * 2.0 * M_PI * SR_cst;
+}
+double Generator::get_phase()
+{
+    return phase;
+}
 void Generator::inc_phase ()
 {
     

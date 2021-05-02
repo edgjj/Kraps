@@ -29,6 +29,7 @@ class LFO : public Generator
 public:
     LFO();
 
+    std::pair<std::vector<Vec2>, std::vector<double>> get_points();
     void add_point (Vec2);
     void move_point (int, Vec2);
     void set_tension (int, double);

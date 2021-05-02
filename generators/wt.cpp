@@ -34,6 +34,8 @@ void Wavetable::process_callback()
 
     double phase_cvt    = phase_cst * phase;
 
+    // shift = (params[1] / 100.0) * (table_size - waveform_size - 1); - something like this for shift
+
     unsigned int pos_int    = *inputs[kWtShiftIn] + phase_cvt + shift;
     unsigned int pos_int_inc = pos_int + 1;
 
