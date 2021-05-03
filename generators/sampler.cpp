@@ -47,7 +47,6 @@ void Sampler::load_source(float* buf, size_t len, double stream_sample_rate)
 	for (uint32_t i = 0; i < cur_file_len; i++)
 		source[i] = buf[i];
 
-
     params_constrainments[1].second = cur_file_len;
     file_sample_rate = stream_sample_rate;
     pos = cur_file_len;
@@ -123,6 +122,7 @@ void Sampler::process_callback()
 
     inc_phase();
 }
+
 void Sampler::process_params()
 {
     base_freq = params[0];

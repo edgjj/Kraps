@@ -50,7 +50,7 @@ void NoteManager::upd_timestamp(int timestamp)
 
 void NoteManager::process_callback()
 {
-	if (!queue.empty())
+	if (!queue.empty() && cur_played_note.type == kEmpty)
 	{
 		cur_played_note = queue.back();
 		queue.pop_back();
@@ -74,8 +74,9 @@ void NoteManager::process_callback()
 		case kNoteOn:
 			if (cur_played_note.type != kEmpty)
 			{
-				cur_played_note = cur;
-				queue.push_back (cur_played_note);
+				queue.push_back(cur_played_note);
+				cur_played_note = Note();
+				queue.push_back(cur);
 				*outputs[kNoteMgrGate] = 0.0;
 				break;
 			}
