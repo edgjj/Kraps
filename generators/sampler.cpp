@@ -49,7 +49,7 @@ void Sampler::load_source(float* buf, size_t len, double stream_sample_rate)
 
     params_constrainments[1].second = cur_file_len;
     file_sample_rate = stream_sample_rate;
-    pos = cur_file_len;
+    pos = cur_file_len - 1;
 
 	set_bypassed(false);
 
@@ -70,7 +70,7 @@ void Sampler::load_source_unserialize(double* buf)
     std::memcpy(source.get(), buf, cur_file_len * sizeof(double));
 
     params_constrainments[1].second = cur_file_len;
-    pos = cur_file_len;
+    pos = cur_file_len - 1;
 
     set_bypassed(false);
 

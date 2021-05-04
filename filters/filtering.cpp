@@ -6,12 +6,15 @@ namespace filters
 {
 Filter::Filter() : Processor (p_filter, 3, 4)
 {
-    params = { 22050.0, 0.8, 1.0 };
-    params_constrainments.push_back(std::pair <double, double>(20, 22050.0));
+    
+    params = { 10000.0, 0.8, 1.0 };
+    params_constrainments.push_back(std::pair <double, double>(20, 20000.0));
     params_constrainments.push_back(std::pair <double, double>(0.10, 16.0));
     params_constrainments.push_back(std::pair <double, double>(1.0, 16.0));
 
+
     setup_filtering();
+
     fake_ptr = new double* [1];
     fake_ptr[0] = new double[1];
     fake_ptr[0][0] = 0.0;
@@ -41,14 +44,13 @@ Filter::~Filter()
 
 void Filter::setup_filtering()
 {
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::LowPass, 1>>(256));
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::HighPass, 1>>(256));
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::BandPass1, 1>>(256));
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::AllPass, 1>>(256));
+    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::LowPass, 1>>(512));
+    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::HighPass, 1>>(512));
+    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::BandPass1, 1>>(512));
+    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::AllPass, 1>>(512));
 
     for (auto& i : filters_bank)
     {
-        i->reset();
         f_params = { 44100.0, params[0], params[1] };
         i->setParams(f_params);
     }
@@ -57,9 +59,14 @@ void Filter::setup_filtering()
 
 void Filter::recalculate_sr()
 {
+    
     f_params[0] = sample_rate;
     for (auto& i : filters_bank)
+    {
+        i->reset();
         i->setParam(Dsp::ParamID::idSampleRate, sample_rate);
+    }
+       
 }
 
 void Filter::process_callback()
@@ -67,9 +74,8 @@ void Filter::process_callback()
     if (sample_rate == 0.0)
         return;
 
-    double freq = *inputs[kFilterFreqIn] * (sample_rate / 2) + params[0];
-    freq = fmin(freq, sample_rate / 2);
-    freq = abs(freq);
+    freq = *inputs[kFilterFreqIn] * ((sample_rate - 2000) / 2) + params[0];
+    freq = fmax (fmin(freq, (sample_rate - 2000) / 2), 20.0);
 
     double q = *inputs[kFilterResIn] + params[1];
     f_params[1] = freq;

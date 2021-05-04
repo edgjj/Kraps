@@ -9,7 +9,8 @@ namespace dafx
 
 enum kDelayInputs
 {
-    kDelayAudioIn
+    kDelayAudioIn,
+    kDelayTimeIn
 };
 
 enum kDelayOutputs
@@ -67,7 +68,8 @@ private:
     std::unique_ptr<misc::LeakySmoother> smoother;
 
     std::unique_ptr<DelayLine <double>> dly_line;
-    double smoothed_time = 0.001;
+    double param_time = 0.0;
+    double smoothed_time = 0.0;
 };
 
 }
