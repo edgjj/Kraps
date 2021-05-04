@@ -6,3 +6,5 @@
 !*.hpp
 !.gitignore
 !README.md
+!LICENSE
+!CHANGELOG
