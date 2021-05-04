@@ -42,6 +42,7 @@ private:
 
 
 	std::unique_ptr<double[]> source;
+	bool is_looping = 0;
 	double file_sample_rate = 0.0;
 	double base_freq = 130.81;
 	double pos = 0;

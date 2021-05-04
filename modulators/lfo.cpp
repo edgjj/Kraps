@@ -41,8 +41,7 @@ void LFO::add_point(Vec2 pos)
 void LFO::process_params()
 {
     param_freq = params[0];
-    if (params.size() > 1)
-        is_env = params[1];
+    is_env = params[1];    
 }
 std::pair<std::vector<Vec2>, std::vector<double>> LFO::get_points()
 {

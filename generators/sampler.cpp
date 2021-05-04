@@ -5,11 +5,11 @@ namespace kraps
 {
 Sampler::Sampler() : Processor (p_sampler, 3, 1)
 {
-    params = { 261.64, 0.0 };
+    params = { 261.64, 0.0, 0.0 };
     base_freq = 261.63;
     params_constrainments.push_back(std::pair(1.0, 5000));
     params_constrainments.push_back(std::pair(0.0, 1.0));
-
+    params_constrainments.push_back(std::pair(0.0, 1.0));
 
     io_description[0] =
     {
@@ -128,6 +128,7 @@ void Sampler::process_callback()
 void Sampler::process_params()
 {
     base_freq = params[0];
+    is_looping = params[2];    
 }
 double Sampler::get_position()
 {
@@ -136,10 +137,10 @@ double Sampler::get_position()
 void Sampler::upd_freq()
 {
     double freq = fmin(*inputs[kSamplerFreqIn], sample_rate / 2);
-    
+    double c3 = 261.63;
+    if (freq == 0.0)
+        freq = c3;
     phase_inc = (file_sample_rate / sample_rate) * freq / base_freq;
-    if (phase_inc == 0.0)
-        phase_inc = 1.0;
 }
 void Sampler::inc_phase()
 {
@@ -153,10 +154,11 @@ void Sampler::inc_phase()
     
 
     pos += *inputs[kSamplerPhaseIn] + phase_inc;
-    pos = fmin(pos, cur_file_len - 1);
+    if (is_looping == false)
+        pos = fmax(fmin(pos, cur_file_len - 1), 0.0);
+    else
+        pos = pos >= cur_file_len - 1 ? 0 : pos;
 
-    if (pos < 0)
-        pos = 0;
 }
 
 nlohmann::json Sampler::get_serialize_obj()

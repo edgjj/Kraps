@@ -163,7 +163,7 @@ void Wavetable::process_params()
     WAIT_LOCK;
     if (table_size == waveform_size)
         shift = 0;
-    if (params.size () > 1 && waveform_size < table_size)
+    if (waveform_size < table_size)
         shift = (params[1] / 100.0) * (table_size - waveform_size - 1);
 }
 

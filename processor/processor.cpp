@@ -122,7 +122,13 @@ nlohmann::json Processor::get_serialize_obj()
 void Processor::set_serialize(nlohmann::json obj)
 {
     if (obj.find("params") != obj.end())
-        obj["params"].get_to(params);
+    {
+        std::vector<double> param_bridge;
+        obj["params"].get_to(param_bridge);
+        for (int p = 0; p < param_bridge.size(); p++)
+            params[p] = param_bridge[p];
+    }
+        
     process_params();
     if (obj.find("bypass") != obj.end())
         obj["bypass"].get_to(bypass);
