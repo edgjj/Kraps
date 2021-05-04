@@ -1,6 +1,7 @@
 #ifndef KRPSDELAY_H
 #define KRPSDELAY_H
 #include "../processor/processor.hpp"
+#include "../misc/leaky_smoother.hpp"
 namespace kraps
 {
 namespace dafx
@@ -37,14 +38,18 @@ public:
         double src_time = time * sample_rate;
         double trunc_t = (int)src_time;
         double frac = src_time - (int)src_time;
-        double ret = get(trunc_t + 1) * frac + get(trunc_t) * (1 - frac) - prev_sample * (1 - frac);
-        prev_sample = ret;
+
+        double ret = get(trunc_t + 1) * pow(frac, 3) / 6
+            + get(trunc_t) * (pow(1 + frac, 3) - 4 * pow(frac, 3)) / 6
+            + get(trunc_t - 1) * (pow(2 - frac, 3) - 4 * pow(1 - frac, 3)) / 6
+            + get(trunc_t - 2) * pow(1 - frac, 3) / 6;
+
         return ret;
+
     }
 
 private:
     std::vector<T> raw_buf;
-    double prev_sample = 0.0;
     int w_pos = 0;
     int sample_cnt = 0;
     double sample_rate = 0.0;
@@ -57,8 +62,12 @@ public:
 	~Delay();
     void process_callback() override; 
     void recalculate_sr() override;
+    void process_params() override;
 private:
+    std::unique_ptr<misc::LeakySmoother> smoother;
+
     std::unique_ptr<DelayLine <double>> dly_line;
+    double smoothed_time = 0.001;
 };
 
 }
