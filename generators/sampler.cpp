@@ -60,9 +60,11 @@ void Sampler::load_source_unserialize(double* buf)
 {
 
     WAIT_LOCK;
-    set_bypassed(true);
 
-    assert(cur_file_len > 0);
+    if (cur_file_len == 0)
+        return;
+    set_bypassed(true);
+  
     source.reset(new double[cur_file_len]);
 
     std::memcpy(source.get(), buf, cur_file_len * sizeof(double));
@@ -126,6 +128,10 @@ void Sampler::process_callback()
 void Sampler::process_params()
 {
     base_freq = params[0];
+}
+double Sampler::get_position()
+{
+    return pos;
 }
 void Sampler::upd_freq()
 {

@@ -21,6 +21,8 @@ public:
 	~Sampler();
 	void load_source(float* buf, size_t len, double stream_sample_rate);
 	
+	double get_position();
+
 	void upd_freq();
 	double* get_source_view() const;
 	uint32_t get_max_len();
