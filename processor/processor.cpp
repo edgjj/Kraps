@@ -121,6 +121,7 @@ nlohmann::json Processor::get_serialize_obj()
 
 void Processor::set_serialize(nlohmann::json obj)
 {
+    WAIT_LOCK;
     if (obj.find("params") != obj.end())
     {
         std::vector<double> param_bridge;

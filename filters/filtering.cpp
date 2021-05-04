@@ -6,9 +6,9 @@ namespace filters
 {
 Filter::Filter() : Processor (p_filter, 3, 4)
 {
-    params = { 22050.0, 0.16, 1.0 };
-    params_constrainments.push_back(std::pair <double, double>(5, 22050.0));
-    params_constrainments.push_back(std::pair <double, double>(0.16, 16.0));
+    params = { 22050.0, 0.8, 1.0 };
+    params_constrainments.push_back(std::pair <double, double>(20, 22050.0));
+    params_constrainments.push_back(std::pair <double, double>(0.10, 16.0));
     params_constrainments.push_back(std::pair <double, double>(1.0, 16.0));
 
     setup_filtering();

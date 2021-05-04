@@ -93,7 +93,7 @@ double* Sampler::get_source_view() const
 
 void Sampler::process_callback()
 {
-    if (source.get() == nullptr)
+    if (source.get() == nullptr || cur_file_len == 0)
         return;
 
     upd_freq();
