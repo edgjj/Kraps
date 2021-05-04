@@ -20,8 +20,7 @@ enum kFilterOutputs
 {
 	kFilterAudioOutLPF,
 	kFilterAudioOutHPF,
-	kFilterAudioOutBPF,
-	kFilterAudioOutAPF
+	kFilterAudioOutBPF
 };
 class Filter : public Processor
 {

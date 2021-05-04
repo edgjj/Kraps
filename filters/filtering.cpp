@@ -10,7 +10,7 @@ Filter::Filter() : Processor (p_filter, 3, 4)
     params = { 10000.0, 0.8, 1.0 };
     params_constrainments.push_back(std::pair <double, double>(20, 20000.0));
     params_constrainments.push_back(std::pair <double, double>(0.10, 16.0));
-    params_constrainments.push_back(std::pair <double, double>(1.0, 16.0));
+    params_constrainments.push_back(std::pair <double, double>(1.0, 4.0));
 
 
     setup_filtering();
@@ -31,7 +31,6 @@ Filter::Filter() : Processor (p_filter, 3, 4)
         {kFilterAudioOutLPF, "LPF", "Low-pass filter output."},
         {kFilterAudioOutHPF, "HPF", "High-pass filter output."},
         {kFilterAudioOutBPF, "BPF", "Band-pass filter output."},
-        {kFilterAudioOutAPF, "APF", "All-pass filter output."},
     };
 
 }
@@ -44,10 +43,10 @@ Filter::~Filter()
 
 void Filter::setup_filtering()
 {
+   
     filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::LowPass, 1>>(512));
     filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::HighPass, 1>>(512));
     filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::BandPass1, 1>>(512));
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::AllPass, 1>>(512));
 
     for (auto& i : filters_bank)
     {
@@ -80,7 +79,6 @@ void Filter::process_callback()
     double q = *inputs[kFilterResIn] + params[1];
     f_params[1] = freq;
     f_params[2] = q;
-
     
     for (int i = 0; i < filters_bank.size(); i++)
     {
