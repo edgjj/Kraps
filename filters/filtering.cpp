@@ -4,7 +4,7 @@ namespace kraps
 {
 namespace filters
 {
-Filter::Filter() : Processor (p_filter, 3, 4)
+Filter::Filter() : Processor (p_filter, 3, 3)
 {
     
     params = { 10000.0, 0.8, 1.0 };
