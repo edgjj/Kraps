@@ -33,9 +33,7 @@ public:
         w_pos = w_pos == 0 ? sample_cnt - 1 : w_pos - 1;
     }
     T get(int time) {
-        int norm = w_pos + time;
-        norm = norm < 0 ? norm += sample_cnt : norm;
-        return raw_buf[norm % sample_cnt];
+        return raw_buf[(w_pos + time) % sample_cnt];
     }
     T get_interp(float time) {
         double src_time = time * sample_rate;
