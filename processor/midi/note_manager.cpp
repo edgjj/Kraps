@@ -20,27 +20,28 @@ void NoteManager::note_on(int note_number, int velocity, double timestamp)
 {
 	Note p;
 	p = { kNoteOn, note_number, velocity, timestamp };
-	notes.push_back (p);
+	notes[timestamp] = p;
 }
 
 void NoteManager::note_off(int note_number, int velocity, double timestamp)
 {
 	Note p;
 	p = { kNoteOff, note_number, velocity, timestamp };
-	notes.push_back(p);
+	notes[timestamp] = p;
 }
 
 void NoteManager::all_notes_off(double timestamp)
 {
 	Note p;
 	p = { kAllNotesOff, -1, -1, timestamp };
-	notes.push_back(p);
+	notes[timestamp] = p;
 }
 
 void NoteManager::set_block_size(int samples_per_block)
 {
 	block_size = samples_per_block;
 	notes.clear();
+	queue.clear();
 }
 
 void NoteManager::upd_timestamp(int timestamp)
@@ -63,11 +64,9 @@ void NoteManager::process_callback()
 		return;
 
 
-	for (int i = 0; i < notes.size(); i++)
+	if(notes.find (global_timestamp) != notes.end())
 	{
-		Note cur = notes[i];
-		if (cur.timestamp != global_timestamp)
-			continue;
+		Note cur = notes[global_timestamp];
 
 		switch (cur.type)
 		{
@@ -117,7 +116,7 @@ void NoteManager::process_callback()
 
 	if (global_timestamp == block_size - 1)
 		notes.clear();
-}
+} 
 
 NoteManager::~NoteManager()
 {
