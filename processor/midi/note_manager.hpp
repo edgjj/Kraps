@@ -50,7 +50,7 @@ private:
 	int global_timestamp = 0;
 	int block_size = 0;
 
-	std::map<int, Note> notes;
+	std::vector<Note> notes;
 	std::deque<Note> queue;
 	Note cur_played_note;
 };
