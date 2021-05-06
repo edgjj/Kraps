@@ -36,6 +36,7 @@ void Processor::process ()
     else
     {
         for (auto& i : outputs) i->val = 0.0;
+        process_bypass();
     }
         
 }

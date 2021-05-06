@@ -91,6 +91,7 @@ protected:
     virtual void process_callback() { ; }
     virtual void process_params () { ; }
     virtual void recalculate_sr () { ; }
+    virtual void process_bypass () { ; }
 
     /* gui friendly stuff */
 

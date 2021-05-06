@@ -28,6 +28,7 @@ public:
 	void set_block_size(int samples_per_block);
 protected:
 	void process_callback();
+	void process_bypass();
 	void process_params() { ; }
 	void recalculate_sr() { ; }
 private:

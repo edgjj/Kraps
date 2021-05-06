@@ -62,7 +62,6 @@ void NoteManager::process_callback()
 	if (notes.empty())
 		return;
 
-
 	for (int i = 0; i < notes.size(); i++)
 	{
 		Note cur = notes[i];
@@ -117,6 +116,16 @@ void NoteManager::process_callback()
 
 	if (global_timestamp == block_size - 1)
 		notes.clear();
+}
+
+void NoteManager::process_bypass()
+{
+	if (!queue.empty() || !notes.empty())
+	{
+		queue.clear();
+		notes.clear();
+		cur_played_note = Note();
+	}
 }
 
 NoteManager::~NoteManager()
