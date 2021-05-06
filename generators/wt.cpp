@@ -67,7 +67,10 @@ void Wavetable::process_callback()
 void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
 {
     WAIT_LOCK;
-    set_bypassed(true);
+
+    bool cur_bypass = is_bypassed();
+    if (!cur_bypass)
+        set_bypassed(true);
 
     table_size = len;
     table.reset(new double[table_size]);
@@ -77,13 +80,17 @@ void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
 
     fill_mipmap();
 
-    set_bypassed(false);
+    if (!cur_bypass)
+        set_bypassed(false);
 }
 
 void Wavetable::fill_table_from_buffer(double* buf, uint32_t len)
 {
     WAIT_LOCK;
-    set_bypassed(true);
+
+    bool cur_bypass = is_bypassed();
+    if (!cur_bypass)
+        set_bypassed(true);
 
     assert(len >= waveform_size);
 
@@ -95,7 +102,8 @@ void Wavetable::fill_table_from_buffer(double* buf, uint32_t len)
 
     fill_mipmap();
 
-    set_bypassed(false);
+    if (!cur_bypass)
+        set_bypassed(false);
 }
 
 void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))

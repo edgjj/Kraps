@@ -39,7 +39,10 @@ void Sampler::load_source(float* buf, size_t len, double stream_sample_rate)
 {
 
 	WAIT_LOCK;
-	set_bypassed(true);
+
+    bool cur_bypass = is_bypassed();
+    if (!cur_bypass)
+        set_bypassed(true);
 
 	cur_file_len = len > max_len ? max_len : len;
 	source.reset(new double[cur_file_len]);
@@ -51,7 +54,8 @@ void Sampler::load_source(float* buf, size_t len, double stream_sample_rate)
     file_sample_rate = stream_sample_rate;
     pos = cur_file_len - 1;
 
-	set_bypassed(false);
+    if (!cur_bypass)
+        set_bypassed(false);
 
 }
 
@@ -63,7 +67,10 @@ void Sampler::load_source_unserialize(double* buf)
 
     if (cur_file_len == 0)
         return;
-    set_bypassed(true);
+
+    bool cur_bypass = is_bypassed();
+    if (!cur_bypass)
+        set_bypassed(true);
   
     source.reset(new double[cur_file_len]);
 
@@ -72,7 +79,8 @@ void Sampler::load_source_unserialize(double* buf)
     params_constrainments[1].second = cur_file_len;
     pos = cur_file_len - 1;
 
-    set_bypassed(false);
+    if (!cur_bypass)
+        set_bypassed(false);
 
 }
 

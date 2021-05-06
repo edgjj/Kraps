@@ -133,6 +133,7 @@ void Processor::set_serialize(nlohmann::json obj)
     process_params();
     if (obj.find("bypass") != obj.end())
         obj["bypass"].get_to(bypass);
+
     if (obj.find("id") != obj.end())
         obj["id"].get_to(id);
 }
