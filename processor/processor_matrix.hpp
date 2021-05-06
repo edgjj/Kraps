@@ -28,7 +28,11 @@ public:
             { 0, "AUDIO", "Outputs audio to host."}
         };
     }
-    double get_sample() { return *inputs[0]; }
+    double get_sample() 
+    { 
+        if (!is_bypassed()) return *inputs[0];
+        else return 0.0;
+    }
     ~OutputProcessor() { ; }
 };
 
