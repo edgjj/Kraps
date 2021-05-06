@@ -85,6 +85,8 @@ void Wavetable::fill_table_from_buffer(double* buf, uint32_t len)
     WAIT_LOCK;
     set_bypassed(true);
 
+    assert(len >= waveform_size);
+
     table_size = len;
     table.reset(new double[table_size]);
 

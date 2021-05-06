@@ -23,6 +23,8 @@ public:
     void fill_table_from_buffer (double*, uint32_t);
 
     void fill_table_from_fcn (double (*fcn) (double phase));
+
+
     nlohmann::json get_serialize_obj() override;
     void set_serialize(nlohmann::json) override;
     double* get_table_view () const;
@@ -35,6 +37,7 @@ protected:
     void process_callback () override;
     void process_params() override;
 private:
+
     void fill_mipmap ();
 
     uint32_t shift = 0;
