@@ -268,7 +268,6 @@ int ProcessorMatrix::deserialize(nlohmann::json o)
     using js = nlohmann::json;
 
 
-
     if (o.find("processors") == o.end())
         return -1;
 
@@ -277,8 +276,16 @@ int ProcessorMatrix::deserialize(nlohmann::json o)
 
     for (auto& i : o["processors"])
     {
-        add_processor(i["type"], i["id"]);
-        processors.back()->set_serialize(i);
+        uint8_t p_type = i["type"];
+        uint32_t p_id = i["id"];
+
+        if (p_type == p_output || p_type == p_notemgr)
+            processors[p_id]->set_serialize(i);
+        else
+        {
+            add_processor(p_type, p_id);
+            processors.back()->set_serialize(i);
+        }
     }
 
     for (auto& i : o["r_matrix"])
