@@ -30,7 +30,7 @@ class Processor
 public:
     Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs);
 
-    void set_bypassed (bool val) { this->bypass = val;  }
+    void set_bypassed(bool val) { WAIT_LOCK;  this->bypass = val; }
     void set_SR (double val) { sample_rate = val; recalculate_sr (); process_params(); }
     double get_SR() { return sample_rate; }
     void set_lock() { is_locked = !is_locked;  }
