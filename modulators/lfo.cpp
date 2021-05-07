@@ -11,7 +11,11 @@ LFO::LFO () : Generator (p_lfo, 0, 0),
     tension ({ 0.0, 0.0 })
 {
     params.push_back(0.0);
+    params.push_back(1.0);
+    params.push_back(4.0);
     params_constrainments.push_back(std::pair(0.0, 1.0));
+    params_constrainments.push_back(std::pair(1.0, 32.0));
+    params_constrainments.push_back(std::pair(1.0, 256.0));
 }
 
 void LFO::add_point(Vec2 pos)
@@ -42,6 +46,7 @@ void LFO::process_params()
 {
     param_freq = params[0];
     is_env = params[1];    
+    freq_ratio = params[3] / params[2];
 }
 std::pair<std::vector<Vec2>, std::vector<double>> LFO::get_points()
 {
@@ -136,7 +141,7 @@ void LFO::inc_phase()
 
 void LFO::process_callback ()
 {
-    set_freq(*inputs[kGenFreqIn] + param_freq);
+    set_freq(*inputs[kGenFreqIn] * freq_ratio + param_freq);
 
     *outputs[kLFOAudioOut] = get_interp( phase * phase_const );
     *outputs[kLFOPhaseOut] = phase;

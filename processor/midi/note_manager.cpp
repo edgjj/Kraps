@@ -3,7 +3,7 @@
 
 namespace kraps {
 
-NoteManager::NoteManager() : Processor (p_notemgr, 0, 3)
+NoteManager::NoteManager() : Processor (p_notemgr, 0, 4)
 {
 	params.push_back (440.0);
 	params_constrainments.push_back(std::make_pair<double, double>(400, 500));
@@ -12,7 +12,8 @@ NoteManager::NoteManager() : Processor (p_notemgr, 0, 3)
 	{
 		{ kNoteMgrFreq, "FREQ", "Current played note frequency."},
 		{ kNoteMgrAmp, "VELO", "Note velocity converted to CV."},
-		{ kNoteMgrGate, "GATE", "Just gate."}
+		{ kNoteMgrGate, "GATE", "Just gate."},
+		{ kNoteMgrSync, "SYNC", "DAW tempo sync. Reports bars per second in Hz."}
 	};
 }
 
@@ -46,6 +47,14 @@ void NoteManager::set_block_size(int samples_per_block)
 void NoteManager::upd_timestamp(int timestamp)
 {
 	global_timestamp = timestamp;
+}
+
+void NoteManager::upd_tempo(int time_sig_numerator, int time_sig_denominator, double tempo)
+{
+	int basic_dem = 4;
+	double ratio = (double)basic_dem / time_sig_denominator;
+	bar_size = tempo / (time_sig_numerator * ratio * 60);
+	*outputs[kNoteMgrSync] = bar_size;
 }
 
 void NoteManager::process_callback()

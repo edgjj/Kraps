@@ -13,6 +13,7 @@ enum kNoteMgrOutputs
 	kNoteMgrFreq,
 	kNoteMgrAmp,
 	kNoteMgrGate,
+	kNoteMgrSync
 };
 
 class NoteManager : public Processor
@@ -26,6 +27,7 @@ public:
 	void all_notes_off (double timestamp);
 	void upd_timestamp(int timestamp);
 	void set_block_size(int samples_per_block);
+	void upd_tempo(int time_sig_numerator, int time_sig_denominator, double tempo);
 protected:
 	void process_callback();
 	void process_bypass();
@@ -50,6 +52,8 @@ private:
 
 	int global_timestamp = 0;
 	int block_size = 0;
+
+	double bar_size = 0;
 
 	std::vector<Note> notes;
 	std::deque<Note> queue;

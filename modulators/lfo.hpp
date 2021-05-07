@@ -48,6 +48,8 @@ private:
     double get_interp (double x);
 
     double param_freq = 0.0;
+    double freq_ratio = 0.0;
+
 
     bool is_env = false;
     double phase_const = 1 / (2 * M_PI);
