@@ -141,7 +141,9 @@ void LFO::inc_phase()
 
 void LFO::process_callback ()
 {
-    set_freq(*inputs[kGenFreqIn] * freq_ratio + param_freq);
+    double freq = inputs[kGenFreqIn]->src->id != -1 ? *inputs[kGenFreqIn] * freq_ratio : param_freq;
+        
+    set_freq(freq);
 
     *outputs[kLFOAudioOut] = get_interp( phase * phase_const );
     *outputs[kLFOPhaseOut] = phase;
