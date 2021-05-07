@@ -212,7 +212,12 @@ void Wavetable::set_serialize(nlohmann::json obj)
     if (obj.find("table") != obj.end())
     {
         auto decoded = base64_decode(obj["table"]);
-        fill_table_from_buffer((double*) decoded.data(), table_size);
+
+        if (decoded.size() / sizeof(double) != table_size)
+            fill_table_from_fcn([](double phase) -> double {
+            return sin(phase); });
+
+        else fill_table_from_buffer((double*) decoded.data(), table_size);
     }
 }
 

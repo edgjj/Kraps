@@ -192,7 +192,13 @@ void Sampler::set_serialize(nlohmann::json obj)
     if (obj.find("source") != obj.end())
     {
         auto decoded = base64_decode(obj["source"]);
-        load_source_unserialize((double*)decoded.data());
+        if (decoded.size() / sizeof(double) != cur_file_len)
+        {
+            file_sample_rate = 0.0;
+            cur_file_len = 0.0;
+        }
+        else load_source_unserialize((double*)decoded.data());
+        
     }
 }
 
