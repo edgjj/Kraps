@@ -37,6 +37,7 @@ public:
     
     nlohmann::json get_serialize_obj() override;
     void set_serialize(nlohmann::json) override;
+    double get_interp(double x);
 
     ~LFO() { ; }
 protected:
@@ -45,7 +46,7 @@ protected:
     void process_params() override;
 private:
     inline double sigmoid (double x, double k);
-    double get_interp (double x);
+    
 
     double param_freq = 0.0;
     double freq_ratio = 0.0;
