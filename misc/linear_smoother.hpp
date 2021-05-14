@@ -22,9 +22,9 @@ private:
 	double time_cst = 0.0;
 	double sr_cst = 0.0;
 
-	double prev_value = 0.0, new_value = 0.0;
+	double prev_value = 0.0, new_value = -1.0;
 
-	double frac = 0.0;
+	double frac = 1.0;
 
 
 	const double& raw_value;

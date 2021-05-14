@@ -7,7 +7,7 @@ namespace misc
 
 LinearSmoother::LinearSmoother(double& val) : raw_value (val)
 {
-	prev_value = raw_value;
+	new_value = raw_value;
 	time_cst = 0.2;
 }
 
@@ -38,7 +38,7 @@ double LinearSmoother::get_smoothed_value()
 		frac += sr_cst / time_cst;
 
 
-	return prev_value * frac + new_value * (1 - frac);
+	return new_value * frac + prev_value * (1 - frac);
 }
 
 }
