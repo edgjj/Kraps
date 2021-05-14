@@ -2,7 +2,7 @@
 #define KRPSFILTER_H
 
 #include "../processor/processor.hpp"
-#include "../misc/leaky_smoother.hpp"
+#include "../misc/linear_smoother.hpp"
 #include "DSPFilters/include/DspFilters/Dsp.h"
 
 namespace kraps

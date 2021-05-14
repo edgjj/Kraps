@@ -9,7 +9,7 @@ Delay::Delay() : Processor (p_delay, 2, 1)
 	params = { 0.02, 0.7, 0.5 };
 	params_constrainments = { {0.001, 0.5}, {0, 1}, {0, 1} };
 	dly_line = std::make_unique<DelayLine <double>>(2 * 44100, 44100);
-	smoother = std::make_unique<misc::LeakySmoother>(smoothed_time);
+	smoother = std::make_unique<misc::LinearSmoother>(smoothed_time);
 
 
 	io_description[0] =

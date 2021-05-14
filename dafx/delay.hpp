@@ -1,7 +1,7 @@
 #ifndef KRPSDELAY_H
 #define KRPSDELAY_H
 #include "../processor/processor.hpp"
-#include "../misc/leaky_smoother.hpp"
+#include "../misc/linear_smoother.hpp"
 namespace kraps
 {
 namespace dafx
@@ -67,7 +67,7 @@ public:
     void recalculate_sr() override;
     void process_params() override;
 private:
-    std::unique_ptr<misc::LeakySmoother> smoother;
+    std::unique_ptr<misc::LinearSmoother> smoother;
 
     std::unique_ptr<DelayLine <double>> dly_line;
     double param_time = 0.0;
