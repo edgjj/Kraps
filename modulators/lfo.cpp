@@ -48,6 +48,7 @@ void LFO::process_params()
     is_env = params[1];    
     freq_ratio = params[3] / params[2];
 }
+
 std::pair<std::vector<Vec2>, std::vector<double>> LFO::get_points()
 {
     return std::make_pair(points,tension);
@@ -108,7 +109,7 @@ double LFO::get_interp (double x){
             return sigmoid ( ( (x - p1.x) / (p2.x - p1.x) ) , tension [i] * sign ) * y_diff + p1.y;
         }
     } 
-    return 0.0;
+    return points.back().y;
 };
 
 void LFO::inc_phase()
