@@ -297,6 +297,8 @@ int ProcessorMatrix::deserialize(nlohmann::json o)
             plug(j["src_proc_id"], i["proc_id"], j["src_id"], j["id"]);
         } 
     }
+
+    proc_ctr = processors.back()->get_ID() + 1;
     return 1;
 }
 
