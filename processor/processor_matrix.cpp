@@ -302,9 +302,5 @@ int ProcessorMatrix::deserialize(nlohmann::json o)
     return 1;
 }
 
-io::Input* ProcessorMatrix::get_in(uint16_t num)
-{
-    return global_inputs[num].get();
-}
 
 }

@@ -59,8 +59,6 @@ public:
     NoteManager* get_note_mgr();
     double process ();
 
-    io::Input* get_in (uint16_t num);
-
     IO_container* get_IO() { return &processors_io; }
 
 
@@ -73,9 +71,6 @@ private:
     IO_container processors_io;
 
     std::array <uint32_t, 2> immutables;
-
-    std::vector < std::unique_ptr <io::Input>  > global_inputs;
-    std::vector < std::unique_ptr <io::Output>  > global_outputs;
 
     std::vector < std::unique_ptr <Processor> > processors;
 
