@@ -24,7 +24,6 @@
 #include <array>
 #include <memory>
 
-
 #include "processor_types.hpp"
 #include "io.hpp"
 #include "../misc/misc.hpp"

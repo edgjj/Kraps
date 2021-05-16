@@ -18,7 +18,7 @@
 
 #ifndef KRPSSAMPLER_H
 #define KRPSSAMPLER_H
-#include "../../processor/processor.hpp"
+#include "../processor/processor.hpp"
 
 namespace kraps
 {
