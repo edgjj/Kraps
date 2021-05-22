@@ -26,7 +26,7 @@ public:
 	void note_off (int note_number, int velocity, double timestamp);
 	void all_notes_off (double timestamp);
 	void upd_timestamp(int timestamp);
-	void set_block_size(int samples_per_block);
+	void reset();
 	void upd_tempo(int time_sig_numerator, int time_sig_denominator, double tempo);
 protected:
 	void process_callback();

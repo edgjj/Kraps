@@ -38,10 +38,10 @@ void NoteManager::all_notes_off(double timestamp)
 	notes.push_back(p);
 }
 
-void NoteManager::set_block_size(int samples_per_block)
+void NoteManager::reset()
 {
-	block_size = samples_per_block;
 	notes.clear();
+	queue.clear();
 }
 
 void NoteManager::upd_timestamp(int timestamp)
@@ -71,11 +71,15 @@ void NoteManager::process_callback()
 	if (notes.empty())
 		return;
 
-	for (int i = 0; i < notes.size(); i++)
+	for (auto it = notes.begin(); it != notes.end();)
 	{
-		Note cur = notes[i];
+		Note cur = *it;
+		
 		if (cur.timestamp != global_timestamp)
+		{
+			++it;
 			continue;
+		}
 
 		switch (cur.type)
 		{
@@ -121,10 +125,9 @@ void NoteManager::process_callback()
 			queue.clear();
 			break;
 		}
+		it = notes.erase(it);
 	}
 
-	if (global_timestamp == block_size - 1)
-		notes.clear();
 }
 
 void NoteManager::process_bypass()
