@@ -57,18 +57,12 @@ void Wavetable::process_callback()
     unsigned int pos_int    = *inputs[kWtShiftIn] + phase_cvt + shift;
     unsigned int pos_int_inc = pos_int + 1;
 
-    if (pos_int_inc == waveform_size)
-        pos_int_inc = 0;
+    if (pos_int_inc == shift + waveform_size)
+        pos_int_inc = shift;
 
     double pos_frac     = phase_cvt - (int)phase_cvt;
-    double log_arg      = freq * 2 * waveform_size / (44100.0); // lets think every wt we get is 44100
-    double num_oct      = 0.0;
-
-    if (log_arg >= 1.0)
-        num_oct = log2(log_arg) - 1;   
-    
-    if (num_oct > NUM_OCTAVES - 2)
-        num_oct = NUM_OCTAVES - 2;
+    double log_arg      = freq * table_size / 44100.0; // lets think every wt we get is 44100
+    double num_oct      = fmax (fmin (log2(log_arg) - 1, NUM_OCTAVES - 1), 0);
 
     unsigned int no_strip = (unsigned int)num_oct;
     double  oct_frac = num_oct - no_strip;
@@ -162,6 +156,9 @@ void Wavetable::fill_mipmap () // incorrect too
     kissfft<double> fft_driver (nfft, false);
     std::unique_ptr<std::complex<double>[]> fft_buf = std::make_unique <std::complex <double>[]>(wt_sz);
     std::unique_ptr<std::complex<double>[]> fft_buf_inv = std::make_unique <std::complex <double>[]>(wt_sz);
+
+    // fs = 44100; Nfft; Nfft / 2; Nfft / 4; Nfft / 8 .. others
+
     for (int i = 0; i < NUM_OCTAVES; i++)
     {
 
@@ -170,7 +167,7 @@ void Wavetable::fill_mipmap () // incorrect too
 
         fft_driver.transform_real(tables[i].get(), fft_buf.get());
 
-        uint16_t bins   = waveform_size / pow(2, i - 2); 
+        uint16_t bins   = nfft / pow(2, i);  // 1/2 fs; 1/4 fs; 1/8; 1/16; 1/32; 1/64; 1/128; 1/256; 1/512; 1/1024; 1/2048; 1/4096
         if (bins == 1) bins = 0;
         for (uint32_t j = bins; j < wt_sz; j++)
             fft_buf[j] = 0.0;

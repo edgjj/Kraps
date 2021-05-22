@@ -60,11 +60,8 @@ void ADSR::process_callback()
     double ret = pos;
 
     if (*inputs[kADSRGate] != gate)
-    {
         set_gate(*inputs[kADSRGate]);
-    }
 
-    
     switch (state){
         case adsr_ENV_ATT:
             if (pos < 1.f && step[adsr_attack] > 0.f){
@@ -82,8 +79,6 @@ void ADSR::process_callback()
                 state = adsr_ENV_SUSTAIN;
             }
             break;
-        case adsr_ENV_SUSTAIN:
-            break;
         case adsr_ENV_REL:
             if (pos > 0.f && step[adsr_release] > 0.f){
                 pos -= step[adsr_release];
@@ -92,6 +87,8 @@ void ADSR::process_callback()
                 pos = 0.f;
                 state = adsr_ENV_IDLE;
             }
+            break;
+        default:
             break;
     }
 

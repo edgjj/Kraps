@@ -22,7 +22,7 @@
 #include "generator.hpp"
 #include "../fft/kissfft.hpp"
 
-#define NUM_OCTAVES 12
+#define NUM_OCTAVES 14
 
 namespace kraps {
 
