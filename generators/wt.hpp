@@ -39,7 +39,6 @@ public:
 
     void fill_table_from_buffer (float*, uint32_t);
     void fill_table_from_buffer (double*, uint32_t);
-
     void fill_table_from_fcn (double (*fcn) (double phase));
 
 
