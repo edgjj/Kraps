@@ -78,11 +78,7 @@ void Wavetable::process_callback()
 
 void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
 {
-    WAIT_LOCK;
-
-    bool cur_bypass = is_bypassed();
-    if (!cur_bypass)
-        set_bypassed(true);
+    set_lock();
 
     table_size = len;
     table.reset(new double[table_size]);
@@ -92,17 +88,12 @@ void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
 
     fill_mipmap();
 
-    if (!cur_bypass)
-        set_bypassed(false);
+    set_unlock();
 }
 
 void Wavetable::fill_table_from_buffer(double* buf, uint32_t len)
 {
-    WAIT_LOCK;
-
-    bool cur_bypass = is_bypassed();
-    if (!cur_bypass)
-        set_bypassed(true);
+    set_lock();
 
     if (len < waveform_size)
         return;
@@ -115,13 +106,12 @@ void Wavetable::fill_table_from_buffer(double* buf, uint32_t len)
 
     fill_mipmap();
 
-    if (!cur_bypass)
-        set_bypassed(false);
+    set_unlock();
 }
 
 void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
 {
-    WAIT_LOCK;
+    set_lock();
 
     table.reset(new double[waveform_size]);
 
@@ -133,6 +123,7 @@ void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
     
     fill_mipmap();
 
+    set_unlock();
 }
 
 
@@ -149,7 +140,6 @@ uint16_t Wavetable::get_wform_size()
 
 void Wavetable::fill_mipmap () // incorrect too
 {
-    WAIT_LOCK;
 
     uint32_t wt_sz = table_size;
     uint32_t nfft = wt_sz / 2;
@@ -182,15 +172,17 @@ void Wavetable::fill_mipmap () // incorrect too
 
         fft_driver.assign(nfft, false);
     } 
+
 }
 
 void Wavetable::process_params()
 {
-    WAIT_LOCK;
+    
     if (table_size == waveform_size)
         shift = 0;
     if (waveform_size < table_size)
         shift = (params[1] / 100.0) * (table_size - waveform_size - 1);
+
 }
 
 uint32_t Wavetable::get_shift()
@@ -206,10 +198,13 @@ uint32_t Wavetable::get_table_size()
 
 nlohmann::json Wavetable::get_serialize_obj()
 {
+    set_lock();
     nlohmann::json o;
     o["table"] = base64_encode((BYTE*) table.get(), sizeof(double) * table_size);
     o["table_size"] = table_size;
     o["waveform_size"] = waveform_size;
+
+    set_unlock();
     o.update(Processor::get_serialize_obj());
 
     return o;
@@ -218,11 +213,16 @@ nlohmann::json Wavetable::get_serialize_obj()
 void Wavetable::set_serialize(nlohmann::json obj)
 {
     Processor::set_serialize(obj);
+
+    set_lock();
+
     if (obj.find("table_size") != obj.end())
         obj["table_size"].get_to(table_size);
 
     if (obj.find("waveform_size") != obj.end()) 
         obj["waveform_size"].get_to(waveform_size);
+
+    set_unlock();
 
     if (obj.find("table") != obj.end())
     {
@@ -234,6 +234,8 @@ void Wavetable::set_serialize(nlohmann::json obj)
 
         else fill_table_from_buffer((double*) decoded.data(), table_size);
     }
+
+    
 }
 
 }

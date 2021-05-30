@@ -43,52 +43,53 @@ ProcessorMatrix::~ProcessorMatrix()
 
 uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
 {
-    // [CRITICAL] not thread-safe at all, needs another solution
-    WAIT_LOCK
-        switch (type)
-        {
-        case p_wt:
-            processors.emplace_back(std::make_unique <Wavetable>(2048));
-            ((Wavetable*)processors.back().get())->fill_table_from_fcn([](double phase) -> double {
-                return sin(phase);
-                });
-            break;
-        case p_lfo:
-            processors.emplace_back(std::make_unique <LFO>());
-            break;
-        case p_adsr:
-            processors.emplace_back(std::make_unique <ADSR>());
-            break;
-        case p_filter:
-            processors.emplace_back(std::make_unique <filters::Filter>());
-            break;
-        case p_tube:
-            processors.emplace_back(std::make_unique <dafx::TubeDist>());
-            break;
-        case p_atten:
-            processors.emplace_back(std::make_unique <Attenuator>());
-            break;
-        case p_summer:
-            processors.emplace_back(std::make_unique <Summer>());
-            break;
-        case p_macro:
-            processors.emplace_back(std::make_unique <Macro>());
-            break;
-        case p_delay:
-            processors.emplace_back(std::make_unique <dafx::Delay>());
-            break;
-        case p_sampler:
-            processors.emplace_back(std::make_unique <Sampler>());
-            break;
-        case p_notemgr:
-            return -1;
-        case p_output:
-            return -1;
-        case p_misc:
-            return -1;
-        default:
-            return -1;
-        }
+   
+    std::lock_guard<std::mutex> lock(proc_mutex);
+
+    switch (type)
+    {
+    case p_wt:
+        processors.emplace_back(std::make_unique <Wavetable>(2048));
+        ((Wavetable*)processors.back().get())->fill_table_from_fcn([](double phase) -> double {
+            return sin(phase);
+            });
+        break;
+    case p_lfo:
+        processors.emplace_back(std::make_unique <LFO>());
+        break;
+    case p_adsr:
+        processors.emplace_back(std::make_unique <ADSR>());
+        break;
+    case p_filter:
+        processors.emplace_back(std::make_unique <filters::Filter>());
+        break;
+    case p_tube:
+        processors.emplace_back(std::make_unique <dafx::TubeDist>());
+        break;
+    case p_atten:
+        processors.emplace_back(std::make_unique <Attenuator>());
+        break;
+    case p_summer:
+        processors.emplace_back(std::make_unique <Summer>());
+        break;
+    case p_macro:
+        processors.emplace_back(std::make_unique <Macro>());
+        break;
+    case p_delay:
+        processors.emplace_back(std::make_unique <dafx::Delay>());
+        break;
+    case p_sampler:
+        processors.emplace_back(std::make_unique <Sampler>());
+        break;
+    case p_notemgr:
+        return -1;
+    case p_output:
+        return -1;
+    case p_misc:
+        return -1;
+    default:
+        return -1;
+    }
 
     processors.back()->set_SR(sample_rate);
     uint32_t id = ++proc_ctr;
@@ -98,6 +99,7 @@ uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
     processors.back()->set_ID(id);
     processors_io[id] = processors.back()->get_IO();
 
+    
     return id;
 }
 
@@ -108,10 +110,10 @@ NoteManager* ProcessorMatrix::get_note_mgr()
 
 bool ProcessorMatrix::remove_processor(uint32_t id)
 {
-    WAIT_LOCK
+    std::lock_guard<std::mutex> lock(proc_mutex);
 
-        if (std::find(immutables.begin(), immutables.end(), id) != immutables.end())
-            return false;
+    if (std::find(immutables.begin(), immutables.end(), id) != immutables.end())
+        return false;    
 
     for (auto& i : processors_io)
     {
@@ -135,12 +137,13 @@ bool ProcessorMatrix::remove_processor(uint32_t id)
 
     processors_io.erase(id);
 
+
     return true;
 }
 
 void ProcessorMatrix::clear()
 {
-    WAIT_LOCK
+    std::lock_guard<std::mutex> lock(proc_mutex);
 
     processors[0]->unplug();
     processors[1]->unplug();
@@ -160,6 +163,7 @@ void ProcessorMatrix::clear()
             ++it;
     }
     
+
 }
 
 Processor* ProcessorMatrix::get_processor(uint32_t id)
@@ -179,22 +183,26 @@ Processor* ProcessorMatrix::get_processor(uint32_t id)
 
 bool ProcessorMatrix::plug(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in)
 {
-    WAIT_LOCK
+    std::lock_guard<std::mutex> lock(proc_mutex);
 
-        if (processors_io.find(src) == processors_io.end() || processors_io.find(dest) == processors_io.end())
-            return false;
+    if (processors_io.find(src) == processors_io.end() || processors_io.find(dest) == processors_io.end())
+        return false;
+        
 
     auto src_vec = std::get <1>(processors_io[src]);
     auto dest_vec = std::get <0>(processors_io[dest]);
 
     dest_vec->at(dest_in)->src = src_vec->at(src_out).get();
+
+
     return true;
+
 }
 
 
 bool ProcessorMatrix::unplug(uint32_t dest, uint16_t dest_in)
 {
-    WAIT_LOCK
+    std::lock_guard<std::mutex> lock(proc_mutex);
 
     if (processors_io.find(dest) == processors_io.end())
         return false;
@@ -206,6 +214,7 @@ bool ProcessorMatrix::unplug(uint32_t dest, uint16_t dest_in)
         });
 
     result->get()->unplug(dest_in);
+
 }
 
 
@@ -220,10 +229,20 @@ void ProcessorMatrix::set_SR(double sample_rate)
 
 void ProcessorMatrix::set_lock()
 {
-    is_locked = !is_locked;
+    proc_mutex.lock();
+
     for (auto& i : processors)
         i->set_lock();
 }
+
+void ProcessorMatrix::set_unlock()
+{
+    proc_mutex.unlock();
+
+    for (auto& i : processors)
+        i->set_unlock();
+}
+
 
 double ProcessorMatrix::process()
 {
@@ -236,7 +255,7 @@ double ProcessorMatrix::process()
 
 nlohmann::json ProcessorMatrix::serialize()
 {
-    WAIT_LOCK
+    std::lock_guard<std::mutex> lock(proc_mutex);
     
     using js = nlohmann::json;
     js o;
@@ -276,10 +295,10 @@ nlohmann::json ProcessorMatrix::serialize()
 
 int ProcessorMatrix::deserialize(nlohmann::json o)
 {
-    WAIT_LOCK
-   
     clear();
+
     
+
     using js = nlohmann::json;
 
 
@@ -314,6 +333,7 @@ int ProcessorMatrix::deserialize(nlohmann::json o)
     }
 
     proc_ctr = processors.back()->get_ID() + 1;
+
     return 1;
 }
 

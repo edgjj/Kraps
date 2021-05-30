@@ -38,7 +38,7 @@ LFO::LFO () : Generator (p_lfo, 0, 0),
 
 void LFO::add_point(Vec2 pos)
 {
-    WAIT_LOCK
+    set_lock();
     for (int i = 0; i < points.size() - 1; i++)
     {
         Vec2 p1, p2;
@@ -57,7 +57,7 @@ void LFO::add_point(Vec2 pos)
             break;
         }
     }
-
+    set_unlock();
 }
 
 void LFO::process_params()
@@ -75,27 +75,29 @@ std::pair<std::vector<Vec2>, std::vector<double>> LFO::get_points()
 
 void LFO::move_point (int i, Vec2 pos)
 {
-    WAIT_LOCK
+    set_lock();
     if (i == 0 || i == points.size() - 1){
         points.front().y    = pos.y;
         points.back().y     = pos.y;
     }
     else points[i] = pos;
-
+    set_unlock();
 }
 
 void LFO::set_tension (int i, double tension)
 {
-    WAIT_LOCK
+    set_lock();
     if (points.size() == 2)
         return;
     int8_t sign         = std::signbit (tension) * 2 - 1;
     this->tension[i]    = fabs (tension) > 0.9999 ? sign * 0.9999 : tension;
+    set_unlock();
+
 }
 
 void LFO::remove_point (int i)
 {
-    WAIT_LOCK
+    set_lock();
     if (points.size() == 2)
         return;
 
@@ -103,7 +105,7 @@ void LFO::remove_point (int i)
         return;
     points.erase (points.begin() + i);
     tension.erase (tension.begin() + i - 1);
-
+    set_unlock();
 }
 
 double LFO::get_interp (double x){
@@ -172,6 +174,7 @@ void LFO::process_callback ()
 
 nlohmann::json LFO::get_serialize_obj()
 {
+    set_lock();
     nlohmann::json o;
     o["tension"] = tension;
     o["is_env"] = is_env;
@@ -183,6 +186,8 @@ nlohmann::json LFO::get_serialize_obj()
 
     o["points"] = pts_conv;
 
+    set_unlock();
+
     o.update(Processor::get_serialize_obj());
 
     return o;
@@ -191,6 +196,9 @@ nlohmann::json LFO::get_serialize_obj()
 void LFO::set_serialize(nlohmann::json obj)
 {
     Processor::set_serialize(obj);
+
+    set_lock();
+
     if (obj.find("tension") != obj.end())
         obj["tension"].get_to(tension);
 
@@ -207,6 +215,8 @@ void LFO::set_serialize(nlohmann::json obj)
 
         points = pts_conv_2;
     }
+
+    set_unlock();
 }
 
 inline double LFO::sigmoid(double x, double k) // k in [ -0.9999; 0.9999 ]

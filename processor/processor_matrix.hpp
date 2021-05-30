@@ -69,6 +69,8 @@ public:
 
     void set_SR(double sample_rate);
     void set_lock();
+    void set_unlock();
+
 
     bool plug(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in);
     bool unplug(uint32_t dest, uint16_t dest_in);
@@ -93,7 +95,7 @@ private:
     std::vector < std::unique_ptr <Processor> > processors;
 
     double sample_rate = 0;
-    bool is_locked = false;
+    std::mutex proc_mutex;
     
 
 };

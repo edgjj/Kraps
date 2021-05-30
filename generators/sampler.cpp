@@ -55,12 +55,8 @@ Sampler::~Sampler()
 }
 void Sampler::load_source(float* buf, size_t len, double stream_sample_rate)
 {
+	set_lock();
 
-	WAIT_LOCK;
-
-    bool cur_bypass = is_bypassed();
-    if (!cur_bypass)
-        set_bypassed(true);
 
 	cur_file_len = len > max_len ? max_len : len;
 	source.reset(new double[cur_file_len]);
@@ -72,23 +68,16 @@ void Sampler::load_source(float* buf, size_t len, double stream_sample_rate)
     file_sample_rate = stream_sample_rate;
     pos = cur_file_len - 1;
 
-    if (!cur_bypass)
-        set_bypassed(false);
 
+    set_unlock();
 }
 
 
 void Sampler::load_source_unserialize(double* buf)
 {
 
-    WAIT_LOCK;
-
     if (cur_file_len == 0)
         return;
-
-    bool cur_bypass = is_bypassed();
-    if (!cur_bypass)
-        set_bypassed(true);
   
     source.reset(new double[cur_file_len]);
 
@@ -97,8 +86,6 @@ void Sampler::load_source_unserialize(double* buf)
     params_constrainments[1].second = cur_file_len;
     pos = cur_file_len - 1;
 
-    if (!cur_bypass)
-        set_bypassed(false);
 
 }
 
@@ -189,10 +176,14 @@ void Sampler::inc_phase()
 
 nlohmann::json Sampler::get_serialize_obj()
 {
+    set_lock();
+
     nlohmann::json o;
     o["source"] = base64_encode((BYTE*)source.get(), sizeof(double) * cur_file_len);
     o["cur_file_len"] = cur_file_len;
     o["sample_rate"] = file_sample_rate;
+
+    set_unlock();
     o.update(Processor::get_serialize_obj());
 
     return o;
@@ -201,6 +192,8 @@ nlohmann::json Sampler::get_serialize_obj()
 void Sampler::set_serialize(nlohmann::json obj)
 {
     Processor::set_serialize(obj);
+    set_lock();
+
     if (obj.find("cur_file_len") != obj.end())
         obj["cur_file_len"].get_to(cur_file_len);
 
@@ -218,6 +211,8 @@ void Sampler::set_serialize(nlohmann::json obj)
         else load_source_unserialize((double*)decoded.data());
         
     }
+
+    set_unlock();
 }
 
 

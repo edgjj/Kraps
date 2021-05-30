@@ -23,15 +23,12 @@
 #include <cstdint>
 #include <array>
 #include <memory>
+#include <mutex>
 
 #include "processor_types.hpp"
 #include "io.hpp"
 #include "../misc/misc.hpp"
 #include "../serialize/nlohmann/json.hpp"
-
-
-
-#define WAIT_LOCK while (is_locked) { ; } // not thread-safe at all and bad idea
 
 namespace kraps {
 
@@ -47,16 +44,18 @@ class Processor
 public:
     Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs);
 
-    void set_bypassed(bool val) { WAIT_LOCK;  this->bypass = val; }
+    void set_bypassed(bool val) { set_lock();  this->bypass = val; set_unlock();  }
     void set_SR (double val) { sample_rate = val; recalculate_sr (); process_params(); }
     double get_SR() { return sample_rate; }
-    void set_lock() { is_locked = !is_locked;  }
+    void set_lock() { proc_mutex->lock(); }
+    void set_unlock() { proc_mutex->unlock(); }
+
 
     void process();
 
     double get_param(int num) { return params[num]; }
-    void set_param(int num, double val) { WAIT_LOCK;  params[num] = val; process_params(); }
-    void set_param(std::vector<double>& val) { WAIT_LOCK;  params = val; process_params(); }
+    void set_param(int num, double val) { set_lock();  params[num] = val; process_params(); set_unlock();  }
+    void set_param(std::vector<double>& val) { set_lock();  params = val; process_params(); set_unlock();  }
 
     size_t get_param_count() { return params.size(); }
     std::pair <double, double> get_param_range(uint32_t id_) { return params_constrainments[id_]; }
@@ -124,9 +123,11 @@ protected:
     std::vector< std::unique_ptr <io::Input> > inputs;
     std::vector< std::unique_ptr <io::Output> > outputs;
 
-    bool is_locked = false;
 
 private:
+
+    std::mutex* proc_mutex;
+
     uint32_t id = 0;
     bool bypass;
     uint8_t type;   

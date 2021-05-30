@@ -37,11 +37,12 @@ Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) :
         outputs.emplace_back (std::make_unique<io::Output> (this, i));
     }
 
+    proc_mutex = new std::mutex();
 }
 
 Processor::~Processor ()
 {
-    
+    delete proc_mutex;
 }
 
 void Processor::process ()
@@ -130,17 +131,22 @@ IODescription Processor::get_io_description(uint32_t num, bool is_output)
 
 nlohmann::json Processor::get_serialize_obj()
 {
+    set_lock();
     nlohmann::json o;
     o["id"] = id;
     o["params"] = params; 
     o["type"] = type;
     o["bypass"] = bypass;
+
+    set_unlock();
+
     return o;
 }
 
 void Processor::set_serialize(nlohmann::json obj)
 {
-    WAIT_LOCK;
+    set_lock();
+
     if (obj.find("params") != obj.end())
     {
         std::vector<double> param_bridge;
@@ -155,5 +161,7 @@ void Processor::set_serialize(nlohmann::json obj)
 
     if (obj.find("id") != obj.end())
         obj["id"].get_to(id);
+
+    set_unlock();
 }
 }
