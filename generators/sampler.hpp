@@ -39,10 +39,12 @@ public:
 	~Sampler();
 	void load_source(float* buf, size_t len, double stream_sample_rate);
 	
-	double get_position();
+	float8 get_position();
 
 	void upd_freq();
 	double* get_source_view() const;
+
+	
 	uint32_t get_max_len();
 	uint32_t get_source_length();
 
@@ -57,7 +59,7 @@ protected:
 	float8 phase_inc = 0.0;
 private:
 	void load_source_unserialize(double* buf);
-
+	float8 pack_voices(float8 pos);
 
 	std::unique_ptr<double[]> source;
 	bool is_looping = 0;

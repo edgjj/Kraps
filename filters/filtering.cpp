@@ -116,7 +116,7 @@ void Filter::process_callback()
         f8cvt[0] = fake_ptr[0][0];
         f8cvt[1] = fake_ptr[1][0];
 
-        *outputs[i] = data.loadu(f8cvt, 1);
+        *outputs[i] = data.loadu(f8cvt, 2);
     }
 
     // do parallel processing of 4 filter types: LP, HP, BP, AP

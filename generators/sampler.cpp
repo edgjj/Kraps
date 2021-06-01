@@ -104,6 +104,21 @@ double* Sampler::get_source_view() const
 	return source.get();
 }
 
+float8 Sampler::pack_voices(float8 pos)
+{
+    float data[8], pos_data[8];
+
+    pos.store(pos_data);
+
+#pragma loop(hint_parallel(8))
+    for (int i = 0; i < 8; i++)
+        data[i] = source[pos_data[i]];
+
+    float8 ret = ret.loadu(data);
+
+    return ret;
+}
+
 void Sampler::process_callback()
 {
     if (source.get() == nullptr || cur_file_len == 0)
@@ -129,7 +144,7 @@ void Sampler::process_callback()
 
     float8 pos_frac = cur_pos - roundneg(cur_pos);
 
-    *outputs[kSamplerAudioOut] = blend(source[pos_int] * (1 - pos_frac) + source[pos_int_inc] * pos_frac, float8(0.f), pos == float8(cur_file_len - 1));
+    *outputs[kSamplerAudioOut] = blend(pack_voices(pos_int) * (float8(1) - pos_frac) + pack_voices(pos_int_inc) * pos_frac, float8(0.f), pos == float8(cur_file_len - 1));
 
     inc_phase();
 }
@@ -139,17 +154,19 @@ void Sampler::process_params()
     base_freq = params[0];
     is_looping = params[2];    
 }
-double Sampler::get_position()
+float8 Sampler::get_position()
 {
     return pos;
 }
 void Sampler::upd_freq()
 {
-    float8 freq = smin( *inputs[kSamplerFreqIn], float8 (sample_rate / 2) );
+    float8 freqin = *inputs[kSamplerFreqIn];
+    float8 freq = smin(freqin, float8 (sample_rate / 2) );
+
     double c3 = 261.63;
-    if (freq == float8 (0.f))
-        freq = c3;
-    phase_inc = (file_sample_rate / sample_rate) * freq / base_freq;
+    freq = blend(freq, float8(c3), freq == float8(0.f));
+
+    phase_inc = float8(file_sample_rate / sample_rate) * freq / base_freq;
 }
 void Sampler::inc_phase()
 {
@@ -162,12 +179,13 @@ void Sampler::inc_phase()
         pos = blend(pos, float8(params[1]), cmp_gate);
         gate = *inputs[kSamplerGateIn];
     }
+    float8 phase_in = *inputs[kSamplerPhaseIn];
+    pos += phase_in + phase_inc;
 
-    pos += *inputs[kSamplerPhaseIn] + phase_inc;
     if (is_looping == false)
-        pos = fmax(fmin(pos, cur_file_len - 1), 0.0);
+        pos = clamp(pos, float8(0.0), float8(cur_file_len - 1));
     else
-        pos = pos.operator float() >= cur_file_len - 1 ? 0 : pos;
+        pos = blend(pos, float8(0), pos >= float8(cur_file_len - 1)); 
 
 }
 
