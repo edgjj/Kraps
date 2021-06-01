@@ -53,17 +53,20 @@ protected:
 	void process_callback() override;
 	void process_params() override;
 	void inc_phase();
-	bool gate = 0.0;
-	double phase_inc = 0.0;
+	float8 gate = 0.0;
+	float8 phase_inc = 0.0;
 private:
 	void load_source_unserialize(double* buf);
 
 
 	std::unique_ptr<double[]> source;
 	bool is_looping = 0;
+
 	double file_sample_rate = 0.0;
-	double base_freq = 130.81;
-	double pos = 0;
+	float8 base_freq = 130.81;
+	float8 pos = 0;
+
+
 	uint32_t cur_file_len = 0;
 	uint32_t max_len = 44100 * 10;
 };

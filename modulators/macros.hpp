@@ -47,7 +47,7 @@ protected:
     void process_callback() override
     {
         for (int i = 0; i < kMacroCnt; i++)
-            *outputs[i] = params[i];
+            *outputs[i] = float8 (params[i]);
     }
     void process_params() override { ; }
     void recalculate_sr() override { ; }

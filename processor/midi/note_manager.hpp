@@ -34,6 +34,8 @@ protected:
 	void process_params() { ; }
 	void recalculate_sr() { ; }
 private:
+	void process_simd();
+
 	enum kNoteEventType
 	{
 		kNoteOn,
@@ -45,7 +47,7 @@ private:
 	{
 		kNoteEventType type = kEmpty;
 		int note_number = -1;
-		int velocity = -1;
+		int velocity = 0;
 		double timestamp = -1;
 	};
 
@@ -55,7 +57,11 @@ private:
 
 	double bar_size = 0;
 
+	
+
 	std::vector<Note> notes;
+	std::array<Note, 8> voices = { Note() };
+
 	std::deque<Note> queue;
 	Note cur_played_note;
 };

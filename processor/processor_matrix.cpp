@@ -244,7 +244,7 @@ void ProcessorMatrix::set_unlock()
 }
 
 
-double ProcessorMatrix::process()
+float8 ProcessorMatrix::process()
 {
     for (auto& i : processors)
         i->process();

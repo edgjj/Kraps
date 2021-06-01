@@ -64,9 +64,15 @@ void Delay::process_callback()
 	smoothed_time = fmax (fmin(*inputs[kDelayTimeIn] + param_time, 0.5), 0.001);
 
 	double fbsmp = dly_line->get_interp(smoother->get_smoothed_value());
+
 	fbsmp = isnan(fbsmp) ? 0.0 : fbsmp;
-	dly_line->push(*inputs[kDelayAudioIn] + fbsmp * params[1]);
-	*outputs[kDelayAudioOut] = *inputs[kDelayAudioIn] + fbsmp * params[2];
+	double in = ((float8)*inputs[kDelayAudioIn]).hadd();
+
+
+	dly_line->push(in + fbsmp * params[1]);
+	float8 out = in + fbsmp * params[2];
+
+	*outputs[kDelayAudioOut] = out;
 }
 }
 }

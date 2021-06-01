@@ -39,60 +39,61 @@ ADSR::ADSR () : Processor (p_adsr, 1, 1) // possibly add smoothing for 4 samples
 }
 
 
-void ADSR::set_gate(bool g)
+void ADSR::set_gate()
 {
-    if (g == true)
-    {
-        state = adsr_ENV_ATT;
-        pos = 0.0;
-    } 
-    else 
-    {
-        state = adsr_ENV_REL;
-    }
+    float8 cmp = *inputs[kADSRGate] != gate;   
 
-    gate = g;
+    if (movemask(cmp) == 0)
+        return;
+    
+    float8 cmp_att = andnot(gate, *inputs[kADSRGate]) == float8 (1.0f);
+    float8 cmp_rel = andnot(*inputs[kADSRGate], gate) == float8(1.0f);
+
+    float8 att = adsr_ENV_ATT;
+    float8 rel = adsr_ENV_REL;
+
+    state = blend (state, att, cmp_att); // attack
+    state = blend (state, rel, cmp_rel); // release
+
+    pos = blend (pos, float8 (0), cmp_att);
+
+    gate = *inputs[kADSRGate];
 }
 
 
 void ADSR::process_callback()
 {
-    double ret = pos;
 
-    if (*inputs[kADSRGate] != gate)
-        set_gate(*inputs[kADSRGate]);
+    set_gate();
 
-    switch (state){
-        case adsr_ENV_ATT:
-            if (pos < 1.f && step[adsr_attack] > 0.f){
-                pos += step[adsr_attack];
-            } else {
-                pos = 1.f;
-                state = adsr_ENV_DECAY;
-            }
-            break;
-        case adsr_ENV_DECAY:
-            if (pos > sustain_amp && step[adsr_decay] > 0.f){
-                pos -= step[adsr_decay];
-            } else {
-                pos = sustain_amp;
-                state = adsr_ENV_SUSTAIN;
-            }
-            break;
-        case adsr_ENV_REL:
-            if (pos > 0.f && step[adsr_release] > 0.f){
-                pos -= step[adsr_release];
-            }
-            else {
-                pos = 0.f;
-                state = adsr_ENV_IDLE;
-            }
-            break;
-        default:
-            break;
-    }
+    float8 comp_att = step[adsr_attack] > float8 (0.f) & pos < float8(1.f);
+    float8 comp_decay = step[adsr_decay] > float8 (0.f) & pos > float8(sustain_amp);
+    float8 comp_rel = step[adsr_release] > float8 (0.f) & pos > float8(0.f);
 
-    *outputs[kADSRAudioOut] = ret;
+    float8 att = state == float8(adsr_ENV_ATT);
+    float8 dec = state == float8(adsr_ENV_DECAY);
+    float8 rel = state == float8(adsr_ENV_REL);
+
+    float8 state_att = blend(float8(0), state, att);
+    float8 state_dec = blend(float8(0), state, dec);
+    float8 state_rel = blend(float8(0), state, rel);
+
+
+    state = blend(float8 (adsr_ENV_DECAY) & state_att != float8(0), state_att, comp_att & att )
+        + blend(float8(adsr_ENV_SUSTAIN) & state_dec != float8(0), state_dec, comp_decay & dec )
+        + blend(float8(adsr_ENV_IDLE) & state_rel != float8(0), state_rel, comp_rel & rel );
+
+    float8 inc(0.0);
+
+    inc = blend(inc, float8(step[adsr_attack]), state == float8(adsr_ENV_ATT));
+    inc = blend(inc, float8(-step[adsr_decay]), state == float8(adsr_ENV_DECAY));
+    inc = blend(inc, float8(-step[adsr_release]), state == float8(adsr_ENV_REL));
+
+    pos += inc;
+    pos = clamp(pos, float8(0), float8(1));
+
+    
+    *outputs[kADSRAudioOut] = pos;
     
 }
 
@@ -108,11 +109,24 @@ void ADSR::process_params ()
 
         if (params[i] <= 0.0)
         {
-            step[i] = 0.0;
+            switch (i)
+            {
+            case adsr_attack:
+                step[i] = 1.0;
+                break;
+            case adsr_decay:
+                step[i] = 1.0 - sustain_amp;
+                break;
+            default:
+                step[i] = sustain_amp;
+                break;
+            }
+            
             continue;
         }
         step[i] = 1.0 / (sample_rate * params[i]);
     }
+    
 }
 
 }

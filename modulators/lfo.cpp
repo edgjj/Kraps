@@ -135,26 +135,29 @@ double LFO::get_interp (double x){
 void LFO::inc_phase()
 {
 
-    if (*inputs[kGenGate] != gate)
+    float8 cmp = *inputs[kGenGate] != gate;
+
+    if (movemask(cmp) != 0)
     {
+        float8 cmp_gate = andnot(gate, *inputs[kGenGate]) == float8(1.0f);
+        phase = blend(phase, float8(0), cmp_gate);
         gate = *inputs[kGenGate];
-        if (gate == true)
-            phase = 0.0;
     }
 
     phase += *inputs[kGenPhaseIn] + phase_inc;
+    float8 mpi2 = 2 * M_PI;
 
     if (is_env)
     {
-        phase = fmin(phase, 2 * M_PI);
+        phase = smin(phase, mpi2);
     }
     else
-    {
-        while (phase < 0.0)
-            phase += 2 * M_PI;
+    { 
+        while (movemask(phase < float8(0.f)) != 0)
+            phase = blend(phase, phase + mpi2, phase < float8(0.f));
 
-        while (phase >= 2 * M_PI)
-            phase -= 2 * M_PI;
+        while (movemask(phase >= mpi2) != 0)
+            phase = blend(phase, phase - mpi2, phase >= mpi2);
     }
     
 
@@ -162,11 +165,21 @@ void LFO::inc_phase()
 
 void LFO::process_callback ()
 {
-    double freq = inputs[kGenFreqIn]->src->id != -1 ? *inputs[kGenFreqIn] * freq_ratio : param_freq;
+    double freq = inputs[kGenFreqIn]->src->id != -1 ? *inputs[kGenFreqIn] * float8 (freq_ratio) : param_freq;
         
     set_freq(freq);
+    float8 phases = phase * float8(phase_const);
 
-    *outputs[kLFOAudioOut] = get_interp( phase * phase_const );
+    // initial support
+    float data[8];
+    phases.storeu(data);
+
+#pragma loop(hint_parallel(8))
+    for (int i = 0; i < 8; i++)
+        data[i] = get_interp(data[i]);
+
+
+    *outputs[kLFOAudioOut] = phases.loadu(data);
     *outputs[kLFOPhaseOut] = phase;
 
     inc_phase();

@@ -51,8 +51,13 @@ public:
 protected:
     void process_callback () override
     { 
+        // needs to be reworked for simd
         for (int i = 0; i < outputs.size(); i++)
-            *outputs[i] = *inputs[i * 2] * *inputs[i * 2 + 1];
+        {
+            float8 i1 = *inputs[i * 2];
+            float8 i2 = *inputs[i * 2 + 1];
+            *outputs[i] = i1 * i2;
+        }
     }
     void process_params () override { ; }
     void recalculate_sr () override { ; }
@@ -73,7 +78,11 @@ protected:
     void process_callback() override
     {
         for (int i = 0; i < outputs.size(); i++)
-            *outputs[i] = *inputs[i * 2] + *inputs[i * 2 + 1];
+        {
+            float8 i1 = *inputs[i * 2];
+            float8 i2 = *inputs[i * 2 + 1];
+            *outputs[i] = i1 + i2;
+        }
     }
     void process_params() override { ; }
     void recalculate_sr() override { ; }

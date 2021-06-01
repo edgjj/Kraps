@@ -46,7 +46,7 @@ public:
             { 0, "AUDIO", "Outputs audio to host."}
         };
     }
-    double get_sample() 
+    float8 get_sample() 
     { 
         if (!is_bypassed()) return *inputs[0];
         else return 0.0;
@@ -77,7 +77,7 @@ public:
 
 
     NoteManager* get_note_mgr();
-    double process ();
+    float8 process ();
 
     IO_container* get_IO() { return &processors_io; }
 

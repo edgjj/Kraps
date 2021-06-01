@@ -16,6 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "simd/avir_float8_avx.h"
+
 #ifndef KRPSIO_H
 #define KRPSIO_H
 
@@ -36,7 +38,7 @@ struct Output
         this->proc = proc;
         id = _id;
     }
-    double val = 0.0;
+    float8 val = 0.0;
 
     int32_t id = 0;
     Processor* proc;
@@ -46,19 +48,19 @@ struct Output
         return val;
     }
 
-    inline const Output& operator=(const double& value)
+    inline const Output& operator=(const float8& value)
     {
         val = value;
         return *this;
     }
 
-    inline const Output& operator+=(const double& value)
+    inline const Output& operator+=(const float8& value)
     {
         val += value;
         return *this;
     }
 
-    inline const Output& operator*(const double& value)
+    inline const Output& operator*(const float8& value)
     {
         val *= value;
         return *this;
@@ -81,37 +83,28 @@ struct Input
         id = _id;
     }
 
-    inline operator double() const
+
+    inline operator float8() const
     {
         return src->val;
     }
 
-    inline operator bool() const
+    inline float8 operator== (const float8& value)
     {
-        return (bool)src->val;
+        return src->val == value;
     }
 
-    inline operator float() const
+    inline float8 operator!= (const float8& value)
     {
-        return (float)src->val;
+        return src->val != value;
     }
 
-    inline const bool operator== (const bool& value)
-    {
-        return src->val == (double)value;
-    }
-
-    inline const bool operator!= (const bool& value)
-    {
-        return src->val != (double)value;
-    }
-
-    inline double operator+ (const double& value)
+    inline double operator+ (const float8& value)
     {
         return src->val + value;
     }
 
-    inline const double operator*(const double& value)
+    inline double operator*(const float8& value)
     {
         return src->val * value;
     }

@@ -63,36 +63,48 @@ void Generator::set_phase(double phase)
 
 void Generator::set_freq () 
 {
-    freq = fmin(*inputs[kGenFreqIn] * params[0], sample_rate / 2);
-    phase_inc = freq * 2.0 * M_PI * SR_cst;
+    float8 raw_freq = *inputs[kGenFreqIn];
+    freq = clamp(raw_freq * float8(params[0]), float8(5.38330078125), float8(sample_rate / 2.0));
+    phase_inc = freq * freq_cst;
 }
 
 void Generator::set_freq(double _freq)
 {
     freq = _freq;
-    phase_inc = freq * 2.0 * M_PI * SR_cst;
+    phase_inc = freq * freq_cst;
 }
+
+void Generator::set_freq(float8 _freq)
+{
+    freq = _freq;
+    phase_inc = freq * freq_cst;
+}
+
 double Generator::get_phase()
 {
     return phase;
 }
 void Generator::inc_phase ()
 {
-    
-    if (*inputs[kGenGate] != gate)
+    float8 cmp = *inputs[kGenGate] != gate;
+
+    if (movemask(cmp) != 0)
     {
+        float8 cmp_gate = andnot(gate, *inputs[kGenGate]) == float8(1.0f);
+        phase = blend(phase, float8(0), cmp_gate);
         gate = *inputs[kGenGate];
-        if (gate == true)
-            phase = 0.0;
     }
+    float8 ext_phase = *inputs[kGenPhaseIn];
 
-    phase += *inputs[kGenPhaseIn] + phase_inc;
+    phase += phase_inc + ext_phase; //  +
 
-    while (phase < 0.0)
-        phase += 2 * M_PI;
-        
-    while (phase >= 2 * M_PI)
-        phase -= 2 * M_PI;
+    float8 mpi2 = 2 * M_PI;
+
+    while (movemask(phase < float8(0.f)) != 0)
+        phase = blend(phase, phase + mpi2, phase < float8(0.f));
+
+    while (movemask(phase >= mpi2) != 0)
+        phase = blend(phase, phase - mpi2, phase >= mpi2);
 
 }
 

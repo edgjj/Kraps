@@ -46,8 +46,7 @@ public:
     ~ADSR () { ; }
 protected:
 
-    void set_gate (bool);
-
+    void set_gate ();
 
     void process_callback () override;
     void process_params () override;
@@ -63,10 +62,11 @@ private:
     };
 
 
-    bool gate = false;
-    adsr_state state = adsr_ENV_IDLE;
-    double pos = 0.0; 
-    std::array <double, 3> step = { 0.0 };
+    float8 gate = false;
+    float8 state = adsr_ENV_IDLE;
+    float8 pos = 0.0; 
+
+    std::array <float8, 3> step = { 0.0 };
     double sustain_amp = 0.0;
 };
 

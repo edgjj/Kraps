@@ -37,6 +37,8 @@ class TubeDist : public Processor
 public:
 	TubeDist();
 	~TubeDist();
+
+	float8 ftanh(float8 x);
 	void process_params() override;
 	void process_callback() override;
 private:

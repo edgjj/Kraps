@@ -33,9 +33,10 @@ Filter::Filter() : Processor (p_filter, 3, 3)
 
     setup_filtering();
 
-    fake_ptr = new double* [1];
+    fake_ptr = new double* [2];
     fake_ptr[0] = new double[1];
-    fake_ptr[0][0] = 0.0;
+    fake_ptr[1] = new double[1];
+
 
     io_description[0] =
     {
@@ -55,6 +56,7 @@ Filter::Filter() : Processor (p_filter, 3, 3)
 
 Filter::~Filter()
 {
+    delete fake_ptr[1];
     delete fake_ptr[0];
     delete fake_ptr;
 }
@@ -62,9 +64,9 @@ Filter::~Filter()
 void Filter::setup_filtering()
 {
    
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::LowPass, 1>>(512));
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::HighPass, 1>>(512));
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::BandPass1, 1>>(512));
+    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::LowPass, 2>>(512));
+    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::HighPass, 2>>(512));
+    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::BandPass1, 2>>(512));
 
     for (auto& i : filters_bank)
     {
@@ -95,16 +97,26 @@ void Filter::process_callback()
     freq = fmax (fmin(freq, (sample_rate - 2000) / 2), 20.0);
 
     double q = *inputs[kFilterResIn] + params[1];
+
+    float8 data = *inputs[kFilterAudioIn];
+    float f8cvt[2];
+    float in = data.hadd();
+    
+
     f_params[1] = freq;
     f_params[2] = q;
     
     for (int i = 0; i < filters_bank.size(); i++)
     {
-        fake_ptr[0][0] = *inputs[kFilterAudioIn];
+        fake_ptr[0][0] = in;
+        fake_ptr[1][0] = in;
         filters_bank[i]->setParams(f_params);
         filters_bank[i]->process(1, fake_ptr);
 
-        *outputs[i] = fake_ptr[0][0];
+        f8cvt[0] = fake_ptr[0][0];
+        f8cvt[1] = fake_ptr[1][0];
+
+        *outputs[i] = data.loadu(f8cvt, 1);
     }
 
     // do parallel processing of 4 filter types: LP, HP, BP, AP

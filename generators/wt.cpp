@@ -42,35 +42,57 @@ Wavetable::~Wavetable()
     
 }
 
+float8 Wavetable::pack_voices(float8 oct, float8 pos)
+{
+    float data[8], oct_data[8], pos_data[8];
+
+    oct.store(oct_data);
+    pos.store(pos_data);
+
+#pragma loop(hint_parallel(8))
+    for (int i = 0; i < 8; i++)
+        data[i] = tables[oct_data[i]][pos_data[i]];
+
+    float8 ret = ret.loadu(data);
+
+    return ret;
+}
 
 void Wavetable::process_callback()
 {
-    if (SR_cst == 0.0 || inputs[kGenFreqIn]->src->val == 0.0)
+    if (sample_rate == 0.0 || inputs[kGenFreqIn]->src->id == -1)
         return;
 
     set_freq();
 
-    double phase_cvt    = phase_cst * phase;
+    float8 phase_cvt    = float8 (phase_cst) * phase;
 
     // shift = (params[1] / 100.0) * (table_size - waveform_size - 1); - something like this for shift
+    
+    float8 shift_in = *inputs[kWtShiftIn];
 
-    unsigned int pos_int    = *inputs[kWtShiftIn] + phase_cvt + shift;
-    unsigned int pos_int_inc = pos_int + 1;
+    float8 pos_int    = roundneg (phase_cvt + shift_in + float8 (shift));
+    float8 pos_int_inc = roundneg (pos_int + float8(1));
 
-    if (pos_int_inc == shift + waveform_size)
-        pos_int_inc = shift;
+    pos_int_inc = blend(pos_int_inc, float8(shift), pos_int_inc == float8(shift + waveform_size));
 
-    double pos_frac     = phase_cvt - (int)phase_cvt;
-    double log_arg      = freq * table_size / sample_rate; // lets think every wt we get is 44100
-    double num_oct      = fmax (fmin (log2(log_arg) - 1, NUM_OCTAVES - 1), 0);
+    float8 pos_frac     = phase_cvt - roundneg(phase_cvt);
+    float8 log_arg      = freq * float8(table_size / sample_rate); // lets think every wt we get is 44100
+    float8 num_oct      = clamp (slog2 (log_arg), 0, NUM_OCTAVES - 1);
 
-    unsigned int no_strip = (unsigned int)num_oct;
-    double  oct_frac = num_oct - no_strip;
+    float8 no_strip = roundneg (num_oct);
+    float8 no_strip_inc = no_strip + float8(1);
+    float8 oct_frac = num_oct - no_strip;
 
-    double o1 = tables[no_strip][pos_int_inc] * pos_frac + tables[no_strip][pos_int] * (1 - pos_frac);
-    double o2 = tables[no_strip + 1][pos_int_inc] * pos_frac + tables[no_strip + 1][pos_int] * (1 - pos_frac);
+    float8 o11 = pack_voices(no_strip, pos_int);
 
-    *outputs[kGenAudioOut] = o1 * (1 - oct_frac) + o2 * oct_frac;
+    float8 o1 = pack_voices (no_strip, pos_int_inc) * pos_frac + pack_voices (no_strip, pos_int) * ( float8(1) - pos_frac); // resolve this for SIMD 
+    float8 o2 = pack_voices(no_strip_inc, pos_int_inc) * pos_frac + pack_voices(no_strip_inc, pos_int) * (float8(1) - pos_frac); // resolve this for SIMD 
+
+    //float8 o1 = tables[no_strip][pos_int_inc] * pos_frac + tables[no_strip][pos_int] * (1 - pos_frac); // resolve this for SIMD 
+    //float8 o2 = tables[no_strip_inc][pos_int_inc] * pos_frac + tables[no_strip_inc][pos_int] * (1 - pos_frac);
+
+    *outputs[kGenAudioOut] = o1 * (float8 (1) - oct_frac) + o2 * oct_frac;
     *outputs[kGenPhaseOut] = phase;
 
     inc_phase ();

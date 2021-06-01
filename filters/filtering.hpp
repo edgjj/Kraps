@@ -52,6 +52,9 @@ private:
 	double freq = 0.0;
 	std::vector <std::unique_ptr <Dsp::Filter> > filters_bank;
 	Dsp::Params f_params;
+
+	
+
 	double** fake_ptr;
 };
 }

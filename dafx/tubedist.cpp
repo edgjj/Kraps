@@ -54,10 +54,21 @@ void TubeDist::process_params()
     out_gain = d2g(params[5]);
 }
 
+float8 TubeDist::ftanh(float8 x)
+{
+    float8 magic = 135135.0f;
+    float8 x2 = x * x;
+    float8 a = x * (magic + x2 * (float8(17325.0f) + x2 * (float8(378.0f) + x2)));
+    float8 b = magic + x2 * (float8 (62370.0f) + x2 * (float8(3150.0f) + x2 * float8(28.0f)));
+
+    return a / b;
+}
+
 void TubeDist::process_callback()
 {
-    double in = *inputs[kDAFXAudioIn];
-    double outsmp = in * pre_gain;
+    float8 in = *inputs[kDAFXAudioIn];
+    float outsmp = in.hadd() * pre_gain;
+
     if (outsmp < 0) outsmp = tanh((outsmp / bC) * gain) * bC;
 
     //scaled biased x^1.5
@@ -73,8 +84,14 @@ void TubeDist::process_callback()
         outsmp *= tC;
     }
 
+
+    /*for (int i = 0; i < 2; i++)
+    {
+        process_dist ()
+    }*/
+
     outsmp *= out_gain;
-    *outputs[kDAFXAudioOut] = outsmp;
+    *outputs[kDAFXAudioOut] = float8 (outsmp);
 }
 }
 }

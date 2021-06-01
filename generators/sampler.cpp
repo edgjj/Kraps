@@ -123,17 +123,13 @@ void Sampler::process_callback()
     
     */
 
-    double cur_pos = pos;
-    unsigned int pos_int = cur_pos;
-    unsigned int pos_int_inc = pos_int + 1;
+    float8 cur_pos = pos;
+    float8 pos_int = roundneg (cur_pos);
+    float8 pos_int_inc = pos_int + float8(1);
 
-    double pos_frac = cur_pos - (int)cur_pos;
+    float8 pos_frac = cur_pos - roundneg(cur_pos);
 
-    if (pos == cur_file_len - 1)
-        *outputs[kSamplerAudioOut] = 0.0;
-    else
-        *outputs[kSamplerAudioOut] = source[pos_int] * (1 - pos_frac) + source[pos_int_inc] * pos_frac;
-
+    *outputs[kSamplerAudioOut] = blend(source[pos_int] * (1 - pos_frac) + source[pos_int_inc] * pos_frac, float8(0.f), pos == float8(cur_file_len - 1));
 
     inc_phase();
 }
@@ -149,28 +145,29 @@ double Sampler::get_position()
 }
 void Sampler::upd_freq()
 {
-    double freq = fmin(*inputs[kSamplerFreqIn], sample_rate / 2);
+    float8 freq = smin( *inputs[kSamplerFreqIn], float8 (sample_rate / 2) );
     double c3 = 261.63;
-    if (freq == 0.0)
+    if (freq == float8 (0.f))
         freq = c3;
     phase_inc = (file_sample_rate / sample_rate) * freq / base_freq;
 }
 void Sampler::inc_phase()
 {
 
-    if (*inputs[kSamplerGateIn] != gate)
+    float8 cmp = *inputs[kSamplerGateIn] != gate;
+
+    if (movemask(cmp) != 0)
     {
+        float8 cmp_gate = andnot(gate, *inputs[kSamplerGateIn]) == float8(1.0f);
+        pos = blend(pos, float8(params[1]), cmp_gate);
         gate = *inputs[kSamplerGateIn];
-        if (gate == true)
-            pos = params[1];
     }
-    
 
     pos += *inputs[kSamplerPhaseIn] + phase_inc;
     if (is_looping == false)
         pos = fmax(fmin(pos, cur_file_len - 1), 0.0);
     else
-        pos = pos >= cur_file_len - 1 ? 0 : pos;
+        pos = pos.operator float() >= cur_file_len - 1 ? 0 : pos;
 
 }
 

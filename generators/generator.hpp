@@ -40,6 +40,7 @@ public:
     Generator(uint8_t type,uint8_t i, uint8_t o);
 
     void set_freq (double);
+    void set_freq (float8);
     void set_freq ();
     void set_phase (double);
     double get_phase();
@@ -50,13 +51,13 @@ public:
 protected:
     void recalculate_sr () override 
     {
-        SR_cst = 1.0 / get_SR();  
+        freq_cst = 1.0 * float8(2 * M_PI) / get_SR();
     }   
-    double phase = 0.0;
-    bool gate = 0.0;
-    double freq = 0.0;
-    double SR_cst = 0.0;
-    double phase_inc = 0.0;
+    float8 phase = 0.0;
+    float8 gate = 0.0;
+    float8 freq = 0.0;
+    float8 freq_cst = 0.0;
+    float8 phase_inc = 0.0;
 private:
     
 
