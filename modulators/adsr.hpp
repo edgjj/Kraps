@@ -42,6 +42,7 @@ class ADSR : public Processor
 {
 public:
     ADSR ();
+    float8 get_position();
 
     ~ADSR () { ; }
 protected:

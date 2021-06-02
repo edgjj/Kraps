@@ -60,6 +60,15 @@ void ADSR::set_gate()
     gate = *inputs[kADSRGate];
 }
 
+float8 ADSR::get_position()
+{
+    set_lock();
+    float8 ret = pos;
+    set_unlock();
+
+    return ret;
+    
+}
 
 void ADSR::process_callback()
 {

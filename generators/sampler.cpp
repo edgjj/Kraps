@@ -156,7 +156,10 @@ void Sampler::process_params()
 }
 float8 Sampler::get_position()
 {
-    return pos;
+    set_lock();
+    float8 ret = pos;
+    set_unlock();
+    return ret;
 }
 void Sampler::upd_freq()
 {

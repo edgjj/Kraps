@@ -84,8 +84,6 @@ void Wavetable::process_callback()
     float8 no_strip_inc = no_strip + float8(1);
     float8 oct_frac = num_oct - no_strip;
 
-    float8 o11 = pack_voices(no_strip, pos_int);
-
     float8 o1 = pack_voices (no_strip, pos_int_inc) * pos_frac + pack_voices (no_strip, pos_int) * ( float8(1) - pos_frac); // resolve this for SIMD 
     float8 o2 = pack_voices(no_strip_inc, pos_int_inc) * pos_frac + pack_voices(no_strip_inc, pos_int) * (float8(1) - pos_frac); // resolve this for SIMD 
 
