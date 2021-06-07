@@ -49,8 +49,8 @@ public:
 	uint32_t get_source_length();
 
 
-	nlohmann::json get_serialize_obj() override;
-	void set_serialize(nlohmann::json) override;
+	const nlohmann::json get_serialize_obj() override;
+	void set_serialize(const nlohmann::json&) override;
 protected:
 	void process_callback() override;
 	void process_params() override;
@@ -59,7 +59,7 @@ protected:
 	float8 phase_inc = 0.0;
 private:
 	void load_source_unserialize(double* buf);
-	float8 pack_voices(float8 pos);
+	float8 pack_voices(const float8& pos);
 
 	std::unique_ptr<double[]> source;
 	bool is_looping = 0;

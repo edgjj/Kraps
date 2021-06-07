@@ -29,8 +29,9 @@ namespace kraps {
 class float8
 {
 public:
-	float8()
+	float8() : value ( _mm256_set1_ps (0.0f))
 	{
+
 	}
 
 	float8( const float8& s )
@@ -427,6 +428,11 @@ inline float8 smax(const float8& Value, const float8& Value2)
 inline float8 smin(const float8& Value, const float8& Value2)
 {
 	return (_mm256_min_ps(Value.value, Value2.value));
+}
+
+inline float8 s_isnan(const float8& Value)
+{
+	return (_mm256_cmp_ps(Value.value, Value.value, _CMP_UNORD_Q));
 }
 
 inline int movemask(const float8& val)

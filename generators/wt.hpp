@@ -41,10 +41,9 @@ public:
     void fill_table_from_buffer (double*, uint32_t);
     void fill_table_from_fcn (double (*fcn) (double phase));
 
-    
+    const nlohmann::json get_serialize_obj() override;
+    void set_serialize(const nlohmann::json&) override;
 
-    nlohmann::json get_serialize_obj() override;
-    void set_serialize(nlohmann::json) override;
     double* get_table_view () const;
     uint32_t get_shift();
     uint16_t get_wform_size();
@@ -55,7 +54,7 @@ protected:
     void process_callback () override;
     void process_params() override;
 private:
-    float8 pack_voices(float8 oct, float8 pos);
+    float8 pack_voices(const float8& oct, const float8& pos);
 
     void fill_mipmap ();
 

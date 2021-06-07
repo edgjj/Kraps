@@ -38,7 +38,7 @@ public:
 	TubeDist();
 	~TubeDist();
 
-	float8 ftanh(float8 x);
+	float8 ftanh(const float8& x);
 	void process_params() override;
 	void process_callback() override;
 private:

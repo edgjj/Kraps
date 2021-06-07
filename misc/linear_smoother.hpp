@@ -31,6 +31,7 @@ public:
 	double get_smoothed_value();
 	//void set_smoothing_time(double time) { smoothing_time = time; }
 	void set_sample_rate(double _sample_rate);
+
 	~LinearSmoother();
 private:
 	double cr = 4096;

@@ -54,7 +54,7 @@ void TubeDist::process_params()
     out_gain = d2g(params[5]);
 }
 
-float8 TubeDist::ftanh(float8 x)
+float8 TubeDist::ftanh(const float8& x)
 {
     float8 magic = 135135.0f;
     float8 x2 = x * x;
@@ -66,32 +66,32 @@ float8 TubeDist::ftanh(float8 x)
 
 void TubeDist::process_callback()
 {
-    float8 in = *inputs[kDAFXAudioIn];
-    float outsmp = in.hadd() * pre_gain;
+    float8 in = *inputs[kDAFXAudioIn] * float8(pre_gain);
 
-    if (outsmp < 0) outsmp = tanh((outsmp / bC) * gain) * bC;
-
-    //scaled biased x^1.5
-    outsmp += bC;
-    outsmp = outsmp * sqrtf(fabs(outsmp)) - bC * sqrtf(fabs(bC)); // x^1.5 = in*(sqrt(abs(in))
-
-    outsmp /= sqrtf(bC) * 1.5;
-
-    if (outsmp >= 0) {
-        outsmp *= gain;
-        outsmp /= tC;
-        outsmp = tanh(outsmp) * (pC + 1) - (outsmp / (sqrtf(outsmp * outsmp + 1))) * pC;
-        outsmp *= tC;
-    }
-
-
-    /*for (int i = 0; i < 2; i++)
+    float data[8];
+    in.storeu(data);
+    
+#pragma loop(hint_parallel(8))
+    for (int i = 0; i < 8; i++)
     {
-        process_dist ()
-    }*/
+        if (data[i] < 0) data[i] = tanh((data[i] / bC) * gain) * bC;
 
-    outsmp *= out_gain;
-    *outputs[kDAFXAudioOut] = float8 (outsmp);
+        //scaled biased x^1.5
+        data[i] += bC;
+        data[i] = data[i] * sqrtf(fabs(data[i])) - bC * sqrtf(fabs(bC)); // x^1.5 = in*(sqrt(abs(in))
+
+        data[i] /= sqrtf(bC) * 1.5;
+
+        if (data[i] >= 0) {
+            data[i] *= gain;
+            data[i] /= tC;
+            data[i] = tanh(data[i]) * (pC + 1) - (data[i] / (sqrtf(data[i] * data[i] + 1))) * pC;
+            data[i] *= tC;
+        }
+    }
+    
+
+    *outputs[kDAFXAudioOut] = in.loadu(data) * float8 (out_gain);
 }
 }
 }

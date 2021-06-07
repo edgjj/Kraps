@@ -185,7 +185,7 @@ void LFO::process_callback ()
     inc_phase();
 }
 
-nlohmann::json LFO::get_serialize_obj()
+const nlohmann::json LFO::get_serialize_obj()
 {
     set_lock();
     nlohmann::json o;
@@ -206,7 +206,7 @@ nlohmann::json LFO::get_serialize_obj()
     return o;
 }
 
-void LFO::set_serialize(nlohmann::json obj)
+void LFO::set_serialize(const nlohmann::json& obj)
 {
     Processor::set_serialize(obj);
 

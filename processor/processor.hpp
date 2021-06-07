@@ -96,8 +96,8 @@ public:
     IODescription get_io_description(uint32_t num, bool is_output = false);
 
     /* serializing things */
-    virtual nlohmann::json get_serialize_obj();
-    virtual void set_serialize(nlohmann::json obj);
+    virtual const nlohmann::json get_serialize_obj();
+    virtual void set_serialize(const nlohmann::json& obj);
 
 
     virtual ~Processor();

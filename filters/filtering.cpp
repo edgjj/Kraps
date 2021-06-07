@@ -33,10 +33,9 @@ Filter::Filter() : Processor (p_filter, 3, 3)
 
     setup_filtering();
 
-    fake_ptr = new double* [2];
-    fake_ptr[0] = new double[1];
-    fake_ptr[1] = new double[1];
-
+    fake_ptr = new double* [8];
+    for (int i = 0; i < 8; i++)
+        fake_ptr[i] = new double[1];
 
     io_description[0] =
     {
@@ -56,17 +55,18 @@ Filter::Filter() : Processor (p_filter, 3, 3)
 
 Filter::~Filter()
 {
-    delete fake_ptr[1];
-    delete fake_ptr[0];
-    delete fake_ptr;
+    for (int i = 0; i < 8; i++)
+        delete [] fake_ptr[i];
+
+    delete [] fake_ptr;
 }
 
 void Filter::setup_filtering()
 {
-   
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::LowPass, 2>>(512));
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::HighPass, 2>>(512));
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::BandPass1, 2>>(512));
+
+    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::LowPass, 8>>(512));
+    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::HighPass, 8>>(512));
+    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::BandPass1, 8>>(512));
 
     for (auto& i : filters_bank)
     {
@@ -93,34 +93,37 @@ void Filter::process_callback()
     if (sample_rate == 0.0)
         return;
 
-    freq = *inputs[kFilterFreqIn] * ((sample_rate - 2000) / 2) + params[0];
-    freq = fmax (fmin(freq, (sample_rate - 2000) / 2), 20.0);
+    freq = *inputs[kFilterFreqIn] * float8((sample_rate - 2000) / 2) + float8 (params[0]);
+    freq = clamp(freq, 20.0, (sample_rate - 2000) / 2); // we got avx float and still hadd
 
-    double q = *inputs[kFilterResIn] + params[1];
 
-    float8 data = *inputs[kFilterAudioIn];
-    float f8cvt[2];
-    float in = data.hadd();
-    
+    float8 q = *inputs[kFilterResIn] + float8 (params[1]);
+    float8 in = *inputs[kFilterAudioIn];
+    float u_data[8];
+
+    in.storeu(u_data);
 
     f_params[1] = freq;
     f_params[2] = q;
     
+
+    // need AVX filters implementation so we dont need to do that this below
+
     for (int i = 0; i < filters_bank.size(); i++)
     {
-        fake_ptr[0][0] = in;
-        fake_ptr[1][0] = in;
+        for (int j = 0; j < 8; j++)
+            fake_ptr[j][0] = u_data[j];
+
+
         filters_bank[i]->setParams(f_params);
         filters_bank[i]->process(1, fake_ptr);
 
-        f8cvt[0] = fake_ptr[0][0];
-        f8cvt[1] = fake_ptr[1][0];
+        for (int j = 0; j < 8; j++)
+            u_data[j] = fake_ptr[j][0];
 
-        *outputs[i] = data.loadu(f8cvt, 2);
+        *outputs[i] = in.loadu(u_data);
     }
 
-    // do parallel processing of 4 filter types: LP, HP, BP, AP
-    // also we need parameter smoothing
 }
 
 }

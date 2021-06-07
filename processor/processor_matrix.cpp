@@ -253,7 +253,7 @@ float8 ProcessorMatrix::process()
     return ((OutputProcessor*)processors[0].get())->get_sample();
 }
 
-nlohmann::json ProcessorMatrix::serialize()
+const nlohmann::json ProcessorMatrix::serialize()
 {
     std::lock_guard<std::mutex> lock(proc_mutex);
     
@@ -293,11 +293,9 @@ nlohmann::json ProcessorMatrix::serialize()
     return o;
 }
 
-int ProcessorMatrix::deserialize(nlohmann::json o)
+int ProcessorMatrix::deserialize(const nlohmann::json& o)
 {
     clear();
-
-    
 
     using js = nlohmann::json;
 

@@ -34,6 +34,7 @@ void LinearSmoother::set_sample_rate(double _sample_rate)
 	sample_rate = _sample_rate; 
 	sr_cst = 1.0 / sample_rate;
 }
+
 LinearSmoother::~LinearSmoother()
 {
 

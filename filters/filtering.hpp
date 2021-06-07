@@ -49,7 +49,7 @@ public:
 	void process_callback() override;
 private:
 	void setup_filtering();
-	double freq = 0.0;
+	float8 freq = 0.0;
 	std::vector <std::unique_ptr <Dsp::Filter> > filters_bank;
 	Dsp::Params f_params;
 

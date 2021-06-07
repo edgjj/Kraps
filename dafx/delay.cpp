@@ -26,9 +26,6 @@ Delay::Delay() : Processor (p_delay, 2, 1)
 {
 	params = { 0.02, 0.7, 0.5 };
 	params_constrainments = { {0.001, 0.5}, {0, 1}, {0, 1} };
-	dly_line = std::make_unique<DelayLine <double>>(2 * 44100, 44100);
-	smoother = std::make_unique<misc::LinearSmoother>(smoothed_time);
-
 
 	io_description[0] =
 	{
@@ -42,7 +39,7 @@ Delay::Delay() : Processor (p_delay, 2, 1)
 	};
 
 
-	
+	smoother = std::make_unique <misc::LinearSmoother> (smoothed_time);
 }
 
 Delay::~Delay()
@@ -51,7 +48,7 @@ Delay::~Delay()
 }
 void Delay::recalculate_sr()
 {
-	dly_line = std::make_unique<DelayLine <double>>(2 * sample_rate, sample_rate);
+	dly_line.set_sample_rate(sample_rate);
 	smoother->set_sample_rate(sample_rate);
 }
 
@@ -62,15 +59,14 @@ void Delay::process_params()
 void Delay::process_callback()
 {
 	smoothed_time = fmax (fmin(*inputs[kDelayTimeIn] + param_time, 0.5), 0.001);
+	float8 fbsmp = dly_line.get_interp(smoother->get_smoothed_value());
+	
+	fbsmp = blend(fbsmp, float8(0), s_isnan(fbsmp));
 
-	double fbsmp = dly_line->get_interp(smoother->get_smoothed_value());
+	float8 in = *inputs[kDelayAudioIn];
 
-	fbsmp = isnan(fbsmp) ? 0.0 : fbsmp;
-	double in = ((float8)*inputs[kDelayAudioIn]).hadd();
-
-
-	dly_line->push(in + fbsmp * params[1]);
-	float8 out = in + fbsmp * params[2];
+	dly_line.push(in + fbsmp * float8 (params[1]));
+	float8 out = in + fbsmp * float8 (params[2]);
 
 	*outputs[kDelayAudioOut] = out;
 }

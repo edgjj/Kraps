@@ -129,7 +129,7 @@ IODescription Processor::get_io_description(uint32_t num, bool is_output)
     return ret;
 }
 
-nlohmann::json Processor::get_serialize_obj()
+const nlohmann::json Processor::get_serialize_obj()
 {
     set_lock();
     nlohmann::json o;
@@ -143,7 +143,7 @@ nlohmann::json Processor::get_serialize_obj()
     return o;
 }
 
-void Processor::set_serialize(nlohmann::json obj)
+void Processor::set_serialize(const nlohmann::json& obj)
 {
     set_lock();
 

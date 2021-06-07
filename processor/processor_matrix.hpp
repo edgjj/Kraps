@@ -82,8 +82,8 @@ public:
     IO_container* get_IO() { return &processors_io; }
 
 
-    nlohmann::json serialize();
-    int deserialize(nlohmann::json o);
+    const nlohmann::json serialize();
+    int deserialize(const nlohmann::json& o);
 
     ~ProcessorMatrix ();
 private:

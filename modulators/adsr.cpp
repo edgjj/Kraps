@@ -75,6 +75,7 @@ void ADSR::process_callback()
 
     set_gate();
 
+    
     float8 comp_att = step[adsr_attack] > float8 (0.f) & pos < float8(1.f);
     float8 comp_decay = step[adsr_decay] > float8 (0.f) & pos > float8(sustain_amp);
     float8 comp_rel = step[adsr_release] > float8 (0.f) & pos > float8(0.f);
@@ -86,7 +87,6 @@ void ADSR::process_callback()
     float8 state_att = blend(float8(0), state, att);
     float8 state_dec = blend(float8(0), state, dec);
     float8 state_rel = blend(float8(0), state, rel);
-
 
     state = blend(float8 (adsr_ENV_DECAY) & state_att != float8(0), state_att, comp_att & att )
         + blend(float8(adsr_ENV_SUSTAIN) & state_dec != float8(0), state_dec, comp_decay & dec )
@@ -112,7 +112,11 @@ void ADSR::process_params ()
     {
         if (i == adsr_sustain)
         {
-            sustain_amp = pow(10, params[i] / 20.0);
+            if (params[i] == -60)
+                sustain_amp = 0;
+            else
+                sustain_amp = pow(10, params[i] / 20.0);
+
             continue;
         }
 

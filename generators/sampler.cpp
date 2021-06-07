@@ -104,7 +104,7 @@ double* Sampler::get_source_view() const
 	return source.get();
 }
 
-float8 Sampler::pack_voices(float8 pos)
+float8 Sampler::pack_voices(const float8& pos)
 {
     float data[8], pos_data[8];
 
@@ -192,7 +192,7 @@ void Sampler::inc_phase()
 
 }
 
-nlohmann::json Sampler::get_serialize_obj()
+const nlohmann::json Sampler::get_serialize_obj()
 {
     set_lock();
 
@@ -207,7 +207,7 @@ nlohmann::json Sampler::get_serialize_obj()
     return o;
 }
 
-void Sampler::set_serialize(nlohmann::json obj)
+void Sampler::set_serialize(const nlohmann::json& obj)
 {
     Processor::set_serialize(obj);
     set_lock();

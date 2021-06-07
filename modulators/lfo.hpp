@@ -53,8 +53,8 @@ public:
     void set_tension (int, double);
     void remove_point (int);
     
-    nlohmann::json get_serialize_obj() override;
-    void set_serialize(nlohmann::json) override;
+    const nlohmann::json get_serialize_obj() override;
+    void set_serialize(const nlohmann::json&) override;
     double get_interp(double x);
 
     ~LFO() { ; }

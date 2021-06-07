@@ -36,42 +36,69 @@ enum kDelayOutputs
     kDelayAudioOut
 };
 
-template<typename T>
-class DelayLine {
+template<size_t MaxTime>
+class AVXDelayLine {
 public:
-    DelayLine(int numSamples, double smp_rate) {
-        sample_cnt = numSamples;
-        sample_rate = smp_rate;
-        raw_buf.resize(sample_cnt);
+    AVXDelayLine()
+    {    
     };
-    ~DelayLine() {
+    ~AVXDelayLine()
+    {
     }
-    void push(T smp) {
+
+    void set_sample_rate(double sr)
+    {
+        sample_rate = sr;
+        sample_cnt = max_time * sample_rate; 
+        w_pos = 0;
+        raw_buf.clear();
+        raw_buf.resize(sample_cnt + 1);
+             
+    }
+
+    void push(const float8& smp) 
+    {
+        assert(sample_rate != 0);
+
         raw_buf[w_pos] = smp;
         w_pos = w_pos == 0 ? sample_cnt - 1 : w_pos - 1;
     }
-    T get(int time) {
+    float8 get(float8 time) 
+    {    
         int norm = w_pos + time;
-        norm = norm < 0 ? norm += sample_cnt : norm;
+        norm = norm < 0 ? norm += sample_cnt : norm; // calc custom sample for each time in packed float
+
         return raw_buf[norm % sample_cnt];
     }
-    T get_interp(float time) {
-        double src_time = time * sample_rate;
-        double trunc_t = (int)src_time;
-        double frac = src_time - (int)src_time;
 
-        double ret = get(trunc_t + 1) * pow(frac, 3) / 6
-            + get(trunc_t) * (pow(1 + frac, 3) - 4 * pow(frac, 3)) / 6
-            + get(trunc_t - 1) * (pow(2 - frac, 3) - 4 * pow(1 - frac, 3)) / 6
-            + get(trunc_t - 2) * pow(1 - frac, 3) / 6;
+    float8 get_interp(float8 time) 
+    {
+        assert(sample_rate != 0);
+
+        float8 time8 = float8(time);
+
+        float8 src_time = time8 * float8(sample_rate);
+        float8 trunc_t = roundneg (src_time);
+            
+        float8 frac = src_time - trunc_t;
+        
+        float8 ret = get(trunc_t + float8(1)) * frac + get(trunc_t) * (float8(1) - frac);
+
+       /* float8 ret = get(trunc_t + float8(1)) * pow(frac, 3) / float8 (6)
+            + get(trunc_t) * (pow(float8 (1) + frac, 3) - 4 * pow(frac, 3)) / float8 (6)
+            + get(trunc_t - float8(1)) * (pow(float8(2) - frac, 3) - 4 * pow(float8(1) - frac, 3)) / float8 (6)
+            + get(trunc_t - float8(2)) * pow(float8(1) - frac, 3) / float8 (6);*/
 
         return ret;
 
     }
 
 private:
-    std::vector<T> raw_buf;
-    int w_pos = 0;
+    std::vector<float8> raw_buf;
+    int w_pos;
+
+    double max_time = MaxTime;
+
     int sample_cnt = 0;
     double sample_rate = 0.0;
 };
@@ -85,9 +112,11 @@ public:
     void recalculate_sr() override;
     void process_params() override;
 private:
-    std::unique_ptr<misc::LinearSmoother> smoother;
+    std::unique_ptr <misc::LinearSmoother> smoother;
 
-    std::unique_ptr<DelayLine <double>> dly_line;
+
+    AVXDelayLine <5> dly_line;
+
     double param_time = 0.0;
     double smoothed_time = 0.0;
 };

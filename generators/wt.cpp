@@ -42,7 +42,7 @@ Wavetable::~Wavetable()
     
 }
 
-float8 Wavetable::pack_voices(float8 oct, float8 pos)
+float8 Wavetable::pack_voices(const float8& oct, const float8& pos)
 {
     float data[8], oct_data[8], pos_data[8];
 
@@ -66,18 +66,17 @@ void Wavetable::process_callback()
     set_freq();
 
     float8 phase_cvt    = float8 (phase_cst) * phase;
-
-    // shift = (params[1] / 100.0) * (table_size - waveform_size - 1); - something like this for shift
     
     float8 shift_in = *inputs[kWtShiftIn];
 
     float8 pos_int    = roundneg (phase_cvt + shift_in + float8 (shift));
-    float8 pos_int_inc = roundneg (pos_int + float8(1));
+    float8 pos_int_inc = pos_int + float8(1);
 
-    pos_int_inc = blend(pos_int_inc, float8(shift), pos_int_inc == float8(shift + waveform_size));
+    pos_int_inc = blend(pos_int_inc, pos_int_inc - float8(waveform_size), pos_int_inc >= float8(table_size));
 
     float8 pos_frac     = phase_cvt - roundneg(phase_cvt);
-    float8 log_arg      = freq * float8(table_size / sample_rate); // lets think every wt we get is 44100
+    float8 log_arg      = freq * float8(table_size / sample_rate); 
+
     float8 num_oct      = clamp (slog2 (log_arg), 0, NUM_OCTAVES - 1);
 
     float8 no_strip = roundneg (num_oct);
@@ -86,9 +85,6 @@ void Wavetable::process_callback()
 
     float8 o1 = pack_voices (no_strip, pos_int_inc) * pos_frac + pack_voices (no_strip, pos_int) * ( float8(1) - pos_frac); // resolve this for SIMD 
     float8 o2 = pack_voices(no_strip_inc, pos_int_inc) * pos_frac + pack_voices(no_strip_inc, pos_int) * (float8(1) - pos_frac); // resolve this for SIMD 
-
-    //float8 o1 = tables[no_strip][pos_int_inc] * pos_frac + tables[no_strip][pos_int] * (1 - pos_frac); // resolve this for SIMD 
-    //float8 o2 = tables[no_strip_inc][pos_int_inc] * pos_frac + tables[no_strip_inc][pos_int] * (1 - pos_frac);
 
     *outputs[kGenAudioOut] = o1 * (float8 (1) - oct_frac) + o2 * oct_frac;
     *outputs[kGenPhaseOut] = phase;
@@ -201,7 +197,7 @@ void Wavetable::process_params()
     if (table_size == waveform_size)
         shift = 0;
     if (waveform_size < table_size)
-        shift = (params[1] / 100.0) * (table_size - waveform_size - 1);
+        shift = (params[1] / 100.0) * (table_size - waveform_size);
 
 }
 
@@ -216,7 +212,7 @@ uint32_t Wavetable::get_table_size()
 }
 
 
-nlohmann::json Wavetable::get_serialize_obj()
+const nlohmann::json Wavetable::get_serialize_obj()
 {
     set_lock();
     nlohmann::json o;
@@ -230,7 +226,7 @@ nlohmann::json Wavetable::get_serialize_obj()
     return o;
 }
 
-void Wavetable::set_serialize(nlohmann::json obj)
+void Wavetable::set_serialize(const nlohmann::json& obj)
 {
     Processor::set_serialize(obj);
 
