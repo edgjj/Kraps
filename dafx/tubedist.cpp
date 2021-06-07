@@ -66,7 +66,8 @@ float8 TubeDist::ftanh(const float8& x)
 
 void TubeDist::process_callback()
 {
-    float8 in = *inputs[kDAFXAudioIn] * float8(pre_gain);
+    float8 in = *inputs[kDAFXAudioIn];
+    in *= float8(pre_gain);
 
     float data[8];
     in.storeu(data);
