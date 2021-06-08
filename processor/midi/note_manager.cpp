@@ -55,7 +55,7 @@ void NoteManager::upd_tempo(int time_sig_numerator, int time_sig_denominator, do
 	int basic_dem = 4;
 	double ratio = (double)basic_dem / time_sig_denominator;
 	bar_size = tempo / (time_sig_numerator * ratio * 60);
-	*outputs[kNoteMgrSync] = bar_size;
+	*outputs[kNoteMgrSync] = float8 (bar_size);
 }
 
 void NoteManager::process_simd()
