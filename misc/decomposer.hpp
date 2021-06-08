@@ -14,9 +14,9 @@ public:
 		float data[8];
 		for (int i = 0; i < inputs.size(); i++)
 		{
-			inputs[i]->src->val.loadu(data);
+			inputs[i]->src->val.storeu(data);
 			for (int o = 0; o < 8; o++)
-				*outputs[o] = float8(data[o]);
+				*outputs[o + i*8] = float8(data[o]);
 		}
 	}
 
