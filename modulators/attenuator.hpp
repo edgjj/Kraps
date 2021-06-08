@@ -22,28 +22,10 @@
 
 namespace kraps {
 
-enum kAttenInputs {
-    kAttenIn1,
-    kAttenMod1,
-    kAttenIn2,
-    kAttenMod2,
-    kAttenIn3,
-    kAttenMod3,
-    kAttenIn4,
-    kAttenMod4,
-};
-
-enum kAttenOutputs {
-    kAttenOut1,
-    kAttenOut2,
-    kAttenOut3,
-    kAttenOut4
-};
-
 class Attenuator : public Processor
 {
 public:
-    Attenuator () : Processor (p_atten, 8, 4)
+    Attenuator () : Processor (p_atten, 16, 8)
     {
 
     }
@@ -59,8 +41,6 @@ protected:
             *outputs[i] = i1 * i2;
         }
     }
-    void process_params () override { ; }
-    void recalculate_sr () override { ; }
 
 private:
     
@@ -69,7 +49,7 @@ private:
 class Summer : public Processor
 {
 public:
-    Summer() : Processor(p_summer, 8, 4)
+    Summer() : Processor(p_summer, 16, 8)
     {
 
     }

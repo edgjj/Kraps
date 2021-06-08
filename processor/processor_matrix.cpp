@@ -81,12 +81,9 @@ uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
     case p_sampler:
         processors.emplace_back(std::make_unique <Sampler>());
         break;
-    case p_notemgr:
-        return -1;
-    case p_output:
-        return -1;
-    case p_misc:
-        return -1;
+    case p_decomposer:
+        processors.emplace_back(std::make_unique<misc::Decomposer>());
+        break;
     default:
         return -1;
     }

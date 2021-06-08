@@ -29,7 +29,7 @@
 #include "../dafx/tubedist.hpp"
 #include "../dafx/delay.hpp"
 #include "../processor/midi/note_manager.hpp"
-
+#include "../misc/decomposer.hpp"
 
 typedef std::map <uint32_t, std::tuple< std::vector <std::unique_ptr<kraps::io::Input> >*,
     std::vector <std::unique_ptr<kraps::io::Output> >*> > IO_container;

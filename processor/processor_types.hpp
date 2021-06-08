@@ -36,10 +36,11 @@ typedef enum ProcessorTypes
     p_delay,
     p_summer,
     p_sampler,
+    p_decomposer,
     p_notemgr = 240,
     p_output,
     p_misc,
-    p_count = p_sampler
+    p_count = p_decomposer
 } ProcessorTypes;
 
 
@@ -56,6 +57,7 @@ static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
     { p_delay, "Delay"},
     { p_notemgr, "Note Manager"},
     { p_output, "Output Node"},
+    { p_decomposer, "Decomposer"},
     { p_misc, "Miscellaneous"}
 };
 
