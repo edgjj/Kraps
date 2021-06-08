@@ -22,7 +22,6 @@
 #include "generator.hpp"
 #include "../fft/kissfft.hpp"
 
-#define NUM_OCTAVES 14
 
 namespace kraps {
 
@@ -39,6 +38,7 @@ public:
 
     void fill_table_from_buffer (float*, uint32_t);
     void fill_table_from_buffer (double*, uint32_t);
+
     void fill_table_from_fcn (double (*fcn) (double phase));
 
     const nlohmann::json get_serialize_obj() override;
@@ -65,7 +65,7 @@ private:
     uint32_t table_size = 0;
 
     std::unique_ptr<double[]> table;
-    std::array <std::unique_ptr<double[]>, NUM_OCTAVES> tables;
+    std::vector <std::unique_ptr<double[]>> tables;
 
 };
 

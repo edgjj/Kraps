@@ -48,7 +48,12 @@ public:
     }
     float8 get_sample() 
     { 
-        if (!is_bypassed()) return *inputs[0];
+        if (!is_bypassed())
+        {
+            float8 out = *inputs[0];
+            out = blend(out, float8(0), out > float8(30.f));
+            return out;
+        }
         else return 0.0;
     }
     ~OutputProcessor() { ; }

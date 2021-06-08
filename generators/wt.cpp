@@ -65,6 +65,8 @@ void Wavetable::process_callback()
 
     set_freq();
 
+    int num_tables = tables.size() - 1;
+
     float8 phase_cvt    = float8 (phase_cst) * phase;
     
     float8 shift_in = *inputs[kWtShiftIn];
@@ -75,9 +77,9 @@ void Wavetable::process_callback()
     pos_int_inc = blend(pos_int_inc, pos_int_inc - float8(waveform_size), pos_int_inc >= float8(table_size));
 
     float8 pos_frac     = phase_cvt - roundneg(phase_cvt);
-    float8 log_arg      = freq * float8(table_size / sample_rate); 
+    float8 log_arg      = float8(22050.0) / freq; // float8 (table_size * 88200) / ( freq * float8 (table_size))
 
-    float8 num_oct      = clamp (slog2 (log_arg), 0, NUM_OCTAVES - 1);
+    float8 num_oct      = clamp (float8 (num_tables) - slog2 (log_arg), float8 (0), float8 (num_tables) );
 
     float8 no_strip = roundneg (num_oct);
     float8 no_strip_inc = no_strip + float8(1);
@@ -92,11 +94,18 @@ void Wavetable::process_callback()
     inc_phase ();
 }
 
+
 void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
 {
     set_lock();
 
-    table_size = len;
+    table_size = (int) len / waveform_size;
+
+    if (table_size < 1)
+        return;
+
+    table_size *= waveform_size;
+
     table.reset(new double[table_size]);
 
     for (uint32_t i = 0; i < table_size; i++)
@@ -111,10 +120,13 @@ void Wavetable::fill_table_from_buffer(double* buf, uint32_t len)
 {
     set_lock();
 
-    if (len < waveform_size)
+    table_size = (int)len / waveform_size;
+
+    if (table_size < 1)
         return;
 
-    table_size = len;
+    table_size *= waveform_size;
+
     table.reset(new double[table_size]);
 
     for (uint32_t i = 0; i < table_size; i++)
@@ -163,18 +175,19 @@ void Wavetable::fill_mipmap () // incorrect too
     std::unique_ptr<std::complex<double>[]> fft_buf = std::make_unique <std::complex <double>[]>(wt_sz);
     std::unique_ptr<std::complex<double>[]> fft_buf_inv = std::make_unique <std::complex <double>[]>(wt_sz);
 
-    // fs = 44100; Nfft; Nfft / 2; Nfft / 4; Nfft / 8 .. others
-
-    for (int i = 0; i < NUM_OCTAVES; i++)
+    uint16_t wf_sz = waveform_size;
+    int i = 0;
+    tables.clear();
+    while (wf_sz != 0)
     {
+        tables.emplace_back( std::make_unique <double[]>(wt_sz) );
 
-        tables[i] = std::make_unique <double []> (wt_sz);
-        std::memcpy (tables[i].get(), table.get(), wt_sz * sizeof(double));
+        std::memcpy(tables[i].get(), table.get(), wt_sz * sizeof(double));
 
         fft_driver.transform_real(tables[i].get(), fft_buf.get());
 
-        uint16_t bins   = nfft / pow(2, i);  // 1/2 fs; 1/4 fs; 1/8; 1/16; 1/32; 1/64; 1/128; 1/256; 1/512; 1/1024; 1/2048; 1/4096
-        if (bins == 1) bins = 0;
+        uint16_t bins = nfft / (2.0 * pow(2, i));  // 1/2 fnyq; 1/4 fnyq; 1/8; 1/16; 1/32; 1/64; 1/128; 1/256; 1/512; 1/1024; ... 1 / waveform_size
+
         for (uint32_t j = bins; j < wt_sz; j++)
             fft_buf[j] = 0.0;
 
@@ -183,11 +196,14 @@ void Wavetable::fill_mipmap () // incorrect too
 
         double mult = 2.0f / wt_sz;
 
-        for (uint32_t j = 0; j < wt_sz; ++j) 
+        for (uint32_t j = 0; j < wt_sz; ++j)
             tables[i][j] = fft_buf_inv[j].real() * mult;
 
         fft_driver.assign(nfft, false);
-    } 
+
+        wf_sz /= 2;
+        i++;
+    }
 
 }
 
