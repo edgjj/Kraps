@@ -45,7 +45,7 @@ public:
     void set_serialize(const nlohmann::json&) override;
 
     double* get_table_view () const;
-    uint32_t get_shift();
+    float8 get_shift();
     uint16_t get_wform_size();
     uint32_t get_table_size();
     ~Wavetable ();
@@ -54,12 +54,12 @@ protected:
     void process_callback () override;
     void process_params() override;
 private:
-    float8 pack_voices(const float8& oct, const float8& pos);
+    float8 pack_voices(const float8& oct, const float8& pos, const float8& shift);
 
     void fill_mipmap ();
 
-    uint32_t shift = 0;
-    double phase_cst = 0.0;
+    float8 shift = 0;
+    float8 phase_cst = 0.0;
 
     uint16_t waveform_size = 0;
     uint32_t table_size = 0;

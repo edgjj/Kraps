@@ -29,10 +29,13 @@ namespace kraps {
 Wavetable::Wavetable(uint16_t waveform_size) : Generator (p_wt, 1, 0)
 {
     this->waveform_size = waveform_size;
-    phase_cst = this->waveform_size / ( 2.0 * M_PI );
+    phase_cst = float8 ( (this->waveform_size - 1) / ( 2.0 * M_PI ) );
 
-    params.push_back(0.0);
-    params_constrainments.push_back(std::pair<double, double>(0.0, 100));
+    params.insert(params.end(), { 0.0 });
+
+    params_constrainments.insert(params_constrainments.end(),
+        { std::pair<double, double>(0.0, 100) });
+
 
     io_description[0].push_back({ kWtShiftIn, "SHIFT", "Shifts WT position forward" });
 }
@@ -42,51 +45,82 @@ Wavetable::~Wavetable()
     
 }
 
-float8 Wavetable::pack_voices(const float8& oct, const float8& pos)
+inline float8 Wavetable::pack_voices(const float8& oct, const float8& pos, const float8& shift)
 {
-    float data[8], oct_data[8], pos_data[8];
+    // really bad solution, just prototype
+    float oct_data[8], pos_data[8];
 
     oct.store(oct_data);
     pos.store(pos_data);
+    
+    float8 shift_pure = shift / float8(waveform_size);
+    
+    float8 pos_int = roundneg(pos);
+    float8 pos_frac = pos - pos_int;
 
-#pragma loop(hint_parallel(8))
+    float8 shift_round = roundneg(shift_pure);
+    float8 shift_frac = shift_pure - shift_round;
+    pos_int += shift_round * float8(waveform_size);
+    
+    bool has_shift = movemask(shift_frac > float8 (0.f)) != 0;
+
+    float pos_int_data[8], pos_int_inc_data[8];
+
+    pos_int.store(pos_int_data);
+    blend((pos_int + float8(1)), pos_int - float8(waveform_size - 1), (pos_int + float8(1)) >= float8(table_size)).store (pos_int_inc_data);
+
+    float data1[8], data2[8];
+
     for (int i = 0; i < 8; i++)
-        data[i] = tables[oct_data[i]][pos_data[i]];
+    {
+        data1[i] = tables[oct_data[i]][pos_int_data[i]];
+        data2[i] = tables[oct_data[i]][pos_int_inc_data[i]];
+    }
 
-    float8 ret = ret.loadu(data);
+    float8 d1 = d1.loadu(data1), d2 = d2.loadu(data2);
 
-    return ret;
+    float8 one = 1;
+    float8 s1 = d1 * (one - pos_frac) + d2 * pos_frac;
+
+    if (has_shift)
+    {
+        float data3[8], data4[4];
+        for (int i = 0; i < 8; i++)
+        {
+            data3[i] = tables[oct_data[i]][pos_int_data[i] + waveform_size];
+            data4[i] = tables[oct_data[i]][pos_int_inc_data[i] + waveform_size];
+        }
+        float8 d3 = d3.loadu(data3), d4 = d4.loadu(data4);
+        float8 s2 = d3 * (one - pos_frac) + d4 * pos_frac;
+        return s1 * (float8(1) - shift_frac) + s2 * shift_frac;
+    }
+    else return s1;
+
 }
 
 void Wavetable::process_callback()
 {
-    if (sample_rate == 0.0 || inputs[kGenFreqIn]->src->id == -1)
-        return;
 
     set_freq();
 
-    int num_tables = tables.size() - 1;
+    float8 num_tables = tables.size() - 1;
 
-    float8 phase_cvt    = float8 (phase_cst) * phase;
+    float8 phase_cvt    = phase_cst * phase;
     
-    float8 shift_in = *inputs[kWtShiftIn];
+    float8 shift_transform = shift + *inputs[kWtShiftIn];
 
-    float8 pos_int    = roundneg (phase_cvt + shift_in + float8 (shift));
-    float8 pos_int_inc = pos_int + float8(1);
+    shift_transform *= table_size - waveform_size;
+    shift_transform = clamp(shift_transform, float8(0), float8(table_size - waveform_size));
 
-    pos_int_inc = blend(pos_int_inc, pos_int_inc - float8(waveform_size), pos_int_inc >= float8(table_size));
-
-    float8 pos_frac     = phase_cvt - roundneg(phase_cvt);
-    float8 log_arg      = float8(22050.0) / freq; // float8 (table_size * 88200) / ( freq * float8 (table_size))
-
-    float8 num_oct      = clamp (float8 (num_tables) - slog2 (log_arg), float8 (0), float8 (num_tables) );
+    float8 num_oct      = clamp (num_tables - slog2 (float8(22050.0) / freq), 0, num_tables );
 
     float8 no_strip = roundneg (num_oct);
     float8 no_strip_inc = no_strip + float8(1);
+
     float8 oct_frac = num_oct - no_strip;
 
-    float8 o1 = pack_voices (no_strip, pos_int_inc) * pos_frac + pack_voices (no_strip, pos_int) * ( float8(1) - pos_frac); // resolve this for SIMD 
-    float8 o2 = pack_voices(no_strip_inc, pos_int_inc) * pos_frac + pack_voices(no_strip_inc, pos_int) * (float8(1) - pos_frac); // resolve this for SIMD 
+    float8 o1 = pack_voices(no_strip, phase_cvt, shift_transform);
+    float8 o2 = pack_voices(no_strip_inc, phase_cvt, shift_transform);
 
     *outputs[kGenAudioOut] = o1 * (float8 (1) - oct_frac) + o2 * oct_frac;
     *outputs[kGenPhaseOut] = phase;
@@ -178,6 +212,9 @@ void Wavetable::fill_mipmap () // incorrect too
     uint16_t wf_sz = waveform_size;
     int i = 0;
     tables.clear();
+
+    // i think there's a bug somewhere: some tables are being shifted forward, leaving a "pop" in the start;
+
     while (wf_sz != 0)
     {
         tables.emplace_back( std::make_unique <double[]>(wt_sz) );
@@ -188,7 +225,7 @@ void Wavetable::fill_mipmap () // incorrect too
 
         uint16_t bins = nfft / (2.0 * pow(2, i));  // 1/2 fnyq; 1/4 fnyq; 1/8; 1/16; 1/32; 1/64; 1/128; 1/256; 1/512; 1/1024; ... 1 / waveform_size
 
-        for (uint32_t j = bins; j < wt_sz; j++)
+        for (uint32_t j = bins; j < wt_sz; ++j)
             fft_buf[j] = 0.0;
 
         fft_driver.assign(wt_sz, true);
@@ -211,15 +248,16 @@ void Wavetable::process_params()
 {
     
     if (table_size == waveform_size)
-        shift = 0;
+        shift = float8(0);
     if (waveform_size < table_size)
-        shift = (params[1] / 100.0) * (table_size - waveform_size);
+        shift = float8(params[1] / 100.0);
 
 }
 
-uint32_t Wavetable::get_shift()
+float8 Wavetable::get_shift()
 {
-    return shift;
+    float8 cur_shift = shift + *inputs[kWtShiftIn];
+    return cur_shift;
 }
 
 uint32_t Wavetable::get_table_size()

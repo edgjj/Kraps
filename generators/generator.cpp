@@ -64,7 +64,7 @@ void Generator::set_phase(double phase)
 void Generator::set_freq () 
 {
     float8 raw_freq = *inputs[kGenFreqIn];
-    freq = clamp(raw_freq * float8(params[0]), float8(5.38330078125), float8(sample_rate / 2.0));
+    freq = clamp(raw_freq * float8(params[0]), float8(0), float8(sample_rate / 2.0));
     phase_inc = freq * freq_cst;
 }
 
@@ -84,6 +84,7 @@ double Generator::get_phase()
 {
     return phase;
 }
+
 void Generator::inc_phase ()
 {
     float8 cmp = *inputs[kGenGate] != gate;
@@ -91,20 +92,26 @@ void Generator::inc_phase ()
     if (movemask(cmp) != 0)
     {
         float8 cmp_gate = andnot(gate, *inputs[kGenGate]) == float8(1.0f);
-        phase = blend(phase, float8(0), cmp_gate);
+        phase_internal = blend(phase_internal, float8(0), cmp_gate);
         gate = *inputs[kGenGate];
     }
-    float8 ext_phase = *inputs[kGenPhaseIn];
-
-    phase += phase_inc + ext_phase; //  +
 
     float8 mpi2 = 2 * M_PI;
+
+    float8 ext_phase = *inputs[kGenPhaseIn];
+    phase = ext_phase * mpi2 + phase_internal; // we also can accumulate external phase instead of just summing (as it was before);
+
+    phase_internal += phase_inc; 
+ 
 
     while (movemask(phase < float8(0.f)) != 0)
         phase = blend(phase, phase + mpi2, phase < float8(0.f));
 
     while (movemask(phase >= mpi2) != 0)
         phase = blend(phase, phase - mpi2, phase >= mpi2);
+
+    while (movemask(phase_internal >= mpi2) != 0)
+        phase_internal = blend(phase_internal, phase_internal - mpi2, phase_internal >= mpi2);
 
 }
 
