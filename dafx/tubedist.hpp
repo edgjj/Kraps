@@ -42,8 +42,8 @@ public:
 	void process_params() override;
 	void process_callback() override;
 private:
-	double tC = 0, bC = 0, pC = 0;
-	double pre_gain = 0, gain = 0, out_gain = 0;
+	float tC = 0, bC = 0, pC = 0;
+	float pre_gain = 0, gain = 0, out_gain = 0;
 };
 }
 }

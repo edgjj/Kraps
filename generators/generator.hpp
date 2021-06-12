@@ -45,6 +45,7 @@ public:
     void set_phase (double);
     double get_phase();
     void inc_phase ();
+    void process_params() override;
 
     virtual ~Generator ();
 
@@ -58,6 +59,8 @@ protected:
     float8 freq = 0.0;
     float8 freq_cst = 0.0;
     float8 phase_inc = 0.0;
+
+    float8 freq_mult = 0.0;
 private:
     float8 phase_internal = 0.0;
 

@@ -24,11 +24,11 @@ namespace filters
 {
 Filter::Filter() : Processor (p_filter, 3, 3)
 {
-    
-    params = { 10000.0, 0.8, 1.0 };
-    params_constrainments.push_back(std::pair <double, double>(20, 20000.0));
-    params_constrainments.push_back(std::pair <double, double>(0.10, 16.0));
-    params_constrainments.push_back(std::pair <double, double>(1.0, 4.0));
+    pt = kraps::parameter::pt::ParameterTable(
+        { new parameter::Parameter<float>("frequency", 10000, 10000, 20, 20000),
+         new parameter::Parameter<float>("qfactor", 0.8, 0.8, 0.1, 16.0),
+         new parameter::Parameter<int>("order", 1, 1, 1, 4.0),
+        });
 
 
     setup_filtering();
@@ -70,7 +70,7 @@ void Filter::setup_filtering()
 
     for (auto& i : filters_bank)
     {
-        f_params = { 44100.0, params[0], params[1] };
+        f_params = { 44100.0, pt.get_raw_value("frequency"),  pt.get_raw_value("qfactor") };
         i->setParams(f_params);
     }
         
@@ -88,16 +88,23 @@ void Filter::recalculate_sr()
        
 }
 
+void Filter::process_params()
+{
+    param_freq = pt.get_raw_value("frequency");
+    param_qfac = pt.get_raw_value("qfactor");
+    param_order = pt.get_raw_value("order");
+}
+
 void Filter::process_callback()
 {
     if (sample_rate == 0.0)
         return;
 
-    freq = *inputs[kFilterFreqIn] * float8((sample_rate - 2000) / 2) + float8 (params[0]);
+    freq = *inputs[kFilterFreqIn] * float8((sample_rate - 2000) / 2) + param_freq;
     freq = clamp(freq, 20.0, (sample_rate - 2000) / 2); // we got avx float and still hadd
 
 
-    float8 q = *inputs[kFilterResIn] + float8 (params[1]);
+    float8 q = *inputs[kFilterResIn] + param_qfac;
     float8 in = *inputs[kFilterAudioIn];
     float u_data[8];
 

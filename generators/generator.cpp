@@ -24,8 +24,10 @@ namespace kraps {
 
 Generator::Generator (uint8_t type, uint8_t i, uint8_t o) : Processor (type, i + 3, o + 2)
 {
-    params = std::vector<double>(1, 1.0);
-    params_constrainments.push_back(std::pair(0.0, 64.0));
+    pt = kraps::parameter::pt::ParameterTable(
+        { new parameter::Parameter<float>("freq_mult", 1, 1, 0, 64),
+        });
+
 
     io_description[0] =
     {
@@ -61,10 +63,15 @@ void Generator::set_phase(double phase)
     this->phase = phase;
 }
 
+void Generator::process_params()
+{
+    freq_mult = pt.get_raw_value("freq_mult");
+}
+
 void Generator::set_freq () 
 {
     float8 raw_freq = *inputs[kGenFreqIn];
-    freq = clamp(raw_freq * float8(params[0]), float8(0), float8(sample_rate / 2.0));
+    freq = clamp(raw_freq * freq_mult, float8(0), float8(sample_rate / 2.0));
     phase_inc = freq * freq_cst;
 }
 
@@ -102,7 +109,6 @@ void Generator::inc_phase ()
     phase = ext_phase * mpi2 + phase_internal; // we also can accumulate external phase instead of just summing (as it was before);
 
     phase_internal += phase_inc; 
- 
 
     while (movemask(phase < float8(0.f)) != 0)
         phase = blend(phase, phase + mpi2, phase < float8(0.f));

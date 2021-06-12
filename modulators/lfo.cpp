@@ -28,12 +28,12 @@ LFO::LFO () : Generator (p_lfo, 0, 0),
     points({ { 0.0, 0.0 }, {0.5, 1.0}, { 1.0, 0.0 } }),
     tension ({ 0.0, 0.0 })
 {
-    params.push_back(0.0);
-    params.push_back(1.0);
-    params.push_back(4.0);
-    params_constrainments.push_back(std::pair(0.0, 1.0));
-    params_constrainments.push_back(std::pair(1.0, 32.0));
-    params_constrainments.push_back(std::pair(1.0, 256.0));
+    pt.add_parameter(
+         new parameter::Parameter<bool>("is_envelope", false, false, false, true),
+         new parameter::Parameter<int>("numerator", 1, 1, 1, 32.0),
+         new parameter::Parameter<int>("denominator", 4, 4, 1, 256.0)
+        );
+
 }
 
 void LFO::add_point(Vec2 pos)
@@ -62,9 +62,10 @@ void LFO::add_point(Vec2 pos)
 
 void LFO::process_params()
 {
-    param_freq = params[0];
-    is_env = params[1];    
-    freq_ratio = params[3] / params[2];
+    param_freq = pt.get_raw_value ("freq_mult");
+    is_env = pt.get_raw_value("is_envelope");    
+    float d = pt.get_raw_value("denominator"), n = pt.get_raw_value("numerator");
+    freq_ratio = d / n;
 }
 
 std::pair<std::vector<Vec2>, std::vector<double>> LFO::get_points()
@@ -165,9 +166,9 @@ void LFO::inc_phase()
 
 void LFO::process_callback ()
 {
-    double freq = inputs[kGenFreqIn]->src->id != -1 ? *inputs[kGenFreqIn] * float8 (freq_ratio) : param_freq;
+    double lfo_freq = inputs[kGenFreqIn]->src->id != -1 ? *inputs[kGenFreqIn] * float8 (freq_ratio) : param_freq;
         
-    set_freq(freq);
+    set_freq(lfo_freq);
     float8 phases = phase * float8(phase_const);
 
     // initial support
@@ -190,7 +191,6 @@ const nlohmann::json LFO::get_serialize_obj()
     set_lock();
     nlohmann::json o;
     o["tension"] = tension;
-    o["is_env"] = is_env;
 
     std::vector <std::array<double, 2>> pts_conv;
 
@@ -214,9 +214,6 @@ void LFO::set_serialize(const nlohmann::json& obj)
 
     if (obj.find("tension") != obj.end())
         obj["tension"].get_to(tension);
-
-    if (obj.find("is_env") != obj.end())
-        obj["is_env"].get_to(is_env);
 
     if (obj.find("points") != obj.end())
     {

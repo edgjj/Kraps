@@ -29,6 +29,7 @@
 #include "io.hpp"
 #include "../misc/misc.hpp"
 #include "../serialize/nlohmann/json.hpp"
+#include "parameters/parameter_table.hpp"
 
 namespace kraps {
 
@@ -50,15 +51,14 @@ public:
     void set_lock() { proc_mutex->lock(); }
     void set_unlock() { proc_mutex->unlock(); }
 
-
     void process();
 
-    double get_param(int num) { return params[num]; }
-    void set_param(int num, double val) { set_lock();  params[num] = val; process_params(); set_unlock();  }
-    void set_param(std::vector<double>& val) { set_lock();  params = val; process_params(); set_unlock();  }
+    parameter::pt::ParameterTable& get_parameter_table()
+    {
+        return pt;
+    }
 
-    size_t get_param_count() { return params.size(); }
-    std::pair <double, double> get_param_range(uint32_t id_) { return params_constrainments[id_]; }
+
     uint32_t get_ID () { return id; }
     void set_ID(uint32_t _id) { id = _id; }
 
@@ -117,8 +117,8 @@ protected:
     /* dsp */
 
     double sample_rate;
-    std::vector<double> params;
-    std::vector <std::pair <double, double>> params_constrainments;
+    
+    parameter::pt::ParameterTable pt;
 
     std::vector< std::unique_ptr <io::Input> > inputs;
     std::vector< std::unique_ptr <io::Output> > outputs;
@@ -127,6 +127,9 @@ protected:
 private:
 
     std::mutex* proc_mutex;
+
+    uint16_t cr_counter = 1024;
+
 
     uint32_t id = 0;
     bool bypass;

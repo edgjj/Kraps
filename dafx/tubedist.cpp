@@ -24,8 +24,15 @@ namespace dafx
 {
 TubeDist::TubeDist() : Processor(p_tube, 1, 1)
 {
-    params = { 0.0, 0.0, 0.0, 0.0, 0.0, -4.5 };
-    params_constrainments = { {0.0, 30.0}, {0.0, 20.0}, {0.0, 100.0}, {0.0, 100.0}, {0.0, 100.0}, {-60.0, 10.0} };
+    pt = kraps::parameter::pt::ParameterTable(
+        { new parameter::Parameter<float>("gain", 0, 0, 0.0, 30.0),
+        new parameter::Parameter<float>("pre_gain", 0, 0, 0.0, 20.0),
+        new parameter::Parameter<float>("top_clip", 0, 0, 0.0, 100.0),
+        new parameter::Parameter<float>("bot_clip", 0, 0, 0.0, 100.0),
+        new parameter::Parameter<float>("peak_clip", 0, 0, 0.0, 100.0),
+        new parameter::Parameter<float>("out_gain", -4.5, -4.5, -60, 10.0),
+        });
+
     process_params();
 
     io_description[0] =
@@ -44,14 +51,15 @@ TubeDist::~TubeDist()
 }
 void TubeDist::process_params()
 {
-    tC = (params[2] / 100.0 < 0.01 ? 0.01 : params[2] / 100.0) * 2 + 1;
-    bC = (params[3] / 100.0 + 0.166666667) * 6;
-    pC = params[4] / 100.0 * 8;
+    float top_clip = pt.get_raw_value("top_clip");
+    tC = (top_clip / 100.0 < 0.01 ? 0.01 : top_clip / 100.0) * 2 + 1;
+    bC = (pt.get_raw_value("bot_clip") / 100.0 + 0.166666667) * 6;
+    pC = pt.get_raw_value("peak_clip") / 100.0 * 8;
 
     auto d2g = [](double dB) { return pow(10, dB / 20); };
-    gain = d2g(params[0]);
-    pre_gain = d2g(params[1]);
-    out_gain = d2g(params[5]);
+    gain = d2g(pt.get_raw_value("gain"));
+    pre_gain = d2g(pt.get_raw_value("pre_gain"));
+    out_gain = d2g(pt.get_raw_value("out_gain"));
 }
 
 float8 TubeDist::ftanh(const float8& x)

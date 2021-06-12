@@ -23,11 +23,14 @@ namespace kraps
 {
 Sampler::Sampler() : Processor (p_sampler, 3, 1)
 {
-    params = { 261.64, 0.0, 0.0 };
+    pt = kraps::parameter::pt::ParameterTable(
+        { new parameter::Parameter<float>("base_freq", 261.63, 261.63, 1, 5000),
+         new parameter::Parameter<int>("sample_start", 0, 0, 0, 1.0),
+         new parameter::Parameter<bool>("is_looping", false, false, false, true)
+        });
+
     base_freq = 261.63;
-    params_constrainments.push_back(std::pair(1.0, 5000));
-    params_constrainments.push_back(std::pair(0.0, 1.0));
-    params_constrainments.push_back(std::pair(0.0, 1.0));
+
 
     io_description[0] =
     {
@@ -64,7 +67,7 @@ void Sampler::load_source(float* buf, size_t len, double stream_sample_rate)
 	for (uint32_t i = 0; i < cur_file_len; i++)
 		source[i] = buf[i];
 
-    params_constrainments[1].second = cur_file_len;
+    //params_constrainments[1].second = cur_file_len;
     file_sample_rate = stream_sample_rate;
     pos = cur_file_len - 1;
 
@@ -83,7 +86,7 @@ void Sampler::load_source_unserialize(double* buf)
 
     std::memcpy(source.get(), buf, cur_file_len * sizeof(double));
 
-    params_constrainments[1].second = cur_file_len;
+    //params_constrainments[1].second = cur_file_len;
     pos = cur_file_len - 1;
 
 
@@ -151,8 +154,8 @@ void Sampler::process_callback()
 
 void Sampler::process_params()
 {
-    base_freq = params[0];
-    is_looping = params[2];    
+    base_freq = pt.get_raw_value ("base_freq");
+    is_looping = pt.get_raw_value ("is_looping");    
 }
 float8 Sampler::get_position()
 {
@@ -179,7 +182,7 @@ void Sampler::inc_phase()
     if (movemask(cmp) != 0)
     {
         float8 cmp_gate = andnot(gate, *inputs[kSamplerGateIn]) == float8(1.0f);
-        pos = blend(pos, float8(params[1]), cmp_gate);
+        pos = blend(pos, float8(pt.get_raw_value("sample_start")), cmp_gate);
         gate = *inputs[kSamplerGateIn];
     }
     float8 phase_in = *inputs[kSamplerPhaseIn];

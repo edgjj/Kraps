@@ -31,7 +31,7 @@ public:
 protected:
 	void process_callback();
 	void process_bypass();
-	void process_params() { ; }
+	void process_params() override;
 	void recalculate_sr() { ; }
 private:
 	void process_simd();
@@ -57,7 +57,7 @@ private:
 
 	double bar_size = 0;
 
-	
+	float8 a3_tune;
 
 	std::vector<Note> notes;
 	std::array<Note, 8> voices = { Note() };

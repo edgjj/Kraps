@@ -42,6 +42,10 @@ Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) :
 
 Processor::~Processor ()
 {
+
+
+
+
     delete proc_mutex;
 }
 
@@ -50,6 +54,14 @@ void Processor::process ()
     /* for future doings */
     if (is_bypassed() == false)
     {
+        if (cr_counter != 0)
+            cr_counter--;
+        else
+        {
+            cr_counter = 1024; // temporary solution
+            process_params();
+        }
+        
         process_callback();
     }
     else
@@ -134,7 +146,7 @@ const nlohmann::json Processor::get_serialize_obj()
     set_lock();
     nlohmann::json o;
     o["id"] = id;
-    o["params"] = params; 
+    o["params"] = pt; 
     o["type"] = type;
     o["bypass"] = bypass;
 
@@ -147,20 +159,12 @@ void Processor::set_serialize(const nlohmann::json& obj)
 {
     set_lock();
 
-    if (obj.find("params") != obj.end())
-    {
-        std::vector<double> param_bridge;
-        obj["params"].get_to(param_bridge);
-        for (int p = 0; p < param_bridge.size(); p++)
-            params[p] = param_bridge[p];
-    }
+    obj.at("params").get_to(pt);
         
     process_params();
-    if (obj.find("bypass") != obj.end())
-        obj["bypass"].get_to(bypass);
 
-    if (obj.find("id") != obj.end())
-        obj["id"].get_to(id);
+    obj.at("bypass").get_to(bypass);
+    obj.at("id").get_to(id);
 
     set_unlock();
 }

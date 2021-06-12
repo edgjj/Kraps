@@ -47,13 +47,15 @@ public:
 	~Filter();
 	void recalculate_sr() override;
 	void process_callback() override;
+	void process_params() override;
+
 private:
 	void setup_filtering();
 	float8 freq = 0.0;
 	std::vector <std::unique_ptr <Dsp::Filter> > filters_bank;
 	Dsp::Params f_params;
 
-	
+	float8 param_freq, param_qfac, param_order;
 
 	double** fake_ptr;
 };

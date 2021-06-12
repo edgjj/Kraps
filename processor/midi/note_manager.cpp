@@ -5,8 +5,10 @@ namespace kraps {
 
 NoteManager::NoteManager() : Processor (p_notemgr, 0, 4)
 {
-	params.push_back (440.0);
-	params_constrainments.push_back(std::make_pair<double, double>(400, 500));
+
+	pt = kraps::parameter::pt::ParameterTable(
+		{ new parameter::Parameter<float>("a3_tuning", 440.0, 440.0, 400, 500),
+		});
 
 	io_description[1] =
 	{
@@ -57,7 +59,10 @@ void NoteManager::upd_tempo(int time_sig_numerator, int time_sig_denominator, do
 	bar_size = tempo / (time_sig_numerator * ratio * 60);
 	*outputs[kNoteMgrSync] = float8 (bar_size);
 }
-
+void NoteManager::process_params()
+{
+	a3_tune = pt.get_raw_value("a3_tuning");
+}
 void NoteManager::process_simd()
 {
 	while (!queue.empty())
@@ -73,7 +78,7 @@ void NoteManager::process_simd()
 	
 	float freq[8], velo[8], gate[8];
 
-	
+	float a3 = a3_tune;
 
 #pragma loop(hint_parallel(8))
 	for (int i = 0; i < 8; i++)
@@ -83,7 +88,7 @@ void NoteManager::process_simd()
 		else
 			gate[i] = 1;
 		
-		freq[i] = pow(2, (voices[i].note_number - 69) / 12.0) * params[0];
+		freq[i] = pow(2, (voices[i].note_number - 69) / 12.0) * a3;
 		velo[i] = voices[i].velocity / 127.f;
 	}
 

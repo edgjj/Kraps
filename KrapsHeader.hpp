@@ -28,8 +28,8 @@ namespace kraps
 
 namespace kraps_info
 {
-	const char* const  version_str = "0.1"; // totally useless;
-	const int          version_num = 0x1;
+	const char* const  version_str = "0.2"; // totally useless;
+	const int          version_num = 0x2;
 }
 
 }

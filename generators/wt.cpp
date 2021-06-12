@@ -31,11 +31,7 @@ Wavetable::Wavetable(uint16_t waveform_size) : Generator (p_wt, 1, 0)
     this->waveform_size = waveform_size;
     phase_cst = float8 ( (this->waveform_size - 1) / ( 2.0 * M_PI ) );
 
-    params.insert(params.end(), { 0.0 });
-
-    params_constrainments.insert(params_constrainments.end(),
-        { std::pair<double, double>(0.0, 100) });
-
+    pt.add_parameter(new parameter::Parameter<float>("wt_pos", 0, 0, 0, 100));
 
     io_description[0].push_back({ kWtShiftIn, "SHIFT", "Shifts WT position forward" });
 }
@@ -246,11 +242,12 @@ void Wavetable::fill_mipmap () // incorrect too
 
 void Wavetable::process_params()
 {
-    
+    Generator::process_params();
+
     if (table_size == waveform_size)
         shift = float8(0);
     if (waveform_size < table_size)
-        shift = float8(params[1] / 100.0);
+        shift = float8(pt.get_raw_value("wt_pos") / 100.0);
 
 }
 

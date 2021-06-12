@@ -39,21 +39,28 @@ class Macro : public Processor
 public:
     Macro() : Processor(p_macro, 0, 8)
     {
-        params = std::vector<double>(8, 0.0);
-        params_constrainments = std::vector<std::pair <double, double >>(8, std::pair<double, double>(0.0, 1.0));
+        for (int i = 0; i < 8; i++)
+            pt.add_parameter(new parameter::Parameter<float>("val" + std::to_string(i), 0, 0, 0, 1));
+
     }
+
     ~Macro() { ; }
 protected:
     void process_callback() override
     {
         for (int i = 0; i < kMacroCnt; i++)
-            *outputs[i] = float8 (params[i]);
+            *outputs[i] = vals[i];
     }
-    void process_params() override { ; }
+    void process_params() override 
+    { 
+        for (int i = 0; i < kMacroCnt; i++)
+            vals[i] = pt.get_raw_value("val" + std::to_string(i));
+    }
+
     void recalculate_sr() override { ; }
 
 private:
-
+    float8 vals[8];
 };
 
 }

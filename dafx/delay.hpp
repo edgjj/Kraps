@@ -117,7 +117,7 @@ private:
 
     AVXDelayLine <5> dly_line;
 
-    double param_time = 0.0;
+    double time = 0.0, drywet = 0.0, feedback = 0.0;
     double smoothed_time = 0.0;
 };
 

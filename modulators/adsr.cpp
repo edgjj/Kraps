@@ -23,10 +23,13 @@
 namespace kraps {
 ADSR::ADSR () : Processor (p_adsr, 1, 1) // possibly add smoothing for 4 samples behind
 {
-    params = std::vector<double> (4, 0.001);
-    params[3] = 0.0;
-    params_constrainments = std::vector<std::pair <double, double >>(3, std::pair<double, double>(0.0, 20.0));
-    params_constrainments.push_back(std::pair(-60, 0));
+    pt = kraps::parameter::pt::ParameterTable (
+        { new parameter::Parameter<float>("attack", 0.001, 0.001, 0.0, 20.0),
+        new parameter::Parameter<float>("decay", 0.001, 0.001, 0.0, 20.0),
+        new parameter::Parameter<float>("release", 0.001, 0.001, 0.0, 20.0),
+        new parameter::Parameter<float>("sustain", 0.0, 0.0, -60.0, 0.0)
+  
+        });
 
     io_description[0] =
     {
@@ -108,36 +111,33 @@ void ADSR::process_callback()
 
 void ADSR::process_params ()
 {
-    for (int i = 0; i < params.size(); i++)
+    sustain_amp = pt.get_raw_value("sustain");
+    sustain_amp = sustain_amp == -60 ? 0 : pow(10, sustain_amp / 20.0);
+
+    step[adsr_attack] = pt.get_raw_value("attack");
+    step[adsr_decay] = pt.get_raw_value("decay");
+    step[adsr_release] = pt.get_raw_value("release");
+
+    for (int i = 0; i < step.size(); i++)
     {
-        if (i == adsr_sustain)
-        {
-            if (params[i] == -60)
-                sustain_amp = 0;
-            else
-                sustain_amp = pow(10, params[i] / 20.0);
+        step[i] = float8 (1.0) / (float8(sample_rate) * step[i]);
 
+        float8 cmp_mask = step[i] <= float8(0.0);
+
+        switch (i)
+        {
+        case adsr_attack:
+            step[i] = blend (step[i], 1.0, cmp_mask);
+            continue;
+        case adsr_decay:
+            step[i] = blend(step[i], 1.0 - sustain_amp, cmp_mask);
+            continue;
+        default:
+            step[i] = blend (step[i], sustain_amp, cmp_mask);
             continue;
         }
-
-        if (params[i] <= 0.0)
-        {
-            switch (i)
-            {
-            case adsr_attack:
-                step[i] = 1.0;
-                break;
-            case adsr_decay:
-                step[i] = 1.0 - sustain_amp;
-                break;
-            default:
-                step[i] = sustain_amp;
-                break;
-            }
-            
-            continue;
-        }
-        step[i] = 1.0 / (sample_rate * params[i]);
+        
+        
     }
     
 }

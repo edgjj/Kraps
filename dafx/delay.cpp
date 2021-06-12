@@ -24,8 +24,12 @@ namespace dafx
 {
 Delay::Delay() : Processor (p_delay, 2, 1)
 {
-	params = { 0.02, 0.7, 0.5 };
-	params_constrainments = { {0.001, 0.5}, {0, 1}, {0, 1} };
+	pt = kraps::parameter::pt::ParameterTable(
+		{ new parameter::Parameter<float>("time", 0.02, 0.02, 0.001, 0.5),
+		 new parameter::Parameter<float>("feedback", 0.7, 0.7, 0.0, 100.0),
+		 new parameter::Parameter<float>("drywet", 0.5, 0.5, -0, 100.0),
+		});
+
 
 	io_description[0] =
 	{
@@ -54,19 +58,21 @@ void Delay::recalculate_sr()
 
 void Delay::process_params()
 {
-	param_time = params[0];
+	time = pt.get_raw_value("time");
+	feedback = pt.get_raw_value("feedback");
+	drywet = pt.get_raw_value("drywet");
 }
 void Delay::process_callback()
 {
-	smoothed_time = fmax (fmin(*inputs[kDelayTimeIn] + param_time, 0.5), 0.001);
+	smoothed_time = fmax (fmin(*inputs[kDelayTimeIn] + time, 0.5), 0.001);
 	float8 fbsmp = dly_line.get_interp(smoother->get_smoothed_value());
 	
 	fbsmp = blend(fbsmp, float8(0), s_isnan(fbsmp));
 
 	float8 in = *inputs[kDelayAudioIn];
 
-	dly_line.push(in + fbsmp * float8 (params[1]));
-	float8 out = in + fbsmp * float8 (params[2]);
+	dly_line.push(in + fbsmp * float8 (feedback));
+	float8 out = in + fbsmp * float8 (drywet);
 
 	*outputs[kDelayAudioOut] = out;
 }
