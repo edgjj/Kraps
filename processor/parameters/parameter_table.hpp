@@ -1,3 +1,21 @@
+/* Copyright 2021 Yegor Suslin
+ *
+ * This file is part of Kraps library.
+ *
+ * Kraps is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Kraps is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef KRPS_PARAMTABLE
 #define KRPS_PARAMTABLE
 
@@ -36,6 +54,13 @@ public:
 	{
 		std::unique_ptr<ParameterInterface> itemArr[] = { std::unique_ptr<ParameterInterface>(items)... };
 		parameters.insert ( parameters.end (), std::make_move_iterator(std::begin(itemArr)), std::make_move_iterator(std::end(itemArr)));
+	}
+
+	void set_value(const std::string& name)
+	{
+		for (auto& i : parameters)
+			if (i->get_name() == name)
+				return i->set_value();
 	}
 
 	void set_value(const std::string& name, const float& val)
