@@ -46,6 +46,8 @@ public:
 
 
 	virtual float get_value() = 0;
+	virtual float get_default_value() = 0;
+
 	virtual void set_value(const float& v) = 0;
 	virtual void set_value() = 0;
 
@@ -92,6 +94,12 @@ public:
 	float get_value() override
 	{
 		float v = value.load();
+		return v;
+	}
+
+	float get_default_value() override
+	{
+		float v = default_value.load();
 		return v;
 	}
 
