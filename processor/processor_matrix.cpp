@@ -243,11 +243,12 @@ void ProcessorMatrix::set_unlock()
 
 float8 ProcessorMatrix::process()
 {
-    for (auto& i : processors)
-        i->process();
+#pragma loop(hint_parallel(0))
+    for (int i= 0; i < processors.size(); i++)
+        processors[i]->process();
 
 
-    return ((OutputProcessor*)processors[0].get())->get_sample();
+    return reinterpret_cast <OutputProcessor*> (processors[0].get())->get_sample();
 }
 
 const nlohmann::json ProcessorMatrix::serialize()

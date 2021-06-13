@@ -64,7 +64,7 @@ private:
 	struct Note
 	{
 		kNoteEventType type = kEmpty;
-		int note_number = -1;
+		int note_number = 0;
 		int velocity = 0;
 		double timestamp = -1;
 	};
@@ -79,6 +79,11 @@ private:
 
 	std::vector<Note> notes;
 	std::array<Note, 8> voices = { Note() };
+
+
+	std::array<float, 127> note_lookup;
+
+
 
 	std::deque<Note> queue;
 	Note cur_played_note;

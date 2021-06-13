@@ -46,17 +46,26 @@ public:
             { 0, "AUDIO", "Outputs audio to host."}
         };
     }
+
+    void process_callback() override
+    {
+        const float8& in = *inputs[0];
+        ret_v = blend(in, float8(0), in > float8(30.f));
+    }
+
+    void process_bypass() override
+    {
+        ret_v = 0.0;
+    }
+
     float8 get_sample() 
     { 
-        if (!is_bypassed())
-        {
-            float8 out = *inputs[0];
-            out = blend(out, float8(0), out > float8(30.f));
-            return out;
-        }
-        else return 0.0;
+        return ret_v;
     }
     ~OutputProcessor() { ; }
+
+private:
+    float8 ret_v;
 };
 
 

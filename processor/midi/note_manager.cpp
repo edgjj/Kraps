@@ -35,12 +35,17 @@ NoteManager::NoteManager() : Processor (p_notemgr, 0, 4)
 		{ kNoteMgrGate, "GATE", "Just gate."},
 		{ kNoteMgrSync, "SYNC", "DAW tempo sync. Reports bars per second in Hz."}
 	};
+
+	for (int i = 0; i < note_lookup.size(); i++)
+	{
+		note_lookup[i] = pow(2, (i - 69) / 12.0);
+	}
+
 }
 
 void NoteManager::note_on(int note_number, int velocity, double timestamp)
 {
 	Note p;
-
 	p = { kNoteOn, note_number, velocity, timestamp };
 	notes.push_back (p);
 }
@@ -55,7 +60,7 @@ void NoteManager::note_off(int note_number, int velocity, double timestamp)
 void NoteManager::all_notes_off(double timestamp)
 {
 	Note p;
-	p = { kAllNotesOff, -1, -1, timestamp };
+	p = { kAllNotesOff, 0, 0, timestamp };
 	notes.push_back(p);
 }
 
@@ -83,79 +88,55 @@ void NoteManager::process_params()
 }
 void NoteManager::process_simd()
 {
+
+	auto it = voices.begin();
+
 	while (!queue.empty())
 	{
-		auto it = std::find_if(voices.begin(), voices.end(), [](const Note& n) { return n.type == kEmpty; });
-		if (it != voices.end())			
+		if (it->type == kEmpty)
+		{
 			*it = queue.back();
-		else
-			voices[7] = queue.back();
+			queue.pop_back();
+			
+		}
 
-		queue.pop_back();
+		if (it == voices.end())
+		{
+			voices.back() = queue.front();
+			queue.clear();
+		}
+
+		++it;
 	}
 	
-	float freq[8], velo[8], gate[8];
-
-	float a3 = a3_tune;
+	float freq[8], velo[8], types[8];
 
 #pragma loop(hint_parallel(8))
 	for (int i = 0; i < 8; i++)
 	{
-		if (voices[i].type == kEmpty)
-			gate[i] = 0;
-		else
-			gate[i] = 1;
-		
-		freq[i] = pow(2, (voices[i].note_number - 69) / 12.0) * a3;
-		velo[i] = voices[i].velocity / 127.f;
+		types[i] = voices[i].type;	
+		freq[i] = note_lookup [voices[i].note_number];
+		velo[i] = voices[i].velocity;
 	}
 
-	using f8 = float8;
-	f8* gatep = &outputs[kNoteMgrGate]->val;
-	f8* velop = &outputs[kNoteMgrAmp]->val;
-	f8* freqp = &outputs[kNoteMgrFreq]->val;
 
-	*gatep = gatep->load(gate);
-	*velop = velop->load(velo);
-	*freqp = freqp->load(freq);
+	*outputs[kNoteMgrGate] = blend (float8 (1), float8 (0), float8::load (types) == float8 (kEmpty));
+	*outputs[kNoteMgrAmp] = float8::load(velo) / float8 (127.f);
+	*outputs[kNoteMgrFreq] = float8::load(freq) * a3_tune;
 }
 
 void NoteManager::process_callback()
 {
 
-	
-	//if (!queue.empty() && cur_played_note.type == kEmpty)
-	//{
-	//	cur_played_note = queue.back();
-	//	queue.pop_back();
-	//	*outputs[kNoteMgrGate] = 1.0;
-	//	*outputs[kNoteMgrFreq] = pow(2, (cur_played_note.note_number - 69) / 12.0) * params[0]; // possible to do RMS smoothing to make "slides"
-	//	*outputs[kNoteMgrAmp] = cur_played_note.velocity / 127.0;
-	//}
-
 	process_simd();
 
-	auto find_erase_note = [](std::deque<Note>& v, Note n)
-	{
-		for (auto iter = v.begin(); iter != v.end(); )
-		{
-			if (iter->note_number == n.note_number)
-			{
-				iter = v.erase(iter);
-			}
-			else
-			{
-				++iter;
-			}
-		}
-	};
 
 	if (notes.empty())
 		return;
 
 	for (auto it = notes.begin(); it != notes.end();)
 	{
-		Note cur = *it;
+		Note& cur = *it;
 		
 		if (cur.timestamp != global_timestamp)
 		{
@@ -172,18 +153,23 @@ void NoteManager::process_callback()
 			{
 				if (voices[i].note_number == cur.note_number)
 				{
-					voices[i] = Note();
-					voices[i].note_number = cur.note_number;
+					voices[i].type = kEmpty; break;
 				}
 			}
-			find_erase_note(queue, cur);
+
+			for (auto iter = queue.begin(); iter != queue.end(); )
+			{
+				if (iter->note_number == cur.note_number)
+				{
+					iter = queue.erase(iter);
+				}
+				else
+				{
+					++iter;
+				}
+			}
 			process_simd();
 			break;
-		/*case kAllNotesOff:
-			*outputs[kNoteMgrGate] = 0.0;
-			cur_played_note = Note();
-			queue.clear();
-			break;*/
 		}
 		it = notes.erase(it);
 	}

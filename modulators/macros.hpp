@@ -31,7 +31,7 @@ enum kMacroOutputs {
     kMacroOut6,
     kMacroOut7,
     kMacroOut8,
-    kMacroCnt = kMacroOut8
+    kMacroCnt
 };
 
 class Macro : public Processor
