@@ -120,9 +120,9 @@ void ADSR::process_params ()
 
     for (int i = 0; i < step.size(); i++)
     {
-        step[i] = float8 (1.0) / (float8(sample_rate) * step[i]);
-
         float8 cmp_mask = step[i] <= float8(0.0);
+
+        step[i] = float8 (1.0) / (float8(sample_rate) * step[i]);
 
         switch (i)
         {
