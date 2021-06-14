@@ -104,7 +104,7 @@ public:
 			std::vector<float> params_old;
 			j.get_to(params_old);
 
-			for (int i = 0; i < p.parameters.size(); i++)
+			for (int i = 0; i < params_old.size(); i++)
 				p.parameters[i]->set_value(params_old[i]);
 
 			return;

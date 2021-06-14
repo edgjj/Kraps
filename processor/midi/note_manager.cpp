@@ -26,6 +26,10 @@ NoteManager::NoteManager() : Processor (p_notemgr, 0, 4)
 
 	pt = kraps::parameter::pt::ParameterTable(
 		{ new parameter::Parameter<float>("a3_tuning", 440.0, 440.0, 400, 500),
+		new parameter::Parameter<bool>("is_mono", false, false, false, true),
+		new parameter::Parameter<bool>("is_legato", false, false, false, true),
+		new parameter::Parameter<bool>("is_always_porta", false, false, false, true),
+		new parameter::Parameter<float>("porta_time", 0, 0, 0, 8000)
 		});
 
 	io_description[1] =
@@ -85,44 +89,89 @@ void NoteManager::upd_tempo(int time_sig_numerator, int time_sig_denominator, do
 void NoteManager::process_params()
 {
 	a3_tune = pt.get_raw_value("a3_tuning");
+
+	bool prev_is_mono = is_mono;
+	is_mono = pt.get_raw_value("is_mono");
+
+	if (prev_is_mono != is_mono)
+		voices = { Note() };
+
+	is_legato = pt.get_raw_value("is_legato");
+	is_always_porta = pt.get_raw_value("is_always_porta");
+	porta_time = pt.get_raw_value("porta_time") / 1000.0f;
+	
 }
 void NoteManager::process_simd()
 {
 
 	auto it = voices.begin();
-
-	while (!queue.empty())
-	{
-		if (it->type == kEmpty)
-		{
-			*it = queue.back();
-			queue.pop_back();
-			
-		}
-
-		if (it == voices.end())
-		{
-			voices.back() = queue.front();
-			queue.clear();
-		}
-
-		++it;
-	}
 	
-	float freq[8], velo[8], types[8];
-
-#pragma loop(hint_parallel(8))
-	for (int i = 0; i < 8; i++)
+	if (is_mono)
 	{
-		types[i] = voices[i].type;	
-		freq[i] = note_lookup [voices[i].note_number];
-		velo[i] = voices[i].velocity;
+		kNoteEventType prev_t = voices[0].type;
+		if (!queue.empty())
+		{
+			Note n = queue.front();
+			queue.clear();
+			for (auto& i : voices)
+				i = n;
+			top_note_num = n.note_number;
+		}
+
+		if (voices[0].type - prev_t == -3 && !is_always_porta) // "ALWAYS"
+		{
+			float8 dest_freq = note_lookup[top_note_num];
+			dest_freq *= a3_tune;
+			*outputs[kNoteMgrFreq] = dest_freq;
+		}
+		else
+		{
+			float8 cur_freq = *outputs[kNoteMgrFreq];
+			float8 dest_freq = note_lookup[top_note_num];
+			dest_freq *= a3_tune;
+
+			float8 diff = dest_freq - cur_freq;
+			diff = blend(diff, diff / (float8(sample_rate) * porta_time), porta_time > float8(0));
+
+			*outputs[kNoteMgrFreq] = blend(cur_freq, cur_freq + diff, sfabs(diff) > float8(0));
+		}
+		
+		*outputs[kNoteMgrGate] = blend(float8(1), float8(0), float8(voices[0].type) == float8(kEmpty));
+		*outputs[kNoteMgrAmp] = float8(voices[0].velocity / float8(127.f));
+	}
+	else
+	{
+		while (!queue.empty())
+		{
+			if (it == voices.end())
+			{
+				voices.back() = queue.front();
+				queue.clear();
+			}
+			else
+			{
+				if (it->type == kEmpty)
+				{
+					*it = queue.back();
+					queue.pop_back();
+				}
+				++it;
+			}
+		}
+
+		float freq[8], velo[8], types[8];
+#pragma loop(hint_parallel(8))
+		for (int i = 0; i < 8; i++)
+		{
+			types[i] = voices[i].type;
+			freq[i] = note_lookup[voices[i].note_number];
+			velo[i] = voices[i].velocity;
+		}
+		*outputs[kNoteMgrGate] = blend(float8(1), float8(0), float8::load(types) == float8(kEmpty));
+		*outputs[kNoteMgrAmp] = float8::load(velo) / float8(127.f);
+		*outputs[kNoteMgrFreq] = float8::load(freq) * a3_tune;
 	}
 
-
-	*outputs[kNoteMgrGate] = blend (float8 (1), float8 (0), float8::load (types) == float8 (kEmpty));
-	*outputs[kNoteMgrAmp] = float8::load(velo) / float8 (127.f);
-	*outputs[kNoteMgrFreq] = float8::load(freq) * a3_tune;
 }
 
 void NoteManager::process_callback()
@@ -130,14 +179,13 @@ void NoteManager::process_callback()
 
 	process_simd();
 
-
 	if (notes.empty())
 		return;
 
 	for (auto it = notes.begin(); it != notes.end();)
 	{
 		Note& cur = *it;
-		
+
 		if (cur.timestamp != global_timestamp)
 		{
 			++it; continue;
@@ -146,34 +194,36 @@ void NoteManager::process_callback()
 		switch (cur.type)
 		{
 		case kNoteOn:
+			if (is_mono && !is_legato)
+			{		
+				voices[0].type = kEmpty;
+				process_simd();
+			}	
 			queue.push_back(cur);
 			break;
 		case kNoteOff:
-			for (int i = 0; i < 8; i++)
-			{
-				if (voices[i].note_number == cur.note_number)
+			if (is_mono)
+				voices[0].type = kEmpty;
+			else
+				for (int i = 0; i < 8; i++)
 				{
-					voices[i].type = kEmpty; break;
+					if (voices[i].note_number == cur.note_number)
+					{
+						voices[i].type = kEmpty; break;
+					}
 				}
-			}
 
-			for (auto iter = queue.begin(); iter != queue.end(); )
-			{
+			for ( auto iter = queue.begin(); iter != queue.end(); )
 				if (iter->note_number == cur.note_number)
-				{
 					iter = queue.erase(iter);
-				}
 				else
-				{
 					++iter;
-				}
-			}
+
 			process_simd();
 			break;
 		}
 		it = notes.erase(it);
 	}
-
 	
 }
 
@@ -183,7 +233,6 @@ void NoteManager::process_bypass()
 	{
 		queue.clear();
 		notes.clear();
-		cur_played_note = Note();
 	}
 }
 

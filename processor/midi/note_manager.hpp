@@ -54,6 +54,8 @@ protected:
 private:
 	void process_simd();
 
+
+
 	enum kNoteEventType
 	{
 		kNoteOn,
@@ -76,17 +78,23 @@ private:
 	double bar_size = 0;
 
 	float8 a3_tune;
+	float8 porta_time;
+
+
+	
+
+	bool is_mono = false, is_legato = false, is_always_porta =false;
+
 
 	std::vector<Note> notes;
 	std::array<Note, 8> voices = { Note() };
 
+	int top_note_num = 0;
+
 
 	std::array<float, 127> note_lookup;
 
-
-
 	std::deque<Note> queue;
-	Note cur_played_note;
 };
 
 }
