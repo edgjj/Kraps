@@ -28,7 +28,8 @@ LFO::LFO () : Generator (p_lfo, 0, 0),
     points({ { 0.0, 0.0 }, {0.5, 1.0}, { 1.0, 0.0 } }),
     tension ({ 0.0, 0.0 })
 {
-    pt.add_parameter(
+    pt = kraps::parameter::pt::ParameterTable(
+        new parameter::Parameter<float>("freq_mult", 1, 1, 0, 64),
          new parameter::Parameter<bool>("is_envelope", false, false, false, true),
          new parameter::Parameter<int>("numerator", 1, 1, 1, 32.0),
          new parameter::Parameter<int>("denominator", 4, 4, 1, 256.0)

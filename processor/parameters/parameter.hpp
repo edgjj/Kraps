@@ -19,6 +19,8 @@
 #ifndef KRPS_PARAMETER
 #define KRPS_PARAMETER
 #include "../../serialize/nlohmann/json.hpp"
+#include "../../simd/avir_float8_avx.h"
+
 #include <utility>
 
 namespace kraps 
@@ -44,18 +46,20 @@ public:
 	}
 
 
-
-	virtual float get_value() = 0;
-	virtual float get_default_value() = 0;
-
 	virtual void set_value(const float& v) = 0;
 	virtual void set_value() = 0;
+	virtual void set_distribution(const float& v, const int& t) = 0;
+
+	using distr_params = struct { float amt; float type; };
+	virtual distr_params get_distribution_params() = 0;
 
 	using raw_pair = struct { float first;  float second; };
 
 	virtual raw_pair get_range () = 0;
 	virtual std::string get_name() = 0;
 
+	virtual float8 get_value() = 0;
+	virtual float get_default_value() = 0;
 
 	virtual ~ParameterInterface()
 	{
@@ -73,7 +77,7 @@ class Parameter : public ParameterInterface
 public:
 	
 
-	Parameter(std::string _name) : param_name(_name)
+	Parameter(std::string _name) : param_name(_name) // individual voice-stacking per parameter
 	{ 
 	}
 
@@ -86,22 +90,11 @@ public:
 	{
 		value = p.value;
 		default_value = p.default_value;
-		min_value = p.min_value;
-		max_value = p.max_value;
+		range = p.range;
+		distribution_amt = p.distribution_amt;
+		distribution_type = p.distribution_type;
 	}
 
-
-	float get_value() override
-	{
-		float v = value.load();
-		return v;
-	}
-
-	float get_default_value() override
-	{
-		float v = default_value.load();
-		return v;
-	}
 
 	void set_value(const float& v) override
 	{
@@ -111,6 +104,47 @@ public:
 	void set_value() override
 	{
 		value = default_value.load();
+	}
+
+	void set_distribution(const float& v, const int& t) override
+	{
+		distribution_amt = v;
+		distribution_type = t;
+	}
+
+	distr_params get_distribution_params() override
+	{
+		distr_params p = { distribution_amt.load(), distribution_type.load() };
+		return p;
+	}
+
+	float8 get_value() override
+	{
+		if (distribution_amt > 0.0f)
+		{
+			
+			range_pair cur_range = range.load();
+			T step = ( (cur_range.second - cur_range.first) / 8.0 ) * distribution_amt; // just linear atm
+
+			float val = value.load();
+
+			float data[8];
+
+			for (int i = 1; i <= 8; i++) // in future there should be switch
+			{
+				data[i-1] = fmax (fmin(val + step * i, cur_range.second), cur_range.first);
+			}
+			return float8::load(data);
+
+		}
+		else 
+			return value.load();
+	}
+
+	float get_default_value() override
+	{
+		float v = default_value.load();
+		return v;
 	}
 
 	raw_pair get_range() override
@@ -132,8 +166,9 @@ public:
 	{
 		value = p.value;
 		default_value = p.default_value;
-		min_value = p.min_value;
-		max_value = p.max_value;
+		range = p.range;
+		distribution_range = p.distribution_range;
+		distribution_type = p.distribution_type;
 
 		return *this;
 	}
@@ -157,12 +192,25 @@ private:
 	{
 		j["value"] = value.load();
 		j["param_name"] = param_name;
+		j["distribution_amt"] = distribution_amt.load();
+		j["distribution_type"] = distribution_type.load();
 	}
 	void internal_from_json(const nlohmann::json& j) override
 	{
-		T val;
-		j.at ("value").get_to(val);
-		value.store(val);
+		try
+		{
+			T val;
+			j.at("value").get_to(val);
+			value.store(val);
+			j.at("distribution_amt").get_to(val);
+			distribution_amt.store(val);
+			j.at("distribution_type").get_to(val);
+			distribution_type.store(val);
+		}
+		catch (std::exception& e)
+		{
+			return;
+		}
 	}
 
 	std::atomic<T> value = 0.0f;
@@ -171,6 +219,8 @@ private:
 	using range_pair = struct { T first;  T second; };
 	std::atomic<range_pair> range = 0.0f;
 
+	std::atomic<float> distribution_amt = 0.0f;
+	std::atomic<int> distribution_type = 0; // 0 - linear; 1 - exp; 2 - log; 3 - etc; 4 - random;
 
 	std::string param_name;
 

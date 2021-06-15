@@ -98,7 +98,7 @@ void NoteManager::process_params()
 
 	is_legato = pt.get_raw_value("is_legato");
 	is_always_porta = pt.get_raw_value("is_always_porta");
-	porta_time = pt.get_raw_value("porta_time") / 1000.0f;
+	porta_time = pt.get_raw_value("porta_time") / float8 (1000.0f);
 	
 }
 void NoteManager::process_simd()

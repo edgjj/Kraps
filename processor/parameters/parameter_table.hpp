@@ -70,7 +70,7 @@ public:
 				return i->set_value(val);
 	}
 
-	float get_raw_value(const std::string& name)
+	float8 get_raw_value(const std::string& name)
 	{
 		for (auto& i : parameters)
 			if (i->get_name() == name)

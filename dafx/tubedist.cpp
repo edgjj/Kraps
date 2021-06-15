@@ -53,8 +53,8 @@ void TubeDist::process_params()
 {
     float top_clip = pt.get_raw_value("top_clip");
     tC = (top_clip / 100.0 < 0.01 ? 0.01 : top_clip / 100.0) * 2 + 1;
-    bC = (pt.get_raw_value("bot_clip") / 100.0 + 0.166666667) * 6;
-    pC = pt.get_raw_value("peak_clip") / 100.0 * 8;
+    bC = (pt.get_raw_value("bot_clip").operator float() / 100.0 + 0.166666667) * 6;
+    pC = pt.get_raw_value("peak_clip").operator float() / 100.0 * 8;
 
     auto d2g = [](double dB) { return pow(10, dB / 20); };
     gain = d2g(pt.get_raw_value("gain"));

@@ -26,6 +26,7 @@ Generator::Generator (uint8_t type, uint8_t i, uint8_t o) : Processor (type, i +
 {
     pt = kraps::parameter::pt::ParameterTable(
         { new parameter::Parameter<float>("freq_mult", 1, 1, 0, 64),
+        new parameter::Parameter<float>("freq_shift", 0, 0, -200.f, 200.f)
         });
 
 
@@ -66,12 +67,13 @@ void Generator::set_phase(double phase)
 void Generator::process_params()
 {
     freq_mult = pt.get_raw_value("freq_mult");
+    freq_shift = pt.get_raw_value("freq_shift");
 }
 
 void Generator::set_freq () 
 {
     float8 raw_freq = *inputs[kGenFreqIn];
-    freq = clamp(raw_freq * freq_mult, float8(0), float8(sample_rate / 2.0));
+    freq = clamp(raw_freq * freq_mult + freq_shift, float8(0), float8(sample_rate / 2.0));
     phase_inc = freq * freq_cst;
 }
 

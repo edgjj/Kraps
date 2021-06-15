@@ -58,7 +58,7 @@ inline float8 Wavetable::pack_voices(const float8& oct, const float8& pos, const
     float8 shift_frac = shift_pure - shift_round;
     pos_int += shift_round * float8(waveform_size);
     
-    bool has_shift = movemask(shift_frac > float8 (0.f)) != 0;
+    float8 shift_mask = shift_frac > float8(0.f);
 
     float pos_int_data[8], pos_int_inc_data[8];
 
@@ -78,19 +78,21 @@ inline float8 Wavetable::pack_voices(const float8& oct, const float8& pos, const
     float8 one = 1;
     float8 s1 = d1 * (one - pos_frac) + d2 * pos_frac;
 
-    if (has_shift)
+    float data3[8], data4[8];
+
+
+    for (int i = 0; i < 8; i++)
     {
-        float data3[8], data4[4];
-        for (int i = 0; i < 8; i++)
-        {
-            data3[i] = tables[oct_data[i]][pos_int_data[i] + waveform_size];
-            data4[i] = tables[oct_data[i]][pos_int_inc_data[i] + waveform_size];
-        }
-        float8 d3 = d3.loadu(data3), d4 = d4.loadu(data4);
-        float8 s2 = d3 * (one - pos_frac) + d4 * pos_frac;
-        return s1 * (float8(1) - shift_frac) + s2 * shift_frac;
+        data3[i] = tables[oct_data[i]][ (int)(pos_int_data[i] + waveform_size) % table_size];
+        data4[i] = tables[oct_data[i]][ (int)(pos_int_inc_data[i] + waveform_size) % table_size];
     }
-    else return s1;
+
+
+    float8 d3 = d3.loadu(data3), d4 = d4.loadu(data4);
+    float8 s2 = d3 * (one - pos_frac) + d4 * pos_frac;
+
+
+    return blend (s1, s1 * (float8(1) - shift_frac) + s2 * shift_frac, shift_mask);
 
 }
 
@@ -247,7 +249,7 @@ void Wavetable::process_params()
     if (table_size == waveform_size)
         shift = float8(0);
     if (waveform_size < table_size)
-        shift = float8(pt.get_raw_value("wt_pos") / 100.0);
+        shift = pt.get_raw_value("wt_pos") / float8(100.0);
 
 }
 

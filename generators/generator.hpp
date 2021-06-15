@@ -61,6 +61,7 @@ protected:
     float8 phase_inc = 0.0;
 
     float8 freq_mult = 0.0;
+    float8 freq_shift = 0.0;
 private:
     float8 phase_internal = 0.0;
 
