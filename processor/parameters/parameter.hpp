@@ -60,7 +60,7 @@ public:
 	virtual raw_pair get_range () = 0;
 	virtual std::string get_name() = 0;
 
-	virtual float8 get_value() = 0;
+	virtual float8 get_value(bool distributed = true) = 0;
 	virtual float get_default_value() = 0;
 
 	virtual ~ParameterInterface()
@@ -126,27 +126,35 @@ public:
 		return p;
 	}
 
-	float8 get_value() override
+	float8 get_value(bool distributed = true) override
 	{
-		if (distribution_amt > 0.0f)
+
+		if (distribution_amt > 0.0f && distributed)
 		{
 			
 			range_pair cur_range = range.load();
-			T step = ( (cur_range.second - cur_range.first) / 8.0 ) * distribution_amt; // just linear atm
+			T range_amt = (cur_range.second - cur_range.first) * distribution_amt;
 
 			float val = value.load();
 
 			float data[8];
-
-			for (int i = 1; i <= 8; i++) // in future there should be switch
+			data[0] = val;
+			data[4] = val;
+			for (int i = 0; i < 7; i++)
 			{
-				data[i-1] = fmax (fmin(val + step * i, cur_range.second), cur_range.first);
+				if (i == 3)
+					continue;
+
+				data[i+1] = fmax(fmin(val + range_amt / (3 - i) , cur_range.second), cur_range.first); // 3 2 1 0 -1 -2 -3
 			}
+
+
 			return float8::load(data);
 
 		}
 		else 
 			return value.load();
+
 	}
 
 	float get_default_value() override
@@ -232,6 +240,8 @@ private:
 	std::atomic<int> distribution_type = 0; // 0 - linear; 1 - exp; 2 - log; 3 - etc; 4 - random;
 
 	std::string param_name;
+
+
 
 };
 
