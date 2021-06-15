@@ -56,6 +56,14 @@ public:
 		parameters.insert ( parameters.end (), std::make_move_iterator(std::begin(itemArr)), std::make_move_iterator(std::end(itemArr)));
 	}
 
+	void set_new_range(const std::string& name, const float& l, const float& r)
+	{
+		for (auto& i : parameters)
+			if (i->get_name() == name)
+				return i->set_new_range(l, r);
+	}
+
+
 	void set_value(const std::string& name)
 	{
 		for (auto& i : parameters)

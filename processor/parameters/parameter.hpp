@@ -45,10 +45,12 @@ public:
 		p.internal_from_json(j);
 	}
 
-
+	virtual void set_new_range(const float& l, const float& r) = 0;
 	virtual void set_value(const float& v) = 0;
 	virtual void set_value() = 0;
 	virtual void set_distribution(const float& v, const int& t) = 0;
+
+
 
 	using distr_params = struct { float amt; float type; };
 	virtual distr_params get_distribution_params() = 0;
@@ -110,6 +112,12 @@ public:
 	{
 		distribution_amt = v;
 		distribution_type = t;
+	}
+
+	void set_new_range(const float& l, const float& r) override
+	{
+		range_pair p = { l,r };
+		range.store(p);
 	}
 
 	distr_params get_distribution_params() override
@@ -202,10 +210,11 @@ private:
 			T val;
 			j.at("value").get_to(val);
 			value.store(val);
-			j.at("distribution_amt").get_to(val);
-			distribution_amt.store(val);
-			j.at("distribution_type").get_to(val);
-			distribution_type.store(val);
+			float dist;
+			j.at("distribution_amt").get_to(dist);
+			distribution_amt.store(dist);
+			j.at("distribution_type").get_to(dist);
+			distribution_type.store(dist);
 		}
 		catch (std::exception& e)
 		{

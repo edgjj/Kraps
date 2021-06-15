@@ -67,7 +67,8 @@ void Sampler::load_source(float* buf, size_t len, double stream_sample_rate)
 	for (uint32_t i = 0; i < cur_file_len; i++)
 		source[i] = buf[i];
 
-    //params_constrainments[1].second = cur_file_len;
+    pt.set_new_range("sample_start", 0, cur_file_len);
+
     file_sample_rate = stream_sample_rate;
     pos = cur_file_len - 1;
 
@@ -86,7 +87,7 @@ void Sampler::load_source_unserialize(double* buf)
 
     std::memcpy(source.get(), buf, cur_file_len * sizeof(double));
 
-    //params_constrainments[1].second = cur_file_len;
+    pt.set_new_range("sample_start", 0, cur_file_len);
     pos = cur_file_len - 1;
 
 
@@ -182,7 +183,7 @@ void Sampler::inc_phase()
     if (movemask(cmp) != 0)
     {
         float8 cmp_gate = andnot(gate, *inputs[kSamplerGateIn]) == float8(1.0f);
-        pos = blend(pos, float8(pt.get_raw_value("sample_start")), cmp_gate);
+        pos = blend(pos, pt.get_raw_value("sample_start"), cmp_gate);
         gate = *inputs[kSamplerGateIn];
     }
     float8 phase_in = *inputs[kSamplerPhaseIn];
