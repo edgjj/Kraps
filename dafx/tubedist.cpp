@@ -51,10 +51,10 @@ TubeDist::~TubeDist()
 }
 void TubeDist::process_params()
 {
-    float top_clip = pt.get_raw_value("top_clip");
-    tC = (top_clip / 100.0 < 0.01 ? 0.01 : top_clip / 100.0) * 2 + 1;
-    bC = (pt.get_raw_value("bot_clip").operator float() / 100.0 + 0.166666667) * 6;
-    pC = pt.get_raw_value("peak_clip").operator float() / 100.0 * 8;
+    float8 top_clip = pt.get_raw_value("top_clip");
+    tC = blend(top_clip, float8(0.01), (top_clip / float8(100.0)) < float8(0.01)) * float8 (2) + float8 (1);
+    bC = ( ( pt.get_raw_value("bot_clip") / float8 (100.0) ) + float8 (0.166666667) ) * float8 (6);
+    pC = pt.get_raw_value("peak_clip") * float8 (8.0 / 100.0);
 
     auto d2g = [](double dB) { return pow(10, dB / 20); };
     gain = d2g(pt.get_raw_value("gain"));
@@ -62,45 +62,33 @@ void TubeDist::process_params()
     out_gain = d2g(pt.get_raw_value("out_gain"));
 }
 
-float8 TubeDist::ftanh(const float8& x)
+inline float8 TubeDist::ftanh(const float8& x)
 {
-    float8 magic = 135135.0f;
-    float8 x2 = x * x;
-    float8 a = x * (magic + x2 * (float8(17325.0f) + x2 * (float8(378.0f) + x2)));
-    float8 b = magic + x2 * (float8 (62370.0f) + x2 * (float8(3150.0f) + x2 * float8(28.0f)));
-
-    return a / b;
+    // https://www.kvraudio.com/forum/viewtopic.php?f=33&t=521377
+    float8 x_trans = x + float8 (0.18) * (x * x * x);
+    return x_trans / ssqrt(x_trans * x_trans + float8(1));
 }
 
 void TubeDist::process_callback()
 {
     float8 in = *inputs[kDAFXAudioIn];
-    in *= float8(pre_gain);
 
-    float data[8];
-    in.storeu(data);
-    
-#pragma loop(hint_parallel(8))
-    for (int i = 0; i < 8; i++)
-    {
-        if (data[i] < 0) data[i] = tanh((data[i] / bC) * gain) * bC;
+    in *= pre_gain;
+    in = blend(in, ftanh( (in / bC) * gain ) * bC, in < float8(0));
+    in += bC;
+    in = in * ssqrt(sfabs(in)) - bC * ssqrt(sfabs(bC));
+    in /= ssqrt(bC) * float8(1.5);
 
-        //scaled biased x^1.5
-        data[i] += bC;
-        data[i] = data[i] * sqrtf(fabs(data[i])) - bC * sqrtf(fabs(bC)); // x^1.5 = in*(sqrt(abs(in))
+    float8 top = in;
 
-        data[i] /= sqrtf(bC) * 1.5;
+    top *= gain;
+    top /= tC;
+    top = ftanh(top) * (pC + float8(1)) - (top / (ssqrt(top * top + float8 (1)))) * pC;
+    top *= tC;
 
-        if (data[i] >= 0) {
-            data[i] *= gain;
-            data[i] /= tC;
-            data[i] = tanh(data[i]) * (pC + 1) - (data[i] / (sqrtf(data[i] * data[i] + 1))) * pC;
-            data[i] *= tC;
-        }
-    }
-    
+    in = blend(in, top, in >= float8(0));
 
-    *outputs[kDAFXAudioOut] = in.loadu(data) * float8 (out_gain);
+    *outputs[kDAFXAudioOut] = in * float8 (out_gain);
 }
 }
 }

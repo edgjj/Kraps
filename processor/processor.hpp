@@ -48,8 +48,8 @@ public:
     void set_bypassed(bool val) { set_lock();  this->bypass = val; set_unlock();  }
     void set_SR (double val) { sample_rate = val; recalculate_sr (); process_params(); }
     double get_SR() { return sample_rate; }
-    void set_lock() { proc_mutex->lock(); }
-    void set_unlock() { proc_mutex->unlock(); }
+    void set_lock() { proc_mutex.lock(); }
+    void set_unlock() { proc_mutex.unlock(); }
 
     void process();
 
@@ -126,7 +126,7 @@ protected:
 
 private:
 
-    std::mutex* proc_mutex;
+    std::mutex proc_mutex;
 
     uint16_t cr_counter = 1024;
 

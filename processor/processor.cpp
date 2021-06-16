@@ -37,16 +37,12 @@ Processor::Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs) :
         outputs.emplace_back (std::make_unique<io::Output> (this, i));
     }
 
-    proc_mutex = new std::mutex();
 }
 
 Processor::~Processor ()
 {
 
 
-
-
-    delete proc_mutex;
 }
 
 void Processor::process ()
