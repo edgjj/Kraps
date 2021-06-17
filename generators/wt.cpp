@@ -61,7 +61,7 @@ void Wavetable::process_callback()
         pos_int_inc = shift;
 
     double pos_frac     = phase_cvt - (int)phase_cvt;
-    double log_arg      = freq * table_size / sample_rate; // lets think every wt we get is 44100
+    double log_arg      = NUM_OCTAVES - (sample_rate / 2 * freq); // lets think every wt we get is 44100
     double num_oct      = fmax (fmin (log2(log_arg) - 1, NUM_OCTAVES - 1), 0);
 
     unsigned int no_strip = (unsigned int)num_oct;
