@@ -38,7 +38,10 @@ enum kFilterOutputs
 {
 	kFilterAudioOutLPF,
 	kFilterAudioOutHPF,
-	kFilterAudioOutBPF
+	kFilterAudioOutBPF,
+	kFilterAudioOutAPF,
+	kFilterAudioOutNF,
+	kFilterAudioOutPF
 };
 class Filter : public Processor
 {
@@ -49,15 +52,19 @@ public:
 	void process_callback() override;
 	void process_params() override;
 
+
 private:
-	void setup_filtering();
-	float8 freq = 0.0;
-	std::vector <std::unique_ptr <Dsp::Filter> > filters_bank;
-	Dsp::Params f_params;
+	void calc_filter();
+	float8 ftan(const float8& v);
 
-	float8 param_freq, param_qfac, param_order;
 
-	double** fake_ptr;
+	float8 freq, qfac, param_order;
+
+	float8 gCoeff, RCoeff, KCoeff;		// gain element 
+
+	float8 z1_A, z2_A;		// state variables (z^-1)
+
+
 };
 }
 }

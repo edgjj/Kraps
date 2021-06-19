@@ -89,7 +89,7 @@ void Generator::set_freq(float8 _freq)
     phase_inc = freq * freq_cst;
 }
 
-double Generator::get_phase()
+float8 Generator::get_phase()
 {
     return phase;
 }

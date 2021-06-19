@@ -16,13 +16,14 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include "filtering.hpp"
 
 namespace kraps
 {
 namespace filters
 {
-Filter::Filter() : Processor (p_filter, 3, 3)
+Filter::Filter() : Processor (p_filter, 3, 6)
 {
     pt = kraps::parameter::pt::ParameterTable(
         { new parameter::Parameter<float>("frequency", 10000, 10000, 20, 20000),
@@ -30,12 +31,6 @@ Filter::Filter() : Processor (p_filter, 3, 3)
          new parameter::Parameter<int>("order", 1, 1, 1, 4.0),
         });
 
-
-    setup_filtering();
-
-    fake_ptr = new double* [8];
-    for (int i = 0; i < 8; i++)
-        fake_ptr[i] = new double[1];
 
     io_description[0] =
     {
@@ -49,50 +44,61 @@ Filter::Filter() : Processor (p_filter, 3, 3)
         {kFilterAudioOutLPF, "LPF", "Low-pass filter output."},
         {kFilterAudioOutHPF, "HPF", "High-pass filter output."},
         {kFilterAudioOutBPF, "BPF", "Band-pass filter output."},
+        {kFilterAudioOutAPF, "APF", "All-pass filter output."},
+        {kFilterAudioOutNF, "NOTCH", "Notch filter output."},
+        {kFilterAudioOutPF, "PEAK", "Peak filter output."},
     };
 
+    gCoeff = 1.0f;
+    RCoeff = 1.0f;
+    KCoeff = 0.0f;
+
+    freq = 1000;
+    qfac = 0.5f;
+    calc_filter();
 }
 
 Filter::~Filter()
 {
-    for (int i = 0; i < 8; i++)
-        delete [] fake_ptr[i];
-
-    delete [] fake_ptr;
 }
 
-void Filter::setup_filtering()
-{
-
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::LowPass, 8>>(512));
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::HighPass, 8>>(512));
-    filters_bank.emplace_back(std::make_unique <Dsp::SmoothedFilterDesign<Dsp::RBJ::Design::BandPass1, 8>>(512));
-
-    for (auto& i : filters_bank)
-    {
-        f_params = { 44100.0, pt.get_raw_value("frequency"),  pt.get_raw_value("qfactor") };
-        i->setParams(f_params);
-    }
-        
-}
 
 void Filter::recalculate_sr()
 {
-    
-    f_params[0] = sample_rate;
-    for (auto& i : filters_bank)
-    {
-        i->reset();
-        i->setParam(Dsp::ParamID::idSampleRate, sample_rate);
-    }
-       
+    calc_filter();
+}
+
+inline float8 Filter::ftan(const float8& v)
+{
+    return v * ( float8 (12.56637061435916) + float8(4) * v) / (float8(14.137166941154055) - float8(5.654866776461622) * v * v); // accident tan approximation
+}
+
+void Filter::calc_filter()
+{
+
+    float8 wd = freq * float8 (2.0f * M_PI);
+    float8 T = 1.0f / sample_rate;
+
+    float8 wa = ( 2.0f / T ) * ftan(wd * T / float8 (2.0f) );
+
+    // Calculate g (gain element of integrator)
+    gCoeff = wa * T / float8 (2.0f);			// Calculate g (gain element of integrator)
+
+    // Calculate Zavalishin's R from Q (referred to as damping parameter)
+    RCoeff = float8 (1.0f) / ( float8 (2.0f) * qfac);
+
 }
 
 void Filter::process_params()
 {
-    param_freq = pt.get_raw_value("frequency");
-    param_qfac = pt.get_raw_value("qfactor");
+    freq = pt.get_raw_value("frequency");
+    qfac = pt.get_raw_value("qfactor") + *inputs[kFilterResIn];
     param_order = pt.get_raw_value("order");
+
+    freq += *inputs[kFilterFreqIn] * float8((sample_rate - 2000) / 2) ;
+    freq = clamp(freq, 2, 0.96 * (sample_rate / 2) );
+
+    calc_filter();
 }
 
 void Filter::process_callback()
@@ -100,36 +106,29 @@ void Filter::process_callback()
     if (sample_rate == 0.0)
         return;
 
-    freq = *inputs[kFilterFreqIn] * float8((sample_rate - 2000) / 2) + param_freq;
-    freq = clamp(freq, 20.0, (sample_rate - 2000) / 2); // we got avx float and still hadd
-
-
-    float8 q = *inputs[kFilterResIn] + param_qfac;
     float8 in = *inputs[kFilterAudioIn];
-    float u_data[8];
 
-    in.storeu(u_data);
+    const float8 HP = (in - ( float8 (2.0f) * RCoeff + gCoeff) * z1_A - z2_A)
+        / ( float8 (1.0f) + (float8(2.0f) * RCoeff * gCoeff) + gCoeff * gCoeff);
 
-    f_params[1] = freq;
-    f_params[2] = q;
-    
+    const float8 BP = HP * gCoeff + z1_A;
 
-    // need AVX filters implementation so we dont need to do that this below
+    const float8 LP = BP * gCoeff + z2_A;
 
-    for (int i = 0; i < filters_bank.size(); i++)
-    {
-        for (int j = 0; j < 8; j++)
-            fake_ptr[j][0] = u_data[j];
+    const float8 UBP = float8 (2.0f) * RCoeff * BP;
+    const float8 Notch = in - UBP;
+    const float8 AP = in - ( float8 (4.0f) * RCoeff * BP);
+    const float8 Peak = LP - HP;
 
+    z1_A = gCoeff * HP + BP;		// unit delay (state variable)
+    z2_A = gCoeff * BP + LP;		// unit delay (state variable)
 
-        filters_bank[i]->setParams(f_params);
-        filters_bank[i]->process(1, fake_ptr);
-
-        for (int j = 0; j < 8; j++)
-            u_data[j] = fake_ptr[j][0];
-
-        *outputs[i] = in.loadu(u_data);
-    }
+    *outputs[kFilterAudioOutLPF] = LP;
+    *outputs[kFilterAudioOutHPF] = HP;
+    *outputs[kFilterAudioOutBPF] = UBP;
+    *outputs[kFilterAudioOutAPF] = AP;
+    *outputs[kFilterAudioOutNF] = Notch;
+    *outputs[kFilterAudioOutPF] = Peak;
 
 }
 

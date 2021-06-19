@@ -65,7 +65,7 @@ void TubeDist::process_params()
 inline float8 TubeDist::ftanh(const float8& x)
 {
     // https://www.kvraudio.com/forum/viewtopic.php?f=33&t=521377
-    float8 x_trans = x + float8 (0.18) * (x * x * x);
+    float8 x_trans = x + float8 (0.18) * (x * x * x); 
     return x_trans / ssqrt(x_trans * x_trans + float8(1));
 }
 

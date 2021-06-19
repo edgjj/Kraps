@@ -43,7 +43,7 @@ public:
     void set_freq (float8);
     void set_freq ();
     void set_phase (double);
-    double get_phase();
+    float8 get_phase();
     void inc_phase ();
     void process_params() override;
 
