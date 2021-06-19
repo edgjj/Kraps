@@ -54,6 +54,9 @@ uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
             return sin(phase);
             });
         break;
+    case p_sampler:
+        processors.emplace_back(std::make_unique <Sampler>());
+        break;
     case p_lfo:
         processors.emplace_back(std::make_unique <LFO>());
         break;
@@ -63,9 +66,15 @@ uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
     case p_filter:
         processors.emplace_back(std::make_unique <filters::Filter>());
         break;
+    case p_pulverizer:
+        processors.emplace_back(std::make_unique<filters::Pulverizer>());
+        break;
     case p_tube:
         processors.emplace_back(std::make_unique <dafx::TubeDist>());
         break;
+    case p_delay:
+        processors.emplace_back(std::make_unique <dafx::Delay>());
+        break; 
     case p_atten:
         processors.emplace_back(std::make_unique <Attenuator>());
         break;
@@ -74,16 +83,10 @@ uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
         break;
     case p_macro:
         processors.emplace_back(std::make_unique <Macro>());
-        break;
-    case p_delay:
-        processors.emplace_back(std::make_unique <dafx::Delay>());
-        break;
-    case p_sampler:
-        processors.emplace_back(std::make_unique <Sampler>());
-        break;
+        break;   
     case p_decomposer:
         processors.emplace_back(std::make_unique<misc::Decomposer>());
-        break;
+        break;    
     default:
         return -1;
     }
@@ -243,6 +246,9 @@ void ProcessorMatrix::set_unlock()
 
 float8 ProcessorMatrix::process()
 {
+    if (sample_rate < 44100.0)
+        return 0.0;
+
 #pragma loop(hint_parallel(0))
     for (int i= 0; i < processors.size(); i++)
         processors[i]->process();

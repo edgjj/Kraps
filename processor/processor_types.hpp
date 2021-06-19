@@ -37,10 +37,10 @@ typedef enum ProcessorTypes
     p_summer,
     p_sampler,
     p_decomposer,
+    p_pulverizer,
     p_notemgr = 240,
     p_output,
-    p_misc,
-    p_count = p_decomposer
+    p_count = p_pulverizer
 } ProcessorTypes;
 
 
@@ -58,7 +58,7 @@ static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
     { p_notemgr, "Note Manager"},
     { p_output, "Output Node"},
     { p_decomposer, "Decomposer"},
-    { p_misc, "Miscellaneous"}
+    { p_pulverizer, "Pulverizer"},
 };
 
 static std::map<ProcessorTypes, std::vector <std::string>> ProcessorParametersDesc = 
@@ -70,7 +70,9 @@ static std::map<ProcessorTypes, std::vector <std::string>> ProcessorParametersDe
     { p_delay, {"Time", "Feedback", "Dry/Wet"}},
     { p_filter, {"Frequency", "Q", "Reserved"}},
     { p_tube, {"Gain", "Pre. Gain", "Top", "Bot", "Peak", "Output Gain"}},
-    { p_notemgr, {"A3 Tuning", "Mono Mode", "Legato", "Always Porta", "Porta Time"}}
+    { p_notemgr, {"A3 Tuning", "Mono Mode", "Legato", "Always Porta", "Porta Time"}},
+    { p_pulverizer, { "1st Frequency", "1st Q", "1st Amount", "2nd Frequency", "2nd Q", "2nd Amount"}}
+
 };
 
 

@@ -16,57 +16,77 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KRPSFILTER_H
-#define KRPSFILTER_H
-
+#ifndef KRAPS_PULVERIZER
+#define KRAPS_PULVERIZER
 #include "../processor/processor.hpp"
-#include "../misc/linear_smoother.hpp"
 
 namespace kraps
 {
 namespace filters
 {
-enum kFilterInputs
+
+struct BiquadCoeffs
 {
-	kFilterAudioIn,
-	kFilterFreqIn,
-	kFilterResIn
+	float8 a0, a1, a2;
+	float8 b0, b1, b2;
 };
 
-enum kFilterOutputs
+struct BiquadDF1UnitD
 {
-	kFilterAudioOutLPF,
-	kFilterAudioOutHPF,
-	kFilterAudioOutBPF,
-	kFilterAudioOutAPF,
-	kFilterAudioOutNF,
-	kFilterAudioOutPF
+	float8 z1[2];
+	float8 z2[2];
 };
-class Filter : public Processor
+
+enum kPulverizerInputs
+{
+	kPulverizerAudioIn,
+	kPulverizerFreqIn,
+	kPulverizerResIn,
+	kPulverizerAudioIn2,
+	kPulverizerFreqIn2,
+	kPulverizerResIn2,
+};
+
+enum kPulverizerOutputs
+{
+	kPulverizerAudioOut1,
+	kPulverizerAudioOut2
+};
+
+class Pulverizer : public Processor
 {
 public:
-	Filter();
-	~Filter();
-	void recalculate_sr() override;
+	Pulverizer();
+	~Pulverizer();
+
 	void process_callback() override;
 	void process_params() override;
+	void recalculate_sr() override;
 
 
 private:
-	void calc_filter();
-	float8 ftan(const float8& v);
+	void calc_cores();
+	float8 ssin(const float8& in);
 
 
-	float8 freq, qfac, param_order;
+	float8 process_stage(float8 in, const bool& is_second, const int& num);
 
-	float8 gCoeff, RCoeff, KCoeff;		// gain element 
+	float8 precalc_sr;
 
-	float8 z1_A, z2_A;		// state variables (z^-1)
+
+	std::array <BiquadDF1UnitD, 100> cores_1 = { BiquadDF1UnitD () };
+	std::array <BiquadDF1UnitD, 100> cores_2 = { BiquadDF1UnitD () };
+
+	BiquadCoeffs c1, c2;
+
+	float8 freq1, freq2, q1, q2;
+
+	float amts[2];
 
 
 };
-}
-}
 
 
+}
+}
 #endif
