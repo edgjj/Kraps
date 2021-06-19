@@ -128,7 +128,7 @@ private:
 
     std::mutex proc_mutex;
 
-    uint16_t cr_counter = 1024;
+    uint16_t cr_counter = 32;
 
 
     uint32_t id = 0;

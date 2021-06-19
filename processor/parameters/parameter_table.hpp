@@ -125,9 +125,17 @@ public:
 		
 		for (auto& o : j)
 		{
-			std::string name;
-			o.at("param_name").get_to(name);
-			o.get_to(*m[name]);
+			try 
+			{
+				std::string name;
+				o.at("param_name").get_to(name);
+				o.get_to(*m[name]);
+			}
+			catch (std::exception& e)
+			{
+				continue;
+			}
+			
 		}
 	}
 	std::vector <std::unique_ptr <parameter::ParameterInterface>>::iterator begin() { return parameters.begin(); }

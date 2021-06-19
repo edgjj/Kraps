@@ -54,10 +54,10 @@ void Processor::process ()
             cr_counter--;
         else
         {
-            cr_counter = 1024; // temporary solution
+            cr_counter = 32; // temporary solution
             process_params();
         }
-        
+
         process_callback();
     }
     else

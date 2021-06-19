@@ -217,6 +217,8 @@ public:
 		return( *this );
 	}
 
+
+
 	float8 operator + ( const float8& s ) const
 	{
 		return( _mm256_add_ps( value, s.value ));
@@ -235,6 +237,13 @@ public:
 	float8 operator / ( const float8& s ) const
 	{
 		return( _mm256_div_ps( value, s.value ));
+	}
+
+	float8& operator % (const float8& s)
+	{
+		__m256 mask = _mm256_cmp_ps(value, s.value, _CMP_GE_OQ);
+		value = _mm256_blendv_ps(value, _mm256_sub_ps (value, s.value), mask);
+		return(*this);
 	}
 
 	float8 operator!= (const float8& s) const

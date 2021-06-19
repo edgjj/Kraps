@@ -44,51 +44,53 @@ Wavetable::~Wavetable()
 inline float8 Wavetable::pack_voices(const float8& oct, const float8& pos, const float8& shift)
 {
     // really bad solution, just prototype
-    float oct_data[8], pos_data[8];
-
+    float oct_data[8];
     oct.store(oct_data);
-    pos.store(pos_data);
-    
-    float8 shift_pure = shift / float8(waveform_size);
+
+    float8 wform_size = waveform_size;
+    float8 t_size = table_size;
+
+    float8 shift_pure = shift / wform_size;
     
     float8 pos_int = roundneg(pos);
+
     float8 pos_frac = pos - pos_int;
 
     float8 shift_round = roundneg(shift_pure);
     float8 shift_frac = shift_pure - shift_round;
-    pos_int += shift_round * float8(waveform_size);
+    pos_int += shift_round * wform_size;
     
     float8 shift_mask = shift_frac > float8(0.f);
 
-    float pos_int_data[8], pos_int_inc_data[8];
+    float8 pos_int_inc = pos_int + float8(1);
+    pos_int_inc = blend(pos_int_inc, pos_int_inc - wform_size, pos_int_inc >= t_size);
+
+    float pos_int_data[16];
 
     pos_int.store(pos_int_data);
-    blend((pos_int + float8(1)), pos_int - float8(waveform_size - 1), (pos_int + float8(1)) >= float8(table_size)).store (pos_int_inc_data);
+    pos_int_inc.store( &pos_int_data[8] );
 
-    float data1[8], data2[8];
+    float data[16];
 
-    for (int i = 0; i < 8; i++)
-    {
-        data1[i] = tables[oct_data[i]][pos_int_data[i]];
-        data2[i] = tables[oct_data[i]][pos_int_inc_data[i]];
-    }
+    for (int i = 0; i < 16; i++)
+        data[i] = tables[oct_data[i % 8]][pos_int_data[i]];
 
-    float8 d1 = d1.loadu(data1), d2 = d2.loadu(data2);
+    float8 d1 = d1.loadu(data), d2 = d2.loadu( &data[8] );
 
     float8 one = 1;
-    float8 s1 = d1 * (one - pos_frac) + d2 * pos_frac;
+    float8 s1 = d1 * (one - pos_frac) + d2 * pos_frac; // there's some problem
 
-    float data3[8], data4[8];
+    float8 pos_int_shift = (pos_int + wform_size) % t_size;
+    float8 pos_int_shift_inc = (pos_int_inc + wform_size) % t_size;
+
+    pos_int_shift.store(pos_int_data);
+    pos_int_shift_inc.store( &pos_int_data[8] );
+
+    for (int i = 0; i < 16; i++)
+        data[i] = tables[oct_data[i % 8]][pos_int_data[i]];
 
 
-    for (int i = 0; i < 8; i++)
-    {
-        data3[i] = tables[oct_data[i]][ (int)(pos_int_data[i] + waveform_size) % table_size];
-        data4[i] = tables[oct_data[i]][ (int)(pos_int_inc_data[i] + waveform_size) % table_size];
-    }
-
-
-    float8 d3 = d3.loadu(data3), d4 = d4.loadu(data4);
+    float8 d3 = d3.loadu(data), d4 = d4.loadu( &data[8] );
     float8 s2 = d3 * (one - pos_frac) + d4 * pos_frac;
 
 
