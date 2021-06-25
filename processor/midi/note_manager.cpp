@@ -23,9 +23,8 @@ namespace kraps {
 
 NoteManager::NoteManager() : Processor (p_notemgr, 0, 4)
 {
-
 	pt = kraps::parameter::pt::ParameterTable(
-		{ new parameter::Parameter<float>("a3_tuning", 440.0, 440.0, 400, 500),
+		{ //new parameter::Parameter<float>("a3_tuning", 440.0, 440.0, 400, 500),
 		new parameter::Parameter<bool>("is_mono", false, false, false, true),
 		new parameter::Parameter<bool>("is_legato", false, false, false, true),
 		new parameter::Parameter<bool>("is_always_porta", false, false, false, true),
@@ -42,7 +41,7 @@ NoteManager::NoteManager() : Processor (p_notemgr, 0, 4)
 
 	for (int i = 0; i < note_lookup.size(); i++)
 	{
-		note_lookup[i] = pow(2, (i - 69) / 12.0);
+		note_lookup[i] = (i - 69) / 12.0;
 	}
 
 }
@@ -88,8 +87,6 @@ void NoteManager::upd_tempo(int time_sig_numerator, int time_sig_denominator, do
 }
 void NoteManager::process_params()
 {
-	a3_tune = pt.get_raw_value("a3_tuning");
-
 	bool prev_is_mono = is_mono;
 	is_mono = pt.get_raw_value("is_mono");
 
@@ -120,15 +117,13 @@ void NoteManager::process_simd()
 
 		if (voices[0].type - prev_t == -3 && !is_always_porta) // "ALWAYS"
 		{
-			float8 dest_freq = note_lookup[top_note_num];
-			dest_freq *= a3_tune;
+			float8 dest_freq = note_lookup[top_note_num]; 
 			*outputs[kNoteMgrFreq] = dest_freq;
 		}
 		else
 		{
 			float8 cur_freq = *outputs[kNoteMgrFreq];
 			float8 dest_freq = note_lookup[top_note_num];
-			dest_freq *= a3_tune;
 
 			float8 diff = dest_freq - cur_freq;
 			diff = blend(diff, diff / (float8(sample_rate) * porta_time), porta_time > float8(0));
@@ -169,7 +164,7 @@ void NoteManager::process_simd()
 		}
 		*outputs[kNoteMgrGate] = blend(float8(1), float8(0), float8::load(types) == float8(kEmpty));
 		*outputs[kNoteMgrAmp] = float8::load(velo) / float8(127.f);
-		*outputs[kNoteMgrFreq] = float8::load(freq) * a3_tune;
+		*outputs[kNoteMgrFreq] = float8::load(freq);
 	}
 
 }

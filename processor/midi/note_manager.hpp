@@ -77,11 +77,7 @@ private:
 
 	double bar_size = 0;
 
-	float8 a3_tune;
 	float8 porta_time;
-
-
-	
 
 	bool is_mono = false, is_legato = false, is_always_porta =false;
 

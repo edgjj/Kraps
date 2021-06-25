@@ -88,7 +88,7 @@ inline float8 Wavetable::pack_voices(const float8& oct, const float8& pos, const
 
     for (int i = 0; i < 16; i++)
         data[i] = tables[oct_data[i % 8]][pos_int_data[i]];
-
+    
 
     float8 d3 = d3.loadu(data), d4 = d4.loadu( &data[8] );
     float8 s2 = d3 * (one - pos_frac) + d4 * pos_frac;
@@ -112,7 +112,7 @@ void Wavetable::process_callback()
     shift_transform *= table_size - waveform_size;
     shift_transform = clamp(shift_transform, float8(0), float8(table_size - waveform_size));
 
-    float8 num_oct      = clamp (num_tables - slog2 (float8(22050.0) / freq), 0, num_tables );
+    float8 num_oct      = clamp (num_tables - slog2 (float8(88200) / freq), 0, num_tables ); 
 
     float8 no_strip = roundneg (num_oct);
     float8 no_strip_inc = no_strip + float8(1);

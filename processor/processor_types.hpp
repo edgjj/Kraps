@@ -70,7 +70,7 @@ static std::map<ProcessorTypes, std::vector <std::string>> ProcessorParametersDe
     { p_delay, {"Time", "Feedback", "Dry/Wet"}},
     { p_filter, {"Frequency", "Q", "Reserved"}},
     { p_tube, {"Gain", "Pre. Gain", "Top", "Bot", "Peak", "Output Gain"}},
-    { p_notemgr, {"A3 Tuning", "Mono Mode", "Legato", "Always Porta", "Porta Time"}},
+    { p_notemgr, {"Mono Mode", "Legato", "Always Porta", "Porta Time"}},
     { p_pulverizer, { "1st Frequency", "1st Q", "1st Amount", "2nd Frequency", "2nd Q", "2nd Amount"}}
 
 };

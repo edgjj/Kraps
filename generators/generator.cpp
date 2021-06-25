@@ -70,20 +70,20 @@ void Generator::process_params()
     freq_shift = pt.get_raw_value("freq_shift");
 }
 
-void Generator::set_freq () 
+void Generator::set_freq () // for oscillators
 {
-    float8 raw_freq = *inputs[kGenFreqIn];
-    freq = clamp(raw_freq * freq_mult + freq_shift, float8(0), float8(sample_rate / 2.0));
+    float8 raw_voltage = *inputs[kGenFreqIn];
+    freq = clamp( float8 ( pow256_ps (_mm256_set1_ps (2), raw_voltage) ) * a3_tune * freq_mult + freq_shift, 0, 20000);
     phase_inc = freq * freq_cst;
 }
 
-void Generator::set_freq(double _freq)
+void Generator::set_freq(double _freq) // for everything else
 {
     freq = _freq;
     phase_inc = freq * freq_cst;
 }
 
-void Generator::set_freq(float8 _freq)
+void Generator::set_freq(float8 _freq) // for everything else
 {
     freq = _freq;
     phase_inc = freq * freq_cst;
@@ -109,6 +109,8 @@ void Generator::inc_phase ()
 
     float8 ext_phase = *inputs[kGenPhaseIn];
     phase = ext_phase * mpi2 + phase_internal; // we also can accumulate external phase instead of just summing (as it was before);
+
+
 
     phase_internal += phase_inc; 
 

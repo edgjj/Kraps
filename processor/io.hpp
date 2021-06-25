@@ -16,7 +16,7 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "simd/avir_float8_avx.h"
+#include "../simd/avir_float8_avx.h"
 
 #ifndef KRPSIO_H
 #define KRPSIO_H

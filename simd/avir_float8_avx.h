@@ -16,6 +16,7 @@
 #define AVIR_FLOAT8_AVX_INCLUDED
 
 #include <immintrin.h>
+#include "avx_mathfun.h"
 
 namespace kraps {
 
@@ -70,6 +71,11 @@ public:
 	operator float () const
 	{
 		return( _mm_cvtss_f32( _mm256_extractf128_ps( value, 0 )));
+	}
+
+	operator __m256 () const
+	{
+		return value;
 	}
 
 	/**
@@ -367,9 +373,19 @@ private:
 
 
 
-inline float8 slog2(const float8& v)
+inline float8 slog2(const float8& x)
 {
-	return (_mm256_log2_ps(v.value));
+	// its pretty dumb
+	__m256i v = _mm256_cvtps_epi32(x.value);
+
+	v = _mm256_andnot_si256(_mm256_srli_epi32(v, 8), v); // keep 8 MSB
+	
+	v = _mm256_castps_si256(_mm256_cvtepi32_ps(v)); // convert an integer to float
+	v = _mm256_srli_epi32(v, 23); // shift down the exponent
+	v = _mm256_subs_epu16(_mm256_set1_epi32(158), v); // undo bias
+	v = _mm256_min_epi16(v, _mm256_set1_epi32(32)); // clamp at 32
+
+	return _mm256_cvtepi32_ps (_mm256_sub_epi32 (_mm256_set1_epi32 (31), v));
 }
 
 inline float8 andnot(const float8& v1, const float8& v2)

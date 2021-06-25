@@ -54,7 +54,12 @@ protected:
     {
         freq_cst = 1.0 * float8(2 * M_PI) / get_SR();
     }   
+    float8 a3_tune = 440.f;
+
+
     float8 phase = 0.0;
+    float8 phase_legacy = 0.0;
+
     float8 gate = 0.0;
     float8 freq = 0.0;
     float8 freq_cst = 0.0;
@@ -62,6 +67,7 @@ protected:
 
     float8 freq_mult = 0.0;
     float8 freq_shift = 0.0;
+
 private:
     float8 phase_internal = 0.0;
 
