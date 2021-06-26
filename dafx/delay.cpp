@@ -42,8 +42,6 @@ Delay::Delay() : Processor (p_delay, 2, 1)
 		{kDelayAudioIn, "AUDIO", "Output for processed signal."}
 	};
 
-
-	smoother = std::make_unique <misc::LinearSmoother> (smoothed_time);
 }
 
 Delay::~Delay()
@@ -53,26 +51,31 @@ Delay::~Delay()
 void Delay::recalculate_sr()
 {
 	dly_line.set_sample_rate(sample_rate);
-	smoother->set_sample_rate(sample_rate);
+	smoother.set_sample_rate(sample_rate);
 }
 
 void Delay::process_params()
 {
 	time = pt.get_raw_value("time");
-	feedback = pt.get_raw_value("feedback");
-	drywet = pt.get_raw_value("drywet");
+
+	float8 sm_time = clamp(*inputs[kDelayTimeIn] * 0.5 + time, 1 / sample_rate, 0.5);
+	smoother.set_target(sm_time);
+	smoother.set_time_cst(sm_time);
+
+	feedback = pt.get_raw_value("feedback") / 100.0;
+	drywet = pt.get_raw_value("drywet") / 100.0;
 }
 void Delay::process_callback()
 {
-	smoothed_time = fmax (fmin(*inputs[kDelayTimeIn] + time, 0.5), 0.001);
-	float8 fbsmp = dly_line.get_interp(smoother->get_smoothed_value());
+
+	float8 fbsmp = dly_line.get_interp(smoother.get_next_value());
 	
 	fbsmp = blend(fbsmp, float8(0), s_isnan(fbsmp));
 
 	float8 in = *inputs[kDelayAudioIn];
 
-	dly_line.push(in + fbsmp * float8 (feedback));
-	float8 out = in + fbsmp * float8 (drywet);
+	dly_line.push(in + fbsmp * feedback);
+	float8 out = in + fbsmp * drywet;
 
 	*outputs[kDelayAudioOut] = out;
 }

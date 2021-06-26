@@ -23,10 +23,9 @@ namespace kraps
 namespace misc
 {
 
-LinearSmoother::LinearSmoother(double& val) : raw_value (val)
+LinearSmoother::LinearSmoother()
 {
-	new_value = raw_value;
-	time_cst = 0.2;
+
 }
 
 void LinearSmoother::set_sample_rate(double _sample_rate)
@@ -40,24 +39,32 @@ LinearSmoother::~LinearSmoother()
 
 }
 
-double LinearSmoother::get_smoothed_value()
+void LinearSmoother::set_time_cst(const float8& v)
+{
+	time_cst = v;
+	step = (target - prev_value) * sr_cst / time_cst;
+}
+
+void LinearSmoother::set_target(const float8& v)
+{
+	float8 mask = v != target;
+	
+	prev_value = blend (prev_value, target, mask);
+	target = blend (target, v, mask);
+
+	step = (target - prev_value) * sr_cst / time_cst;
+}
+
+float8 LinearSmoother::get_next_value()
 {
 	if (sample_rate == 0.0)
 		return 0.0;
 
+	step = blend(0.0, step, blend ( target - cur_value , cur_value - target, prev_value > target) > float8 (0.0f) );
+	cur_value += step;
+	
 
-	if (abs (new_value - raw_value) > 0.0001f)
-	{
-		prev_value = new_value;
-		new_value = raw_value;
-		frac = 0.0;
-	}
-
-	if (frac < 1.0)
-		frac += sr_cst / time_cst;
-
-
-	return new_value * frac + prev_value * (1 - frac);
+	return cur_value;
 }
 
 }

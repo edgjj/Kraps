@@ -19,6 +19,7 @@
 #ifndef KRAPSSMOOTHER_H
 #define KRAPSSMOOTHER_H
 #include <cstdint>
+#include "../simd/avir_float8_avx.h"
 namespace kraps
 {
 namespace misc
@@ -27,26 +28,27 @@ namespace misc
 class LinearSmoother
 {
 public:
-	LinearSmoother(double& val);
-	double get_smoothed_value();
+	LinearSmoother();
+	void set_target(const float8& v);
+	void set_time_cst(const float8& v);
+
+	float8 get_next_value();
 	//void set_smoothing_time(double time) { smoothing_time = time; }
 	void set_sample_rate(double _sample_rate);
 
 	~LinearSmoother();
 private:
-	double cr = 4096;
 	uint8_t counter = 0;
 
 	double sample_rate = 0.0;
-	double time_cst = 0.0;
+	float8 time_cst = 1.0;
 	double sr_cst = 0.0;
 
-	double prev_value = 0.0, new_value = -1.0;
+	float8 cur_value = 0.0;
 
-	double frac = 1.0;
-
-
-	const double& raw_value;
+	float8 step = 0.0;
+	float8 target = 0.0;
+	float8 prev_value = 0.0;
 };
 
 }

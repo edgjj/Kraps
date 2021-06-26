@@ -84,11 +84,6 @@ public:
         
         float8 ret = get(trunc_t + float8(1)) * frac + get(trunc_t) * (float8(1) - frac);
 
-       /* float8 ret = get(trunc_t + float8(1)) * pow(frac, 3) / float8 (6)
-            + get(trunc_t) * (pow(float8 (1) + frac, 3) - 4 * pow(frac, 3)) / float8 (6)
-            + get(trunc_t - float8(1)) * (pow(float8(2) - frac, 3) - 4 * pow(float8(1) - frac, 3)) / float8 (6)
-            + get(trunc_t - float8(2)) * pow(float8(1) - frac, 3) / float8 (6);*/
-
         return ret;
 
     }
@@ -112,13 +107,12 @@ public:
     void recalculate_sr() override;
     void process_params() override;
 private:
-    std::unique_ptr <misc::LinearSmoother> smoother;
+    misc::LinearSmoother smoother;
 
 
     AVXDelayLine <5> dly_line;
 
-    double time = 0.0, drywet = 0.0, feedback = 0.0;
-    double smoothed_time = 0.0;
+    float8 time = 0.0, drywet = 0.0, feedback = 0.0;
 };
 
 }
