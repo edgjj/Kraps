@@ -16,29 +16,31 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
  
-#ifndef KRAPSDAFX_H
-#define KRAPSDAFX_H
+#ifndef KRAPS_TUBEDIST_H
+#define KRAPS_TUBEDIST_H
 #include "../processor/processor.hpp"
 
 namespace kraps 
 {
 namespace dafx
 {
-enum kTubeInputs 
-{
-	kDAFXAudioIn
-};
-enum kTubeOutputs
-{
-	kDAFXAudioOut
-};
+
 class TubeDist : public Processor
 {
 public:
+	enum kTubeInputs
+	{
+		kTubeDistAudioIn
+	};
+	enum kTubeOutputs
+	{
+		kTubeDistAudioOut
+	};
+
 	TubeDist();
 	~TubeDist();
 
-	float8 ftanh(const float8& x);
+	
 	void process_params() override;
 	void process_callback() override;
 private:

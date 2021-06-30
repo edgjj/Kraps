@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef AGENERATOR_H
-#define AGENERATOR_H
+#ifndef KRAPS_GENERATOR_H
+#define KRAPS_GENERATOR_H
 #include "../processor/processor.hpp"
 namespace kraps {
 
@@ -58,7 +58,6 @@ protected:
 
 
     float8 phase = 0.0;
-    float8 phase_legacy = 0.0;
 
     float8 gate = 0.0;
     float8 freq = 0.0;

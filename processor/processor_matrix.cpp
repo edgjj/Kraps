@@ -75,6 +75,9 @@ uint32_t ProcessorMatrix::add_processor(uint8_t type, uint32_t _id)
     case p_delay:
         processors.emplace_back(std::make_unique <dafx::Delay>());
         break; 
+    case p_compressor:
+        processors.emplace_back(std::make_unique<dafx::Compressor>());
+        break;
     case p_atten:
         processors.emplace_back(std::make_unique <Attenuator>());
         break;

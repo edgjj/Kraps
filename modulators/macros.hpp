@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MACROS_H
-#define MACROS_H
+#ifndef KRAPS_MACROS_H
+#define KRAPS_MACROS_H
 #include "../processor/processor.hpp"
 
 namespace kraps {

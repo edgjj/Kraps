@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KRPS_PARAMETER
-#define KRPS_PARAMETER
+#ifndef KRAPS_PARAMETER_H
+#define KRAPS_PARAMETER_H
 #include "../../serialize/nlohmann/json.hpp"
 #include "../../simd/avir_float8_avx.h"
 

@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KRAPS_PULVERIZER
-#define KRAPS_PULVERIZER
+#ifndef KRAPS_PULVERIZER_H
+#define KRAPS_PULVERIZER_H
 #include "../processor/processor.hpp"
 
 namespace kraps

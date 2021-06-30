@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PROCESSOR_DEFS_H
-#define PROCESSOR_DEFS_H
+#ifndef KRAPS_PROCESSOR_DEFS_H
+#define KRAPS_PROCESSOR_DEFS_H
 
 #include <map>
 #include <string>
@@ -38,11 +38,13 @@ typedef enum ProcessorTypes
     p_sampler,
     p_decomposer,
     p_pulverizer,
+    p_compressor,
     p_notemgr = 240,
     p_output,
-    p_count = p_pulverizer
+    p_count = p_compressor
 } ProcessorTypes;
 
+// i definitely think there should be better solution instead of static descriptions
 
 static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
     { p_wt, "Wavetable" },
@@ -59,6 +61,7 @@ static std::map <ProcessorTypes, std::string> ProcessorTypesDesc {
     { p_output, "Output Node"},
     { p_decomposer, "Decomposer"},
     { p_pulverizer, "Pulverizer"},
+    { p_compressor, "Compressor"}
 };
 
 static std::map<ProcessorTypes, std::vector <std::string>> ProcessorParametersDesc = 
@@ -71,7 +74,8 @@ static std::map<ProcessorTypes, std::vector <std::string>> ProcessorParametersDe
     { p_filter, {"Frequency", "Q", "Reserved"}},
     { p_tube, {"Gain", "Pre. Gain", "Top", "Bot", "Peak", "Output Gain"}},
     { p_notemgr, {"Mono Mode", "Legato", "Always Porta", "Porta Time"}},
-    { p_pulverizer, { "1st Frequency", "1st Q", "1st Amount", "2nd Frequency", "2nd Q", "2nd Amount"}}
+    { p_pulverizer, { "1st Frequency", "1st Q", "1st Amount", "2nd Frequency", "2nd Q", "2nd Amount"}},
+    { p_compressor, { "Threshold", "Ratio", "Knee", "Attack", "Release", "Out. Gain"}}
 
 };
 

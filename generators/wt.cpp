@@ -78,7 +78,7 @@ inline float8 Wavetable::pack_voices(const float8& oct, const float8& pos, const
     float8 d1 = d1.loadu(data), d2 = d2.loadu( &data[8] );
 
     float8 one = 1;
-    float8 s1 = d1 * (one - pos_frac) + d2 * pos_frac; // there's some problem
+    float8 s1 = d1 * (one - pos_frac) + d2 * pos_frac; 
 
     float8 pos_int_shift = (pos_int + wform_size) % t_size;
     float8 pos_int_shift_inc = (pos_int_inc + wform_size) % t_size;

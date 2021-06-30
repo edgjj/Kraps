@@ -15,35 +15,36 @@
  * You should have received a copy of the GNU General Public License
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef KRAPS_DECOMPOSER_H
-#define KRAPS_DECOMPOSER_H
 
-#include "../processor/processor.hpp"
 
+#include "../simd/avir_float8_avx.h"
+
+#ifndef KRAPS_ENVFOLLOWER_H
+#define KRAPS_ENVFOLLOWER_H
 namespace kraps
 {
 namespace misc
 {
-class Decomposer : public Processor
+
+class EnvelopeFollower
 {
 public:
-	Decomposer() : Processor (p_decomposer, 2, 16) { ; }
-	~Decomposer() { ; }
-	void process_callback() override
-	{
-		float data[8];
-		for (int i = 0; i < inputs.size(); i++)
-		{
-			inputs[i]->src->val.storeu(data);
-			for (int o = 0; o < 8; o++)
-				*outputs[o + i*8] = float8(data[o]);
-		}
-	}
+	EnvelopeFollower() { ; }
+	~EnvelopeFollower() { ; }
 
+	void setup(const float& sample_rate, const float8& a, const float8& r);
+
+	float8 process(const float8& x);
 private:
-	
+	float8 z1 = 0.f;
+	float sample_rate = 0.f;
+
+	float8 coeffs[2];
 };
+
 }
 }
 
-#endif 
+
+
+#endif

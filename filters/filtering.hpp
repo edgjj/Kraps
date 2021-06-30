@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KRPSFILTER_H
-#define KRPSFILTER_H
+#ifndef KRAPS_FILTER_H
+#define KRAPS_FILTER_H
 
 #include "../processor/processor.hpp"
 #include "../misc/linear_smoother.hpp"

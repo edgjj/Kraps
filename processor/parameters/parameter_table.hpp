@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KRPS_PARAMTABLE
-#define KRPS_PARAMTABLE
+#ifndef KRAPS_PARAMTABLE_H
+#define KRAPS_PARAMTABLE_H
 
 #include "parameter.hpp"
 
@@ -129,6 +129,10 @@ public:
 			{
 				std::string name;
 				o.at("param_name").get_to(name);
+
+				if (m.find(name) == m.end())
+					continue;
+
 				o.get_to(*m[name]);
 			}
 			catch (std::exception& e)

@@ -15,35 +15,49 @@
  * You should have received a copy of the GNU General Public License
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef KRAPS_DECOMPOSER_H
-#define KRAPS_DECOMPOSER_H
+
+#ifndef KRAPS_COMPRESSOR_H
+#define KRAPS_COMPRESSOR_H
 
 #include "../processor/processor.hpp"
+#include "../misc/env_follower.hpp"
 
 namespace kraps
 {
-namespace misc
+namespace dafx
 {
-class Decomposer : public Processor
+
+
+class Compressor : public Processor
 {
 public:
-	Decomposer() : Processor (p_decomposer, 2, 16) { ; }
-	~Decomposer() { ; }
-	void process_callback() override
+	enum kCompressorInputs
 	{
-		float data[8];
-		for (int i = 0; i < inputs.size(); i++)
-		{
-			inputs[i]->src->val.storeu(data);
-			for (int o = 0; o < 8; o++)
-				*outputs[o + i*8] = float8(data[o]);
-		}
-	}
+		kDAFXAudioIn
+	};
+	enum kCompressorOutputs
+	{
+		kDAFXAudioOut
+	};
+
+
+	Compressor();
+	~Compressor();
+
+	void process_params() override;
+	void process_callback() override;
+	void recalculate_sr() override;
 
 private:
-	
+	float8 threshold, ratio, knee, out_gain;
+
+	misc::EnvelopeFollower follower;
+
 };
+
 }
 }
 
-#endif 
+
+#endif
+

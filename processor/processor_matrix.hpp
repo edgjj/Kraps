@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef APROCESSORMTX_H
-#define APROCESSORMTX_H
+#ifndef KRAPS_PROCESSORMTX_H
+#define KRAPS_PROCESSORMTX_H
 
 #include "../generators/wt.hpp"
 #include "../modulators/lfo.hpp"
@@ -31,7 +31,7 @@
 #include "../processor/midi/note_manager.hpp"
 #include "../misc/decomposer.hpp"
 #include "../filters/pulverizer.hpp"
-
+#include "../dafx/compressor.hpp"
 
 typedef std::map <uint32_t, std::tuple< std::vector <std::unique_ptr<kraps::io::Input> >*,
     std::vector <std::unique_ptr<kraps::io::Output> >*> > IO_container;

@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KRAPSSMOOTHER_H
-#define KRAPSSMOOTHER_H
+#ifndef KRAPS_SMOOTHER_H
+#define KRAPS_SMOOTHER_H
 #include <cstdint>
 #include "../simd/avir_float8_avx.h"
 namespace kraps

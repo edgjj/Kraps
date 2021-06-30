@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ATTENUATOR_H
-#define ATTENUATOR_H
+#ifndef KRAPS_ATTENUATOR_H
+#define KRAPS_ATTENUATOR_H
 #include "../processor/processor.hpp"
 
 namespace kraps {

@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KRPSDELAY_H
-#define KRPSDELAY_H
+#ifndef KRAPS_DELAY_H
+#define KRAPS_DELAY_H
 #include "../processor/processor.hpp"
 #include "../misc/linear_smoother.hpp"
 namespace kraps
@@ -25,16 +25,6 @@ namespace kraps
 namespace dafx
 {
 
-enum kDelayInputs
-{
-    kDelayAudioIn,
-    kDelayTimeIn
-};
-
-enum kDelayOutputs
-{
-    kDelayAudioOut
-};
 
 template<size_t MaxTime>
 class AVXDelayLine {
@@ -101,6 +91,18 @@ private:
 class Delay : public Processor
 {
 public:
+    enum kDelayInputs
+    {
+        kDelayAudioIn,
+        kDelayTimeIn
+    };
+
+    enum kDelayOutputs
+    {
+        kDelayAudioOut
+    };
+
+
 	Delay();
 	~Delay();
     void process_callback() override; 

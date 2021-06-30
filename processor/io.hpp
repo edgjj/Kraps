@@ -18,8 +18,8 @@
 
 #include "../simd/avir_float8_avx.h"
 
-#ifndef KRPSIO_H
-#define KRPSIO_H
+#ifndef KRAPS_IO_H
+#define KRAPS_IO_H
 
 namespace kraps{
 class Processor;

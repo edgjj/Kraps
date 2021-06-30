@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef WT_H
-#define WT_H
+#ifndef KRAPS_WT_H
+#define KRAPS_WT_H
 #include <array>
 #include "generator.hpp"
 #include "../fft/kissfft.hpp"

@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LFO_H
-#define LFO_H
+#ifndef KRAPS_LFO_H
+#define KRAPS_LFO_H
 #include <map>
 #include "../generators/generator.hpp"
 namespace kraps {

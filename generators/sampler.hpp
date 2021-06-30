@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KRPSSAMPLER_H
-#define KRPSSAMPLER_H
+#ifndef KRAPS_SAMPLER_H
+#define KRAPS_SAMPLER_H
 #include "../processor/processor.hpp"
 
 namespace kraps

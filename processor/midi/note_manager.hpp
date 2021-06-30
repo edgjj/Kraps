@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KRPSNOTEMGR_H
-#define KRPSNOTEMGR_H
+#ifndef KRAPS_NOTEMGR_H
+#define KRAPS_NOTEMGR_H
 #include <vector>
 #include <deque>
 #include "../processor.hpp"

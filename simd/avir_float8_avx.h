@@ -423,6 +423,13 @@ inline float8 ssqrt(const float8& v)
 	return (_mm256_sqrt_ps(v.value));
 }
 
+inline float8 ftanh(const float8& x)
+{
+	// https://www.kvraudio.com/forum/viewtopic.php?f=33&t=521377
+	float8 x_trans = x + float8(0.18) * (x * x * x);
+	return x_trans / ssqrt(x_trans * x_trans + float8(1));
+}
+
 /**
  * SIMD rounding function, exact result.
  *

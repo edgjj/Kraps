@@ -37,12 +37,12 @@ TubeDist::TubeDist() : Processor(p_tube, 1, 1)
 
     io_description[0] =
     {
-        {kDAFXAudioIn, "AUDIO", "Just audio input."}
+        {kTubeDistAudioIn, "AUDIO", "Just audio input."}
     };
 
     io_description[1] =
     {
-        {kDAFXAudioOut, "AUDIO", "Output for processed signal."}
+        {kTubeDistAudioOut, "AUDIO", "Output for processed signal."}
     };
 }
 TubeDist::~TubeDist()
@@ -62,16 +62,10 @@ void TubeDist::process_params()
     out_gain = d2g(pt.get_raw_value("out_gain"));
 }
 
-inline float8 TubeDist::ftanh(const float8& x)
-{
-    // https://www.kvraudio.com/forum/viewtopic.php?f=33&t=521377
-    float8 x_trans = x + float8 (0.18) * (x * x * x); 
-    return x_trans / ssqrt(x_trans * x_trans + float8(1));
-}
 
 void TubeDist::process_callback()
 {
-    float8 in = *inputs[kDAFXAudioIn];
+    float8 in = *inputs[kTubeDistAudioIn];
 
     in *= pre_gain;
     in = blend(in, ftanh( (in / bC) * gain ) * bC, in < float8(0));
@@ -88,7 +82,7 @@ void TubeDist::process_callback()
 
     in = blend(in, top, in >= float8(0));
 
-    *outputs[kDAFXAudioOut] = in * float8 (out_gain);
+    *outputs[kTubeDistAudioOut] = in * float8 (out_gain);
 }
 }
 }

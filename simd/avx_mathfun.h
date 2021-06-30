@@ -104,7 +104,7 @@ typedef union ymm_mm_union {
 /* natural logarithm computed for 4 simultaneous float 
    return NaN for x <= 0
 */
-static v8sf log256_ps(v8sf x) {
+static v8sf ln256_ps(v8sf x) {
   v8si emm0;
 
   v8sf one = *(v8sf*)_ps_1;
@@ -243,9 +243,16 @@ static v8sf exp256_ps(v8sf x) {
   return y;
 }
 
+_PS_CONST(log10_precalc, 0.434294481903251827651128918916605082294397005803);
+
+static v8sf log256_ps(v8sf x)
+{
+    return _mm256_mul_ps (ln256_ps(x) , *( (v8sf*)_ps_log10_precalc) );
+}
+
 static v8sf pow256_ps(v8sf x, v8sf y)
 {
-    return exp256_ps(_mm256_mul_ps (y, log256_ps(x)));
+    return exp256_ps(_mm256_mul_ps (y, ln256_ps(x)));
 }
 
 _PS_CONST(minus_cephes_DP1, -0.78515625);

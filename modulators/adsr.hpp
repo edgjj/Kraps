@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ADSR_h
-#define ADSR_h
+#ifndef KRAPS_ADSR_H
+#define KRAPS_ADSR_H
 
 #include "../processor/processor.hpp"
 

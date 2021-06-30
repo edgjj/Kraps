@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef KRAPSHDR_H
-#define KRAPSHDR_H
+#ifndef KRAPS_HDR_H
+#define KRAPS_HDR_H
 
 #include "serialize/base64/base64.hpp"
 #include "processor/processor_matrix.hpp"

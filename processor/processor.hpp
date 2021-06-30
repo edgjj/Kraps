@@ -16,8 +16,8 @@
  * along with Kraps.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef APROCESSOR_H
-#define APROCESSOR_H
+#ifndef KRAPS_PROCESSOR_H
+#define KRAPS_PROCESSOR_H
 
 #include <vector>
 #include <cstdint>
