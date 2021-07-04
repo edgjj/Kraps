@@ -33,16 +33,15 @@ public:
 	void set_time_cst(const float8& v);
 
 	float8 get_next_value();
-	//void set_smoothing_time(double time) { smoothing_time = time; }
-	void set_sample_rate(double _sample_rate);
+	void set_sample_rate(float _sample_rate);
 
 	~LinearSmoother();
 private:
 	uint8_t counter = 0;
 
-	double sample_rate = 0.0;
+	float sample_rate = 0.0;
 	float8 time_cst = 1.0;
-	double sr_cst = 0.0;
+	float sr_cst = 0.0;
 
 	float8 cur_value = 0.0;
 

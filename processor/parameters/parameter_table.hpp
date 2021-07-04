@@ -83,6 +83,7 @@ public:
 		for (auto& i : parameters)
 			if (i->get_name() == name)
 				return i->get_value();
+		return 0.0f;
 	}
 
 	ParameterInterface::raw_pair get_raw_range(const std::string& name)
@@ -135,7 +136,7 @@ public:
 
 				o.get_to(*m[name]);
 			}
-			catch (std::exception& e)
+			catch (...)
 			{
 				continue;
 			}

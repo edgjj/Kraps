@@ -59,7 +59,7 @@ protected:
 	float8 phase_inc = 0.0;
 private:
 	void load_source_unserialize(double* buf);
-	float8 pack_voices(const float8& pos);
+	float8 pack_voices(const float8& _pos);
 
 	std::unique_ptr<double[]> source;
 	bool is_looping = 0;

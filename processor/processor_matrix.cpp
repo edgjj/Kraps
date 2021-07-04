@@ -17,7 +17,20 @@
  */
 
 #include "processor_matrix.hpp"
-#include "midi/note_manager.hpp"
+
+#include "../generators/wt.hpp"
+#include "../modulators/lfo.hpp"
+#include "../modulators/adsr.hpp"
+#include "../modulators/attenuator.hpp"
+#include "../modulators/macros.hpp"
+#include "../generators/sampler.hpp"
+#include "../filters/filtering.hpp"
+#include "../dafx/tubedist.hpp"
+#include "../dafx/delay.hpp"
+
+#include "../misc/decomposer.hpp"
+#include "../filters/pulverizer.hpp"
+#include "../dafx/compressor.hpp"
 
 namespace kraps {
 
@@ -221,12 +234,12 @@ bool ProcessorMatrix::unplug(uint32_t dest, uint16_t dest_in)
 }
 
 
-void ProcessorMatrix::set_SR(double sample_rate)
+void ProcessorMatrix::set_SR(double _sample_rate)
 {
-    this->sample_rate = sample_rate;
+    this->sample_rate = _sample_rate;
     for (auto& i : processors)
     {
-        i->set_SR(sample_rate);
+        i->set_SR(_sample_rate);
     }
 }
 
@@ -282,15 +295,15 @@ const nlohmann::json ProcessorMatrix::serialize()
 
         js r_mtx;
         r_mtx["proc_id"] = id;
-        for (auto& i : *inp)
+        for (auto& j : *inp)
         {
             js input;
-            input["id"] = i->id;
-            input["src_id"] = i->src->id;
-            if (i->src->id == -1)
+            input["id"] = j->id;
+            input["src_id"] = j->src->id;
+            if (j->src->id == -1)
                 input["src_proc_id"] = -1;
             else
-                input["src_proc_id"] = i->src->proc->get_ID();
+                input["src_proc_id"] = j->src->proc->get_ID();
 
             r_mtx["inputs"].push_back(input);
         }

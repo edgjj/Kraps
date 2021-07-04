@@ -46,8 +46,8 @@ public:
     Processor (uint8_t type, uint8_t num_inputs, uint8_t num_outputs);
 
     void set_bypassed(bool val) { set_lock();  this->bypass = val; set_unlock();  }
-    void set_SR (double val) { sample_rate = val; recalculate_sr (); process_params(); }
-    double get_SR() { return sample_rate; }
+    void set_SR (float val) { sample_rate = val; recalculate_sr (); process_params(); }
+    float get_SR() { return sample_rate; }
     void set_lock() { proc_mutex.lock(); }
     void set_unlock() { proc_mutex.unlock(); }
 
@@ -116,7 +116,7 @@ protected:
 
     /* dsp */
 
-    double sample_rate;
+    float sample_rate;
     
     parameter::pt::ParameterTable pt;
 

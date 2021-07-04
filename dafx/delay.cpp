@@ -62,8 +62,8 @@ void Delay::process_params()
 	smoother.set_target(sm_time);
 	smoother.set_time_cst(sm_time);
 
-	feedback = pt.get_raw_value("feedback") / 100.0;
-	drywet = pt.get_raw_value("drywet") / 100.0;
+	feedback = pt.get_raw_value("feedback") / 100.0f;
+	drywet = pt.get_raw_value("drywet") / 100.0f;
 }
 void Delay::process_callback()
 {

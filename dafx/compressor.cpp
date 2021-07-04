@@ -70,7 +70,6 @@ void Compressor::recalculate_sr()
 void Compressor::process_callback() 
 {
 
-
     float8 in = *inputs[kDAFXAudioIn];
     float8 env = follower.process (in); 
 
@@ -78,13 +77,13 @@ void Compressor::process_callback()
     
     float8 pre = env;
 
-    env = env + float8 ( exp256_ps(env) ) * float8(-0.02);
+    env = env + float8 ( exp256_ps(env) ) * float8(-0.02f);
     env = ssqrt (env * env + knee);
 
-    pre += env * 0.88 + ftanh(env) * 1.1;
+    pre += env * 0.88f + ftanh(env) * 1.1f;
     pre *= 0.41;
     
-    float8 g = ( 0 - smax(pre, 0.0) ) * ratio;
+    float8 g = ( 0 - smax(pre, 0.0f) ) * ratio;
     g = exp256_ps(g);
 
 

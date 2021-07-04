@@ -36,7 +36,7 @@ public:
     {
     }
 
-    void set_sample_rate(double sr)
+    void set_sample_rate(float sr)
     {
         sample_rate = sr;
         sample_cnt = max_time * sample_rate; 
@@ -82,10 +82,10 @@ private:
     std::vector<float8> raw_buf;
     int w_pos;
 
-    double max_time = MaxTime;
+    float max_time = MaxTime;
 
     int sample_cnt = 0;
-    double sample_rate = 0.0;
+    float sample_rate = 0.0;
 };
 
 class Delay : public Processor

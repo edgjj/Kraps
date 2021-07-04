@@ -40,10 +40,10 @@ struct Output
     }
     float8 val = 0.0;
 
-    int32_t id = 0;
+    int id = 0;
     Processor* proc;
 
-    inline operator double() const
+    inline operator float() const
     {
         return val;
     }
@@ -70,13 +70,13 @@ struct Output
 struct Input
 {
 
-    Input(uint32_t _id)
+    Input(unsigned int _id)
     {
         this->proc = nullptr;
         this->src = nullptr;
         id = _id;
     }
-    Input(Processor* proc, Output* src, uint32_t _id)
+    Input(Processor* proc, Output* src, unsigned int _id)
     {
         this->proc = proc;
         this->src = src;
@@ -99,17 +99,17 @@ struct Input
         return src->val != value;
     }
 
-    inline double operator+ (const float8& value)
+    inline float8 operator+ (const float8& value)
     {
         return src->val + value;
     }
 
-    inline double operator*(const float8& value)
+    inline float8 operator*(const float8& value)
     {
         return src->val * value;
     }
 
-    int32_t id = 0;
+    int id = 0;
     Processor* proc;
     Output* src;
 };

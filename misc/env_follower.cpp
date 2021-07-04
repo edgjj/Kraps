@@ -24,11 +24,11 @@ namespace kraps
 namespace misc
 {
 
-void EnvelopeFollower::setup (const float& sample_rate, const float8& a, const float8& r)
+void EnvelopeFollower::setup (const float& _sample_rate, const float8& a, const float8& r)
 {
-	float8 cst1 = 0.01, cst2 = 1.0;
-    coeffs[0] = pow256_ps(cst1, cst2 / (a * float8 (sample_rate) ) );
-    coeffs[1] = pow256_ps(cst1, cst2 / (r * float8 (sample_rate) ) );
+	float8 cst1 = 0.01f, cst2 = 1.0f;
+    coeffs[0] = pow256_ps(cst1, cst2 / (a * _sample_rate) );
+    coeffs[1] = pow256_ps(cst1, cst2 / (r * _sample_rate) );
 }
 
 

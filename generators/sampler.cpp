@@ -70,7 +70,7 @@ void Sampler::load_source(float* buf, size_t len, double stream_sample_rate)
     pt.set_new_range("sample_start", 0, cur_file_len);
 
     file_sample_rate = stream_sample_rate;
-    pos = cur_file_len - 1;
+    pos = static_cast <float> (cur_file_len - 1);
 
 
     set_unlock();
@@ -88,7 +88,7 @@ void Sampler::load_source_unserialize(double* buf)
     std::memcpy(source.get(), buf, cur_file_len * sizeof(double));
 
     pt.set_new_range("sample_start", 0, cur_file_len);
-    pos = cur_file_len - 1;
+    pos = static_cast <float> (cur_file_len - 1);
 
 
 }
@@ -108,11 +108,11 @@ double* Sampler::get_source_view() const
 	return source.get();
 }
 
-float8 Sampler::pack_voices(const float8& pos)
+inline float8 Sampler::pack_voices(const float8& _pos)
 {
     float data[8], pos_data[8];
 
-    pos.store(pos_data);
+    _pos.store(pos_data);
 
 #pragma loop(hint_parallel(8))
     for (int i = 0; i < 8; i++)

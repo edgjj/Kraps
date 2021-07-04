@@ -18,20 +18,8 @@
 
 #ifndef KRAPS_PROCESSORMTX_H
 #define KRAPS_PROCESSORMTX_H
-
-#include "../generators/wt.hpp"
-#include "../modulators/lfo.hpp"
-#include "../modulators/adsr.hpp"
-#include "../modulators/attenuator.hpp"
-#include "../modulators/macros.hpp"
-#include "../generators/sampler.hpp"
-#include "../filters/filtering.hpp"
-#include "../dafx/tubedist.hpp"
-#include "../dafx/delay.hpp"
+#include "../processor/processor.hpp"
 #include "../processor/midi/note_manager.hpp"
-#include "../misc/decomposer.hpp"
-#include "../filters/pulverizer.hpp"
-#include "../dafx/compressor.hpp"
 
 typedef std::map <uint32_t, std::tuple< std::vector <std::unique_ptr<kraps::io::Input> >*,
     std::vector <std::unique_ptr<kraps::io::Output> >*> > IO_container;
@@ -83,7 +71,7 @@ public:
 
 
 
-    void set_SR(double sample_rate);
+    void set_SR(double _sample_rate);
     void set_lock();
     void set_unlock();
 
@@ -91,8 +79,9 @@ public:
     bool plug(uint32_t src, uint32_t dest, uint16_t src_out, uint16_t dest_in);
     bool unplug(uint32_t dest, uint16_t dest_in);
 
-
+    
     NoteManager* get_note_mgr();
+
     float8 process ();
 
     IO_container* get_IO() { return &processors_io; }

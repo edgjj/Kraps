@@ -55,7 +55,7 @@ public:
     
     const nlohmann::json get_serialize_obj() override;
     void set_serialize(const nlohmann::json&) override;
-    double get_interp(double x);
+    float get_interp(float x);
 
     ~LFO() { ; }
 protected:

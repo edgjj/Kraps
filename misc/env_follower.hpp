@@ -32,12 +32,11 @@ public:
 	EnvelopeFollower() { ; }
 	~EnvelopeFollower() { ; }
 
-	void setup(const float& sample_rate, const float8& a, const float8& r);
+	void setup(const float& _sample_rate, const float8& a, const float8& r);
 
 	float8 process(const float8& x);
 private:
 	float8 z1 = 0.f;
-	float sample_rate = 0.f;
 
 	float8 coeffs[2];
 };

@@ -86,13 +86,13 @@ void LFO::move_point (int i, Vec2 pos)
     set_unlock();
 }
 
-void LFO::set_tension (int i, double tension)
+void LFO::set_tension (int _i, double _tension)
 {
     set_lock();
     if (points.size() == 2)
         return;
-    int8_t sign         = std::signbit (tension) * 2 - 1;
-    this->tension[i]    = fabs (tension) > 0.9999 ? sign * 0.9999 : tension;
+    int8_t sign         = std::signbit (_tension) * 2 - 1;
+    this->tension[_i]    = fabs (_tension) > 0.9999 ? sign * 0.9999 : _tension;
     set_unlock();
 
 }
@@ -110,7 +110,7 @@ void LFO::remove_point (int i)
     set_unlock();
 }
 
-double LFO::get_interp (double x){
+float LFO::get_interp (float x){
     Vec2    p1, p2;
     double  y_diff;
     int8_t  sign;

@@ -41,7 +41,7 @@ Wavetable::~Wavetable()
     
 }
 
-inline float8 Wavetable::pack_voices(const float8& oct, const float8& pos, const float8& shift)
+inline float8 Wavetable::pack_voices(const float8& oct, const float8& pos, const float8& _shift)
 {
     // really bad solution, just prototype
     float oct_data[8];
@@ -50,7 +50,7 @@ inline float8 Wavetable::pack_voices(const float8& oct, const float8& pos, const
     float8 wform_size = waveform_size;
     float8 t_size = table_size;
 
-    float8 shift_pure = shift / wform_size;
+    float8 shift_pure = _shift / wform_size;
     
     float8 pos_int = roundneg(pos);
 
@@ -300,8 +300,8 @@ void Wavetable::set_serialize(const nlohmann::json& obj)
         auto decoded = base64_decode(obj["table"]);
 
         if (decoded.size() / sizeof(double) != table_size)
-            fill_table_from_fcn([](double phase) -> double {
-            return sin(phase); });
+            fill_table_from_fcn([](double _phase) -> double {
+            return sin(_phase); });
 
         else fill_table_from_buffer((double*) decoded.data(), table_size);
     }

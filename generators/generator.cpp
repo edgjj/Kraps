@@ -59,9 +59,9 @@ Generator::~Generator ()
 
 }
 
-void Generator::set_phase(double phase)
+void Generator::set_phase(double _phase)
 {
-    this->phase = phase;
+    phase = _phase;
 }
 
 void Generator::process_params()

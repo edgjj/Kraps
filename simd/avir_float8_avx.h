@@ -199,22 +199,22 @@ public:
 		}
 	}
 
-	float8 operator + (const double& s) const
+	float8 operator + (const float& s) const
 	{
 		return(_mm256_add_ps(value, _mm256_set1_ps (s)));
 	}
 
-	float8 operator - (const double& s) const
+	float8 operator - (const float& s) const
 	{
 		return(_mm256_sub_ps(value, _mm256_set1_ps(s)));
 	}
 
-	float8 operator * (const double& s) const
+	float8 operator * (const float& s) const
 	{
 		return(_mm256_mul_ps(value, _mm256_set1_ps(s)));
 	}
 
-	float8 operator / (const double& s) const
+	float8 operator / (const float& s) const
 	{
 		return(_mm256_div_ps(value, _mm256_set1_ps(s)));
 	}

@@ -116,13 +116,13 @@ public:
 
 	void set_new_range(const float& l, const float& r) override
 	{
-		range_pair p = { l,r };
+		range_pair p = { static_cast <T> (l), static_cast<T> (r) };
 		range.store(p);
 	}
 
 	distr_params get_distribution_params() override
 	{
-		distr_params p = { distribution_amt.load(), distribution_type.load() };
+		distr_params p = { static_cast<float> (distribution_amt.load()), static_cast <float> (distribution_type.load()) };
 		return p;
 	}
 
@@ -133,9 +133,9 @@ public:
 		{
 			
 			range_pair cur_range = range.load();
-			T range_amt = (cur_range.second - cur_range.first) * distribution_amt;
+			float range_amt = static_cast <float> (cur_range.second - cur_range.first) * distribution_amt;
 
-			float val = value.load();
+			float val = static_cast <float> (value.load());
 
 			float data[8];
 			data[0] = val;
@@ -145,7 +145,7 @@ public:
 				if (i == 3)
 					continue;
 
-				data[i+1] = fmax(fmin(val + range_amt / (3 - i) , cur_range.second), cur_range.first); // 3 2 1 0 -1 -2 -3
+				data[i+1] = fmax(fmin(val + range_amt / (3.0f - i) , cur_range.second), cur_range.first); // 3 2 1 0 -1 -2 -3
 			}
 
 
@@ -167,7 +167,7 @@ public:
 	{
 		range_pair rp = range.load();
 		raw_pair p{
-			rp.first, rp.second };
+			static_cast <float> (rp.first), static_cast<float>(rp.second) };
 		return p;
 	}
 
@@ -224,7 +224,7 @@ private:
 			j.at("distribution_type").get_to(dist);
 			distribution_type.store(dist);
 		}
-		catch (std::exception& e)
+		catch (...)
 		{
 			return;
 		}
