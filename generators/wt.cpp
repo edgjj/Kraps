@@ -29,11 +29,12 @@ namespace kraps {
 Wavetable::Wavetable(uint16_t waveform_size) : Generator (p_wt, 1, 0)
 {
     this->waveform_size = waveform_size;
-    phase_cst = float8 ( (this->waveform_size - 1) / ( 2.0 * M_PI ) );
+    phase_cst = float8 ( this->waveform_size / ( 2.0 * M_PI ) );
 
     pt.add_parameter(new parameter::Parameter<float>("wt_pos", 0, 0, 0, 100));
 
     io_description[0].push_back({ kWtShiftIn, "SHIFT", "Shifts WT position forward" });
+
 }
 
 Wavetable::~Wavetable()
@@ -43,86 +44,66 @@ Wavetable::~Wavetable()
 
 inline float8 Wavetable::pack_voices(const float8& oct, const float8& pos, const float8& _shift)
 {
-    // really bad solution, just prototype
+
     float oct_data[8];
     oct.store(oct_data);
 
-    float8 wform_size = waveform_size;
-    float8 t_size = table_size;
-
-    float8 shift_pure = _shift / wform_size;
-    
     float8 pos_int = roundneg(pos);
-
     float8 pos_frac = pos - pos_int;
 
-    float8 shift_round = roundneg(shift_pure);
-    float8 shift_frac = shift_pure - shift_round;
-    pos_int += shift_round * wform_size;
-    
+    float8 shift_round = roundneg(_shift);
+    float8 shift_upper = smin (shift_round + float8 (1), n_forms - 1);
+
+    float8 shift_frac = _shift - shift_round;
     float8 shift_mask = shift_frac > float8(0.f);
 
-    float8 pos_int_inc = pos_int + float8(1);
-    pos_int_inc = blend(pos_int_inc, pos_int_inc - wform_size, pos_int_inc >= t_size);
+    float8 pos_int_inc = pos_int + float8 (1.f);
+    pos_int_inc = blend(pos_int_inc, 0, pos_int_inc >= float8 (waveform_size) );
 
-    float pos_int_data[16];
+    float pos_int_data[16], shift_up[8];
 
     pos_int.store(pos_int_data);
     pos_int_inc.store( &pos_int_data[8] );
+    shift_round.store(shift_up);
 
     float data[16];
-
     for (int i = 0; i < 16; i++)
-        data[i] = tables[oct_data[i % 8]][pos_int_data[i]];
-
-    float8 d1 = d1.loadu(data), d2 = d2.loadu( &data[8] );
-
-    float8 one = 1;
-    float8 s1 = d1 * (one - pos_frac) + d2 * pos_frac; 
-
-    float8 pos_int_shift = (pos_int + wform_size) % t_size;
-    float8 pos_int_shift_inc = (pos_int_inc + wform_size) % t_size;
-
-    pos_int_shift.store(pos_int_data);
-    pos_int_shift_inc.store( &pos_int_data[8] );
-
-    for (int i = 0; i < 16; i++)
-        data[i] = tables[oct_data[i % 8]][pos_int_data[i]];
+        data[i] = forms[shift_up[i & 0b0111]][oct_data[i & 0b0111]][pos_int_data[i]];
     
+    float8 d1 = d1.loadu(data), d2 = d2.loadu( &data[8] );
+    float8 s1 = d1 + (d2 - d1) * pos_frac;
 
+    shift_upper.storeu(shift_up);
+
+    for (int i = 0; i < 16; i++)
+        data[i] = forms[shift_up[i & 0b0111] ][oct_data[i & 0b0111]][pos_int_data[i]];
+    
     float8 d3 = d3.loadu(data), d4 = d4.loadu( &data[8] );
-    float8 s2 = d3 * (one - pos_frac) + d4 * pos_frac;
+    float8 s2 = d3 + (d4 - d3) * pos_frac;
 
-
-    return blend (s1, s1 * (float8(1) - shift_frac) + s2 * shift_frac, shift_mask);
+    return blend (s1, s1 + (s2 - s1) * shift_frac, shift_mask);
 
 }
 
 void Wavetable::process_callback()
 {
-
     set_freq();
 
-    float8 num_tables = tables.size() - 1;
-
     float8 phase_cvt    = phase_cst * phase;
-    
     float8 shift_transform = shift + *inputs[kWtShiftIn];
 
-    shift_transform *= table_size - waveform_size;
-    shift_transform = clamp(shift_transform, float8(0), float8(table_size - waveform_size));
-
-    float8 num_oct      = clamp (num_tables - slog2 (float8(88200) / freq), 0, num_tables ); 
+    shift_transform *= (table_size - waveform_size) / waveform_size;
+    float8 num_oct = smax (log256_ps2(freq * float8 (2 * waveform_size / sample_rate)), 0);
 
     float8 no_strip = roundneg (num_oct);
-    float8 no_strip_inc = no_strip + float8(1);
+    float8 no_strip_dec = smax(no_strip - float8(1), 0);
 
     float8 oct_frac = num_oct - no_strip;
 
     float8 o1 = pack_voices(no_strip, phase_cvt, shift_transform);
-    float8 o2 = pack_voices(no_strip_inc, phase_cvt, shift_transform);
+    float8 o2 = pack_voices(no_strip_dec, phase_cvt, shift_transform);
 
-    *outputs[kGenAudioOut] = o1 * (float8 (1) - oct_frac) + o2 * oct_frac;
+    *outputs[kGenAudioOut] = o2 + (o1 - o2) * oct_frac; // evil anti-aliasing hacks
     *outputs[kGenPhaseOut] = phase;
 
     inc_phase ();
@@ -144,6 +125,7 @@ void Wavetable::fill_table_from_buffer (float* buf, uint32_t len)
 
     for (uint32_t i = 0; i < table_size; i++)
         table[i] = buf[i];
+
 
     fill_mipmap();
 
@@ -182,7 +164,6 @@ void Wavetable::fill_table_from_fcn (double (*fcn) (double phase))
     for (uint32_t i = 0; i < table_size; i++)
 		table[i] = (*fcn) ( 2 * M_PI * ( (float) i  / waveform_size ) );
      
-    
     fill_mipmap();
 
     set_unlock();
@@ -198,48 +179,45 @@ uint16_t Wavetable::get_wform_size()
     return waveform_size;
 }
 
-
-
 void Wavetable::fill_mipmap () // incorrect too
 {
 
-    uint32_t wt_sz = table_size;
-    uint32_t nfft = wt_sz / 2;
-    kissfft<double> fft_driver (nfft, false);
-    std::unique_ptr<std::complex<double>[]> fft_buf = std::make_unique <std::complex <double>[]>(wt_sz);
-    std::unique_ptr<std::complex<double>[]> fft_buf_inv = std::make_unique <std::complex <double>[]>(wt_sz);
-
     uint16_t wf_sz = waveform_size;
-    int i = 0;
-    tables.clear();
+    uint32_t nfft = wf_sz / 2;
+    kissfft<double> fft_driver (nfft, false);
+    std::unique_ptr<std::complex<double>[]> fft_buf = std::make_unique <std::complex <double>[]>(wf_sz);
+    std::unique_ptr<std::complex<double>[]> fft_buf_inv = std::make_unique <std::complex <double>[]>(wf_sz);    
 
-    // i think there's a bug somewhere: some tables are being shifted forward, leaving a "pop" in the start;
+    n_forms = table_size / waveform_size;
+    n_tables = log2(nfft);
 
-    while (wf_sz != 0)
-    {
-        tables.emplace_back( std::make_unique <double[]>(wt_sz) );
+    forms.clear();
+    forms.resize(n_forms);
 
-        std::memcpy(tables[i].get(), table.get(), wt_sz * sizeof(double));
+    double mult = 2.0f / wf_sz;
+    for (int i = 0; i < n_forms; ++i)
+    {     
+        for (int j = 0; j < n_tables; ++j)
+        {
+            forms[i].emplace_back(std::make_unique<double[]>(wf_sz));
+            std::memcpy(forms[i][j].get(), table.get() + i * waveform_size, wf_sz * sizeof(double));
 
-        fft_driver.transform_real(tables[i].get(), fft_buf.get());
+            fft_driver.transform_real(forms[i][j].get(), fft_buf.get());
 
-        uint16_t bins = nfft / (2.0 * pow(2, i));  // 1/2 fnyq; 1/4 fnyq; 1/8; 1/16; 1/32; 1/64; 1/128; 1/256; 1/512; 1/1024; ... 1 / waveform_size
+            uint16_t bins = nfft / pow(2, j); // 1024 harmonics; 512; 256; 128; 64; 32; 16; 8; 4; 2; 1
 
-        for (uint32_t j = bins; j < wt_sz; ++j)
-            fft_buf[j] = 0.0;
+            for (uint32_t s = bins; s < wf_sz; ++s)
+                fft_buf[s] = 0.0;
 
-        fft_driver.assign(wt_sz, true);
-        fft_driver.transform(fft_buf.get(), fft_buf_inv.get());
+            fft_driver.assign(wf_sz, true);
+            fft_driver.transform(fft_buf.get(), fft_buf_inv.get());
 
-        double mult = 2.0f / wt_sz;
+            for (uint32_t s = 0; s < wf_sz; ++s)
+                forms[i][j][s] = fft_buf_inv[s].real() * mult;
 
-        for (uint32_t j = 0; j < wt_sz; ++j)
-            tables[i][j] = fft_buf_inv[j].real() * mult;
-
-        fft_driver.assign(nfft, false);
-
-        wf_sz /= 2;
-        i++;
+            fft_driver.assign(nfft, false);
+        }
+        
     }
 
 }

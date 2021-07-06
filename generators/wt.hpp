@@ -61,12 +61,15 @@ private:
     float8 shift = 0;
     float8 phase_cst = 0.0;
 
-    uint16_t waveform_size = 0;
-    uint32_t table_size = 0;
+    int waveform_size = 0;
+    int table_size = 0;
+
+    int n_tables = 0;
+    int n_forms = 0;
 
     std::unique_ptr<double[]> table;
-    std::vector <std::unique_ptr<double[]>> tables;
 
+    std::vector <std::vector<std::unique_ptr<double[]>>> forms;
 };
 
 }

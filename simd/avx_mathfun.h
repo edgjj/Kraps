@@ -243,11 +243,17 @@ static v8sf exp256_ps(v8sf x) {
   return y;
 }
 
-_PS_CONST(log10_precalc, 0.434294481903251827651128918916605082294397005803);
+_PS_CONST(ln10_precalc, 2.302585092994);
 
 static v8sf log256_ps(v8sf x)
 {
-    return _mm256_mul_ps (ln256_ps(x) , *( (v8sf*)_ps_log10_precalc) );
+    return _mm256_div_ps (ln256_ps(x) , *( (v8sf*)_ps_ln10_precalc) );
+}
+
+_PS_CONST(ln2_precalc, 0.69314718056);
+static v8sf log256_ps2(v8sf x)
+{
+    return _mm256_div_ps(ln256_ps(x), *((v8sf*)_ps_ln2_precalc));
 }
 
 static v8sf pow256_ps(v8sf x, v8sf y)
