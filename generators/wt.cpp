@@ -93,7 +93,7 @@ void Wavetable::process_callback()
     float8 shift_transform = shift + *inputs[kWtShiftIn];
 
     shift_transform *= (table_size - waveform_size) / waveform_size;
-    float8 num_oct = smax (log256_ps2(freq * float8 (2 * waveform_size / sample_rate)), 0);
+    float8 num_oct = clamp (log256_ps2(freq * float8 (2 * waveform_size / sample_rate)), 0, n_tables - 1);
 
     float8 no_strip = roundneg (num_oct);
     float8 no_strip_dec = smax(no_strip - float8(1), 0);
