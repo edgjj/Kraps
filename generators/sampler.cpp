@@ -143,12 +143,12 @@ void Sampler::process_callback()
     */
 
     float8 cur_pos = pos;
-    float8 pos_int = roundneg (cur_pos);
+    float8 pos_int = float8ops::roundneg (cur_pos);
     float8 pos_int_inc = pos_int + float8(1);
 
-    float8 pos_frac = cur_pos - roundneg(cur_pos);
+    float8 pos_frac = cur_pos - float8ops::roundneg(cur_pos);
 
-    *outputs[kSamplerAudioOut] = blend(pack_voices(pos_int) * (float8(1) - pos_frac) + pack_voices(pos_int_inc) * pos_frac, float8(0.f), pos == float8(cur_file_len - 1));
+    *outputs[kSamplerAudioOut] = float8ops::blend(pack_voices(pos_int) * (float8(1) - pos_frac) + pack_voices(pos_int_inc) * pos_frac, float8(0.f), pos == float8(cur_file_len - 1));
 
     inc_phase();
 }
@@ -168,16 +168,16 @@ float8 Sampler::get_position()
 void Sampler::upd_freq()
 {
     float8 freqin = *inputs[kSamplerFreqIn];
-    float8 freq = smin(freqin, float8 (sample_rate / 2) );
+    float8 freq = float8ops::smin(freqin, float8 (sample_rate / 2) );
 
     double c3 = 261.63;
-    freq = blend(freq, float8(c3), freq == float8(0.f));
+    freq = float8ops::blend(freq, float8(c3), freq == float8(0.f));
 
     phase_inc = float8(file_sample_rate / sample_rate) * freq / base_freq;
 }
 void Sampler::inc_phase()
 {
-
+    using namespace float8ops;
     float8 cmp = *inputs[kSamplerGateIn] != gate;
 
     if (movemask(cmp) != 0)

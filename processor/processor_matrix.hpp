@@ -40,7 +40,7 @@ public:
     void process_callback() override
     {
         const float8& in = *inputs[0];
-        ret_v = blend(in, float8(0), in > float8(30.f));
+        ret_v = float8ops::blend(in, float8(0), in > float8(30.f));
     }
 
     void process_bypass() override

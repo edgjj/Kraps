@@ -102,7 +102,8 @@ void NoteManager::process_simd()
 {
 
 	auto it = voices.begin();
-	
+	using namespace float8ops;
+
 	if (is_mono)
 	{
 		kNoteEventType prev_t = voices[0].type;

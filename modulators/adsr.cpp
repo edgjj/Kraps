@@ -45,6 +45,7 @@ ADSR::ADSR () : Processor (p_adsr, 1, 1) // possibly add smoothing for 4 samples
 void ADSR::set_gate()
 {
     float8 cmp = *inputs[kADSRGate] != gate;   
+    using namespace float8ops;
 
     if (movemask(cmp) == 0)
         return;
@@ -75,7 +76,7 @@ float8 ADSR::get_position()
 
 void ADSR::process_callback()
 {
-
+    using namespace float8ops;
     set_gate();
 
     
@@ -127,13 +128,13 @@ void ADSR::process_params ()
         switch (i)
         {
         case adsr_attack:
-            step[i] = blend (step[i], 1.0, cmp_mask);
+            step[i] = float8ops::blend (step[i], 1.0, cmp_mask);
             continue;
         case adsr_decay:
-            step[i] = blend(step[i], 1.0 - sustain_amp, cmp_mask);
+            step[i] = float8ops::blend(step[i], 1.0 - sustain_amp, cmp_mask);
             continue;
         default:
-            step[i] = blend (step[i], sustain_amp, cmp_mask);
+            step[i] = float8ops::blend (step[i], sustain_amp, cmp_mask);
             continue;
         }
         

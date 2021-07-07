@@ -96,7 +96,7 @@ void Filter::process_params()
     param_order = pt.get_raw_value("order");
 
     freq += *inputs[kFilterFreqIn] * float8((sample_rate - 2000) / 2) ;
-    freq = clamp(freq, 2, 0.96 * (sample_rate / 2) );
+    freq = float8ops::clamp(freq, 2, 0.96 * (sample_rate / 2) );
 
     calc_filter();
 }

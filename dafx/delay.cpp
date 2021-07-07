@@ -58,7 +58,7 @@ void Delay::process_params()
 {
 	time = pt.get_raw_value("time");
 
-	float8 sm_time = clamp(*inputs[kDelayTimeIn] * 0.5 + time, 1 / sample_rate, 0.5);
+	float8 sm_time = float8ops::clamp(*inputs[kDelayTimeIn] * 0.5 + time, 1 / sample_rate, 0.5);
 	smoother.set_target(sm_time);
 	smoother.set_time_cst(sm_time);
 
@@ -67,7 +67,7 @@ void Delay::process_params()
 }
 void Delay::process_callback()
 {
-
+	using namespace float8ops;
 	float8 fbsmp = dly_line.get_interp(smoother.get_next_value());
 	
 	fbsmp = blend(fbsmp, float8(0), s_isnan(fbsmp));

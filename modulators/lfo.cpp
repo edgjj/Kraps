@@ -136,7 +136,7 @@ float LFO::get_interp (float x){
 
 void LFO::inc_phase()
 {
-
+    using namespace float8ops;
     float8 cmp = *inputs[kGenGate] != gate;
 
     if (movemask(cmp) != 0)

@@ -29,7 +29,7 @@ namespace kraps {
 Wavetable::Wavetable(uint16_t waveform_size) : Generator (p_wt, 1, 0)
 {
     this->waveform_size = waveform_size;
-    phase_cst = float8 ( this->waveform_size / ( 2.0 * M_PI ) );
+    phase_cst = float8 ( (float) this->waveform_size / ( 2.0 * M_PI ) );
 
     pt.add_parameter(new parameter::Parameter<float>("wt_pos", 0, 0, 0, 100));
 
@@ -42,63 +42,64 @@ Wavetable::~Wavetable()
     
 }
 
-inline float8 Wavetable::pack_voices(const float8& oct, const float8& pos, const float8& _shift)
+inline float8 Wavetable::pack_voices(const int8& oct, const float8& pos, const float8& _shift)
 {
+    int oct_data[8];
+    oct.storeu(oct_data);
 
-    float oct_data[8];
-    oct.store(oct_data);
+    int8 pos_int = static_cast <__m256> ( float8ops::roundneg (pos) );
+    float8 pos_frac = pos - static_cast <__m256i> (pos_int);
 
-    float8 pos_int = roundneg(pos);
-    float8 pos_frac = pos - pos_int;
+    int8 shift_round = static_cast <__m256> (_shift);
+    int8 shift_upper = int8ops::smin (shift_round + int8 (1), n_forms - 1);
 
-    float8 shift_round = roundneg(_shift);
-    float8 shift_upper = smin (shift_round + float8 (1), n_forms - 1);
+    float8 shift_frac = _shift - static_cast <__m256i> (shift_round);
 
-    float8 shift_frac = _shift - shift_round;
-    float8 shift_mask = shift_frac > float8(0.f);
+    int8 pos_int_inc = pos_int + int8 (1);
+    pos_int_inc = int8ops::andnot (waveform_size, pos_int_inc); 
 
-    float8 pos_int_inc = pos_int + float8 (1.f);
-    pos_int_inc = blend(pos_int_inc, 0, pos_int_inc >= float8 (waveform_size) );
+    int pos_int_data[16];
+    int shift_up[8];
 
-    float pos_int_data[16], shift_up[8];
-
-    pos_int.store(pos_int_data);
-    pos_int_inc.store( &pos_int_data[8] );
-    shift_round.store(shift_up);
+    pos_int.storeu(pos_int_data);
+    pos_int_inc.storeu( &pos_int_data[8] );
+    shift_round.storeu(shift_up);
 
     float data[16];
+
     for (int i = 0; i < 16; i++)
-        data[i] = forms[shift_up[i & 0b0111]][oct_data[i & 0b0111]][pos_int_data[i]];
+        data[i] = forms[shift_up[i & 0b0111]][oct_data[i & 0b0111]][pos_int_data[i]]; // HOT THING
     
     float8 d1 = d1.loadu(data), d2 = d2.loadu( &data[8] );
-    float8 s1 = d1 + (d2 - d1) * pos_frac;
+    float8 s1 = d1 + (d2 - d1) * pos_frac; // HOT THING
 
     shift_upper.storeu(shift_up);
 
     for (int i = 0; i < 16; i++)
-        data[i] = forms[shift_up[i & 0b0111] ][oct_data[i & 0b0111]][pos_int_data[i]];
+        data[i] = forms[shift_up[i & 0b0111] ][oct_data[i & 0b0111]][pos_int_data[i]]; // HOT THING TOO
     
     float8 d3 = d3.loadu(data), d4 = d4.loadu( &data[8] );
-    float8 s2 = d3 + (d4 - d3) * pos_frac;
+    float8 s2 = d3 + (d4 - d3) * pos_frac; // HOT THING
 
-    return blend (s1, s1 + (s2 - s1) * shift_frac, shift_mask);
+    return s1 + (s2 - s1) * shift_frac;
 
 }
 
-void Wavetable::process_callback()
+void Wavetable::process_callback() // try a "more pre-filtered versions" approach; like, instead of log2(waveform_size), waveform_size / 64
 {
+
     set_freq();
 
     float8 phase_cvt    = phase_cst * phase;
     float8 shift_transform = shift + *inputs[kWtShiftIn];
 
     shift_transform *= (table_size - waveform_size) / waveform_size;
-    float8 num_oct = clamp (log256_ps2(freq * float8 (2 * waveform_size / sample_rate)), 0, n_tables - 1);
+    float8 num_oct = float8ops::clamp (log256_ps2(freq * float8 (2 * waveform_size / sample_rate)), 0, n_tables - 1);
 
-    float8 no_strip = roundneg (num_oct);
-    float8 no_strip_dec = smax(no_strip - float8(1), 0);
+    int8 no_strip = static_cast <__m256> ( float8ops::roundneg (num_oct) );
+    int8 no_strip_dec = int8ops::smax(no_strip - int8(1), 0);
 
-    float8 oct_frac = num_oct - no_strip;
+    float8 oct_frac = num_oct - float8(static_cast <__m256i> (no_strip) );
 
     float8 o1 = pack_voices(no_strip, phase_cvt, shift_transform);
     float8 o2 = pack_voices(no_strip_dec, phase_cvt, shift_transform);
@@ -179,7 +180,7 @@ uint16_t Wavetable::get_wform_size()
     return waveform_size;
 }
 
-void Wavetable::fill_mipmap () // incorrect too
+void Wavetable::fill_mipmap () 
 {
 
     uint16_t wf_sz = waveform_size;

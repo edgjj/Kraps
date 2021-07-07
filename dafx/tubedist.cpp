@@ -52,6 +52,9 @@ TubeDist::~TubeDist()
 void TubeDist::process_params()
 {
     float8 top_clip = pt.get_raw_value("top_clip");
+    using namespace float8ops;
+
+
     tC = blend(top_clip, float8(0.01), (top_clip / float8(100.0)) < float8(0.01)) * float8 (2) + float8 (1);
     bC = ( ( pt.get_raw_value("bot_clip") / float8 (100.0) ) + float8 (0.166666667) ) * float8 (6);
     pC = pt.get_raw_value("peak_clip") * float8 (8.0 / 100.0);
@@ -66,6 +69,7 @@ void TubeDist::process_params()
 void TubeDist::process_callback()
 {
     float8 in = *inputs[kTubeDistAudioIn];
+    using namespace float8ops;
 
     in *= pre_gain;
     in = blend(in, ftanh( (in / bC) * gain ) * bC, in < float8(0));

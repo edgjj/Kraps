@@ -34,7 +34,7 @@ void EnvelopeFollower::setup (const float& _sample_rate, const float8& a, const 
 
 float8 EnvelopeFollower::process(const float8& x)
 {
-    float8 f = sfabs(x);
+    float8 f = float8ops::sfabs(x);
     if (f > z1)
         z1 = coeffs[0] * (z1 - f) + f;
     else

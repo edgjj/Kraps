@@ -69,6 +69,7 @@ void Compressor::recalculate_sr()
 }
 void Compressor::process_callback() 
 {
+    using namespace float8ops;
 
     float8 in = *inputs[kDAFXAudioIn];
     float8 env = follower.process (in); 

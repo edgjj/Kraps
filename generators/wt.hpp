@@ -54,7 +54,7 @@ protected:
     void process_callback () override;
     void process_params() override;
 private:
-    float8 pack_voices(const float8& oct, const float8& pos, const float8& shift);
+    float8 pack_voices(const int8& oct, const float8& pos, const float8& shift);
 
     void fill_mipmap ();
 
@@ -66,6 +66,7 @@ private:
 
     int n_tables = 0;
     int n_forms = 0;
+
 
     std::unique_ptr<double[]> table;
 

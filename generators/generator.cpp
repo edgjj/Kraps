@@ -73,7 +73,7 @@ void Generator::process_params()
 void Generator::set_freq () // for oscillators
 {
     float8 raw_voltage = *inputs[kGenFreqIn];
-    freq = clamp( float8 ( pow256_ps (_mm256_set1_ps (2), raw_voltage) ) * a3_tune * freq_mult + freq_shift, 0, 20000);
+    freq = float8ops::clamp( float8 ( pow256_ps (_mm256_set1_ps (2), raw_voltage) ) * a3_tune * freq_mult + freq_shift, 0, 20000);
     phase_inc = freq * freq_cst;
 }
 
@@ -96,6 +96,7 @@ float8 Generator::get_phase()
 
 void Generator::inc_phase ()
 {
+    using namespace float8ops;
     float8 cmp = *inputs[kGenGate] != gate;
 
     if (movemask(cmp) != 0)

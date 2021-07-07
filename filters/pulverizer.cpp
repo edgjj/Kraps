@@ -101,11 +101,11 @@ void Pulverizer::process_params()
 
 	freq1 = pt.get_raw_value("frequency1");
 	freq1 += *inputs[kPulverizerFreqIn] * cst;
-	freq1 = clamp (freq1, 30, cst);
+	freq1 = float8ops::clamp (freq1, 30, cst);
 
 	freq2 = pt.get_raw_value("frequency2");
 	freq2 += *inputs[kPulverizerFreqIn2] * cst;
-	freq2 = clamp(freq2, 30, cst);
+	freq2 = float8ops::clamp(freq2, 30, cst);
 
 	q1 = pt.get_raw_value("res1") + *inputs[kPulverizerResIn];
 	q2 = pt.get_raw_value("res2") + *inputs[kPulverizerResIn2];

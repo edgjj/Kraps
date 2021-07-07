@@ -47,6 +47,7 @@ void LinearSmoother::set_time_cst(const float8& v)
 
 void LinearSmoother::set_target(const float8& v)
 {
+	using namespace float8ops;
 	float8 mask = v != target;
 	
 	prev_value = blend (prev_value, target, mask);
@@ -60,7 +61,7 @@ float8 LinearSmoother::get_next_value()
 	if (sample_rate == 0.0)
 		return 0.0;
 
-	step = blend(0.0, step, blend ( target - cur_value , cur_value - target, prev_value > target) > float8 (0.0f) );
+	step = float8ops::blend(0.0, step, float8ops::blend ( target - cur_value , cur_value - target, prev_value > target) > float8 (0.0f) );
 	cur_value += step;
 	
 

@@ -68,7 +68,7 @@ public:
         float8 time8 = float8(time);
 
         float8 src_time = time8 * float8(sample_rate);
-        float8 trunc_t = roundneg (src_time);
+        float8 trunc_t = float8ops::roundneg (src_time);
             
         float8 frac = src_time - trunc_t;
         
