@@ -85,7 +85,7 @@ inline float8 Wavetable::pack_voices(const int8& oct, const float8& pos, const f
 
 }
 
-void Wavetable::process_callback() // try a "more pre-filtered versions" approach; like, instead of log2(waveform_size), waveform_size / 64
+void Wavetable::process_callback() 
 {
 
     set_freq();
@@ -94,17 +94,11 @@ void Wavetable::process_callback() // try a "more pre-filtered versions" approac
     float8 shift_transform = shift + *inputs[kWtShiftIn];
 
     shift_transform *= (table_size - waveform_size) / waveform_size;
-    float8 num_oct = float8ops::clamp (log256_ps2(freq * float8 (2 * waveform_size / sample_rate)), 0, n_tables - 1);
+    int8 num_oct = static_cast <__m256> ( float8ops::clamp(float8ops::slog2(freq * float8(2 * waveform_size / sample_rate)), 0, n_tables - 1) );
 
-    int8 no_strip = static_cast <__m256> ( float8ops::roundneg (num_oct) );
-    int8 no_strip_dec = int8ops::smax(no_strip - int8(1), 0);
+    float8 o1 = pack_voices(num_oct, phase_cvt, shift_transform);
 
-    float8 oct_frac = num_oct - float8(static_cast <__m256i> (no_strip) );
-
-    float8 o1 = pack_voices(no_strip, phase_cvt, shift_transform);
-    float8 o2 = pack_voices(no_strip_dec, phase_cvt, shift_transform);
-
-    *outputs[kGenAudioOut] = o2 + (o1 - o2) * oct_frac; // evil anti-aliasing hacks
+    *outputs[kGenAudioOut] = o1;
     *outputs[kGenPhaseOut] = phase;
 
     inc_phase ();
