@@ -47,13 +47,13 @@ inline float8 Wavetable::pack_voices(const int8& oct, const float8& pos, const f
     int oct_data[8];
     oct.storeu(oct_data);
 
-    int8 pos_int = static_cast <__m256i> ( float8ops::roundneg (pos) );
-    float8 pos_frac = pos - float8 (static_cast <__m256> (pos_int));
+    int8 pos_int = static_cast <__m256> ( float8ops::roundneg (pos) );
+    float8 pos_frac = pos - float8 (static_cast <__m256i> (pos_int));
 
-    int8 shift_round = static_cast <__m256i> (_shift);
+    int8 shift_round = static_cast <__m256> (_shift);
     int8 shift_upper = int8ops::smin (shift_round + int8 (1), n_forms - 1);
 
-    float8 shift_frac = _shift - float8 (static_cast <__m256> (shift_round));
+    float8 shift_frac = _shift - float8 (static_cast <__m256i> (shift_round));
 
     int8 pos_int_inc = pos_int + int8 (1);
     pos_int_inc = int8ops::andnot (waveform_size, pos_int_inc); 
