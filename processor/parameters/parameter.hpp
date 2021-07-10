@@ -183,7 +183,6 @@ public:
 		value = p.value;
 		default_value = p.default_value;
 		range = p.range;
-		distribution_range = p.distribution_range;
 		distribution_type = p.distribution_type;
 
 		return *this;

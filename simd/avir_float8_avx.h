@@ -693,7 +693,7 @@ public:
 
 	int8 operator / (const int32_t& s) const
 	{
-		return(_mm256_div_epi32(value, _mm256_set1_epi32(s)));
+		return(_mm256_cvtps_epi32( _mm256_div_ps (_mm256_cvtepi32_ps(value), _mm256_set1_ps(s))));
 	}
 
 	/* packed ops */
@@ -717,7 +717,7 @@ public:
 
 	int8& operator /= (const int8& s)
 	{
-		value = _mm256_div_epi32(value, s.value);
+		value = _mm256_cvtps_epi32( _mm256_div_ps (_mm256_cvtepi32_ps(value), _mm256_set1_ps(s)));
 		return(*this);
 	}
 
@@ -738,7 +738,7 @@ public:
 
 	int8 operator / (const int8& s) const
 	{
-		return(_mm256_div_epi32(value, s.value));
+		return(_mm256_cvtps_epi32( _mm256_div_ps (_mm256_cvtepi32_ps(value), _mm256_set1_ps(s))));
 	}
 
 

@@ -99,8 +99,8 @@ void ADSR::process_callback()
     float8 inc(0.0);
 
     inc = blend(inc, float8(step[adsr_attack]), state == float8(adsr_ENV_ATT));
-    inc = blend(inc, float8(-step[adsr_decay]), state == float8(adsr_ENV_DECAY));
-    inc = blend(inc, float8(-step[adsr_release]), state == float8(adsr_ENV_REL));
+    inc = blend(inc, float8(step[adsr_decay] * -1.0f), state == float8(adsr_ENV_DECAY));
+    inc = blend(inc, float8(step[adsr_release] * -1.0f), state == float8(adsr_ENV_REL));
 
     pos += inc;
     pos = clamp(pos, float8(0), float8(1));

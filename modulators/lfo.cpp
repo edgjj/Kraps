@@ -167,7 +167,7 @@ void LFO::inc_phase()
 
 void LFO::process_callback ()
 {
-    double lfo_freq = inputs[kGenFreqIn]->src->id != -1 ? *inputs[kGenFreqIn] * float8 (freq_ratio) : param_freq;
+    double lfo_freq = inputs[kGenFreqIn]->src->id != -1 ? static_cast<float> (*inputs[kGenFreqIn] * float8 (freq_ratio)) : param_freq;
         
     set_freq(lfo_freq);
     float8 phases = phase * float8(phase_const);

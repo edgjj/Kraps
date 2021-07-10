@@ -43,11 +43,10 @@ struct Output
     int id = 0;
     Processor* proc;
 
-    inline operator float() const
+    inline operator float8 () const
     {
         return val;
     }
-
     inline const Output& operator=(const float8& value)
     {
         val = value;

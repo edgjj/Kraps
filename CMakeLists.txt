@@ -32,9 +32,8 @@ file (GLOB_RECURSE KRAPS_HDR_PROCESSOR ${PROJECT_SOURCE_DIR}/processor *.hpp)
 
 set (ALL_SRC ${KRAPS_HDR} ${KRAPS_SRC} ${KRAPS_SRC_SERIALIZE} ${KRAPS_HDR_SERIALIZE} ${KRAPS_SRC_PROCESSOR} ${KRAPS_HDR_PROCESSOR})
 
-add_compile_definitions(_​USE_MATH_DEFINES)
+add_compile_definitions(_USE_MATH_DEFINES)
 add_definitions(-D_USE_MATH_DEFINES)
-
 add_library (${PROJECT_NAME} STATIC
         ${ALL_SRC})
 		
