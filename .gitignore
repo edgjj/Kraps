@@ -3,6 +3,7 @@
 !*.c
 !*.h
 !*.cpp
+!CMakeLists.txt
 !*.hpp
 !.gitignore
 !README.md
