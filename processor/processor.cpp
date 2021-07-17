@@ -140,14 +140,16 @@ IODescription Processor::get_io_description(uint32_t num, bool is_output)
 const nlohmann::json Processor::get_serialize_obj()
 {
     set_lock();
+
     nlohmann::json o;
     o["id"] = id;
     o["params"] = pt; 
     o["type"] = type;
     o["bypass"] = bypass;
+    o["position"]["x"] = position.x;
+    o["position"]["y"] = position.y;
 
     set_unlock();
-
     return o;
 }
 
@@ -155,13 +157,24 @@ void Processor::set_serialize(const nlohmann::json& obj)
 {
     set_lock();
 
-    obj.at("params").get_to(pt);
+    try
+    {
+        obj.at("params").get_to(pt);
         
-    process_params();
+        process_params();
 
-    obj.at("bypass").get_to(bypass);
-    obj.at("id").get_to(id);
+        obj.at("bypass").get_to(bypass);
+        obj.at("id").get_to(id);
 
+        obj.at("position").at("x").get_to(position.x);
+        obj.at("position").at("y").get_to(position.y);
+    }
+
+    catch (...)
+    {
+        set_unlock();
+        return;
+    }    
     set_unlock();
 }
 }

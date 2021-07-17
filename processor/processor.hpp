@@ -62,6 +62,8 @@ public:
     uint32_t get_ID () { return id; }
     void set_ID(uint32_t _id) { id = _id; }
 
+    IVec2 get_pos() { return position; }
+    void set_pos (const IVec2& pos) { position = pos; }
 
     io::Output* get_output(uint8_t id_) { return outputs[id_].get(); }
 
@@ -110,12 +112,9 @@ protected:
     virtual void process_bypass () { ; }
 
     /* gui friendly stuff */
-
     std::array <std::vector <IODescription>, 2> io_description = { };
 
-
     /* dsp */
-
     float sample_rate;
     
     parameter::pt::ParameterTable pt;
@@ -130,8 +129,8 @@ private:
 
     uint16_t cr_counter = 32;
 
-
     uint32_t id = 0;
+    IVec2 position{ 40, 40 };
     bool bypass;
     uint8_t type;   
     std::unique_ptr<io::Output> null_out;

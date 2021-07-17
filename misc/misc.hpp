@@ -18,5 +18,19 @@
 
 #ifndef KRAPS_MISC_H
 #define KRAPS_MISC_H
+namespace kraps
+{
+struct FVec2
+{
+    double x = 0.0;
+    double y = 0.0;
+};
+
+struct IVec2
+{
+    int x = 0;
+    int y = 0;
+};
+}
 
 #endif

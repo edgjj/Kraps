@@ -22,13 +22,6 @@
 #include "../generators/generator.hpp"
 namespace kraps {
 
-struct Vec2 
-{
-    double x = 0.0;
-    double y = 0.0;
-};
-
-
 enum kLFOInputs 
 {
     kLFOFreqIn,
@@ -47,9 +40,9 @@ class LFO : public Generator
 public:
     LFO();
 
-    std::pair<std::vector<Vec2>, std::vector<double>> get_points();
-    void add_point (Vec2);
-    void move_point (int, Vec2);
+    std::pair<std::vector<FVec2>, std::vector<double>> get_points();
+    void add_point (FVec2);
+    void move_point (int, FVec2);
     void set_tension (int, double);
     void remove_point (int);
     
@@ -73,7 +66,7 @@ private:
     bool is_env = false;
     double phase_const = 1 / (2 * M_PI);
 
-    std::vector<Vec2> points;
+    std::vector<FVec2> points;
     std::vector <double> tension; // == N + 2 / 2
 };
 

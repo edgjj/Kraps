@@ -37,12 +37,12 @@ LFO::LFO () : Generator (p_lfo, 0, 0),
 
 }
 
-void LFO::add_point(Vec2 pos)
+void LFO::add_point(FVec2 pos)
 {
     set_lock();
     for (int i = 0; i < points.size() - 1; i++)
     {
-        Vec2 p1, p2;
+        FVec2 p1, p2;
         p1 = points[i];
         p2 = points[i+1];
         if (pos.x > p1.x && pos.x < p2.x)
@@ -69,13 +69,13 @@ void LFO::process_params()
     freq_ratio = d / n;
 }
 
-std::pair<std::vector<Vec2>, std::vector<double>> LFO::get_points()
+std::pair<std::vector<FVec2>, std::vector<double>> LFO::get_points()
 {
     return std::make_pair(points,tension);
 }
 
 
-void LFO::move_point (int i, Vec2 pos)
+void LFO::move_point (int i, FVec2 pos)
 {
     set_lock();
     if (i == 0 || i == points.size() - 1){
@@ -111,7 +111,7 @@ void LFO::remove_point (int i)
 }
 
 float LFO::get_interp (float x){
-    Vec2    p1, p2;
+    FVec2    p1, p2;
     double  y_diff;
     int8_t  sign;
     
@@ -219,7 +219,7 @@ void LFO::set_serialize(const nlohmann::json& obj)
     if (obj.find("points") != obj.end())
     {
         std::vector <std::array<double, 2>> pts_conv;
-        std::vector <Vec2> pts_conv_2;
+        std::vector <FVec2> pts_conv_2;
         obj["points"].get_to(pts_conv);
         for (auto& i : pts_conv)
             pts_conv_2.push_back({ i[0], i[1] });
